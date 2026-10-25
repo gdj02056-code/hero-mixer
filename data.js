@@ -127,7 +127,7 @@ const HRAR = [
   { n: 'SSR', c: '#fbbf24' },
   { n: 'UR', c: '#f43f5e' },
 ];
-const HERO_GACHA_W = [7500, 2200, 299, 1];
+const HERO_GACHA_W = [7500, 2200, 290, 10];
 const HEROES = [
   { id: 'knight', name: '견습 기사', r: 0, wt: 'sword', look: { hair: '#f59e0b', body: '#2563eb', cape: '#dc2626', skin: '#fde4c8' }, bonus: { hpPct: 0.05, def: 5 } },
   { id: 'archer', name: '숲의 궁수', r: 0, wt: 'bow', look: { hair: '#65a30d', body: '#166534', cape: '#a16207', skin: '#fde4c8', hood: '#15803d' }, bonus: { aspd: 0.1 } },
@@ -184,7 +184,7 @@ const PRAR = [
   { n: '영웅', c: '#a78bfa', m: 2.2 },
   { n: '전설', c: '#fbbf24', m: 3.2 },
 ];
-const PET_GACHA_W = [7000, 2500, 499, 1];
+const PET_GACHA_W = [7000, 2500, 490, 10];
 // base = body drawing, kind = how it fights, c = colors
 const PETS = [
   { id: 'slime', name: '말랑 슬라임', r: 0, base: 'slime', kind: 'goo', c: ['#4ade80', '#bbf7d0'], desc: '끈적한 점액탄으로 적을 느리게' },
@@ -232,7 +232,7 @@ const RELICS = [
   { id: 'heart', name: '불사조의 심장', icon: '❤️‍🔥', key: 'regen', per: 0.3, r: 3 },
   { id: 'crown', name: '왕의 왕관', icon: '👑', key: 'atkPct', per: 0.05, r: 3 },
 ];
-const RELIC_W = [7000, 2500, 499, 1];
+const RELIC_W = [7000, 2500, 490, 10];
 const RELIC_MAX = 50;
 const relicCost = lv => Math.floor(300 * Math.pow(lv, 1.5));
 
