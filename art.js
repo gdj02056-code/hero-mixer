@@ -154,8 +154,13 @@ function iconURL(key, size, draw) {
 // ---------- generated images (img/, listed in imglist.js); canvas art is the fallback ----------
 const IMG_SET = new Set(typeof IMG_LIST !== 'undefined' ? IMG_LIST : []);
 const IMGS = {};
-for (const k of IMG_SET) { const im = new Image(); im.src = `img/${k}.webp`; IMGS[k] = im; }
-const imgReady = k => { const im = k && IMGS[k]; return im && im.complete && im.naturalWidth ? im : null; };
+// loads an image the first time it is asked for; until then the canvas art is drawn instead
+function imgReady(k) {
+  if (!k || !IMG_SET.has(k)) return null;
+  let im = IMGS[k];
+  if (!im) { im = IMGS[k] = new Image(); im.src = `img/${k}.webp`; }
+  return im.complete && im.naturalWidth ? im : null;
+}
 const imgURL = k => k && IMG_SET.has(k) ? `img/${k}.webp` : null;
 // grade image, else the nearest lower grade, else the plain image
 function gradedKey(dir, id, g) {
