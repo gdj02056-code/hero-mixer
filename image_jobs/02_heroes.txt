@@ -1,0 +1,77 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: PART 2 of 7 - 36 heroes (UR heroes look the most epic, R heroes the simplest).
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+
+=== JOB LIST (36 images) ===
+[
+  {"file": "assets/heroes/sunking.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "sun king, golden hair, big golden crown, shining gold armor, red royal cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/lich.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "lich lord, icy cyan hair, crown, pale blue skin, dark indigo robe, teal cape, glowing eyes, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/archangel.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "archangel, light blonde hair, golden halo, golden helmet, white armor, small white wings, yellow cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/demonlord.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "demon lord, black hair, red horns, small dark crown, pinkish red skin, dark crimson armor, red cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/gunqueen.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "gun queen, crimson red hair, black cowboy hat, black coat, crimson cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/titan.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "titan giant warrior, grey beard, stone grey helmet, heavy grey armor, bronze cape, muscular, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/reaper.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "grim reaper girl, white hair, dark hood, black robe, purple cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/dragoon.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "dragon knight, red dragon helmet with horns, crimson armor, golden cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/archmage.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "archmage, long white hair, tall dark indigo wizard hat, indigo robe, lavender cape, epic legendary outfit with ornate gold details and a glowing magical aura"},
+  {"file": "assets/heroes/paladin.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "holy paladin, silver helmet, white plate armor, golden cape, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/berserker.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "berserker warrior, red hair, horned helmet, grey fur armor, dark red cape, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/ninja.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "wind ninja, black hair, face mask, navy blue outfit, light blue scarf, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/stormmage.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "storm mage, light blue hair, tall dark blue wizard hat, navy robe, sky blue cape, tiny sparks, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/commander.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "knight commander, grey beard, dark steel helmet, black plate armor, red cape, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/shadowqueen.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "shadow queen, dark purple hair, small golden crown, black dress armor, purple cape, pale skin, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/sniper.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "sniper ranger, green camouflage hood, olive outfit, dark green cape, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/saint.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "holy saint girl, cream hair, golden halo, small crown, white and gold robe, golden cape, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/tiger.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "tiger warrior, orange hair, tiger ears, black headband, brown armor, orange cape, ornate outfit with gold trim and a faint magical glow"},
+  {"file": "assets/heroes/rogue.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "shadow thief, black hair, dark cloth mask over the mouth, dark grey outfit, purple cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/mage.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "fire mage, red hair, tall dark orange wizard hat, brown robe, orange cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/monk.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "bald monk, tan skin, golden yellow robe, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/priest.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "kind priest girl, light blonde hair, golden halo above head, white robe, light blue cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/samurai.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "samurai, black topknot hair, white headband, red samurai armor, black cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/catgirl.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "cat girl swordswoman, orange hair, orange cat ears, cream outfit, orange cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/viking.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "viking warrior, orange braided beard, horned helmet, grey fur armor, blue cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/elfarcher.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "elf archer, pale blonde long hair, pointed elf ears, light green outfit, dark green cape, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/alchemist.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "alchemist, dark teal hood, teal robe, mint green cape, small potion bottles on belt, nicer outfit with small decorative details"},
+  {"file": "assets/heroes/knight.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "young knight boy, orange hair, blue tunic, red cape, simple modest outfit"},
+  {"file": "assets/heroes/archer.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "forest archer girl, green hood, green leather outfit, brown cape, simple modest outfit"},
+  {"file": "assets/heroes/gunner.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "gunslinger, brown cowboy hat, grey long coat, brown cape, simple modest outfit"},
+  {"file": "assets/heroes/squire.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "young shield soldier, brown hair, round steel helmet, grey tunic, blue cape, simple modest outfit"},
+  {"file": "assets/heroes/hunter.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "hunter, grey hair, red headband, olive green leather outfit, brown cape, simple modest outfit"},
+  {"file": "assets/heroes/farmer.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "brave farmer boy, yellow straw hat, blue overalls, green cape, simple modest outfit"},
+  {"file": "assets/heroes/apprentice.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "apprentice wizard girl, purple hair, tall dark purple wizard hat, violet robe, lilac cape, simple modest outfit"},
+  {"file": "assets/heroes/sailor.png", "size": "512x512", "bg": "green", "pose": "hero", "prompt": "pirate sailor, black hair, red bandana, white striped shirt, navy blue cape, simple modest outfit"},
+  {"file": "assets/heroes/scout.png", "size": "512x512", "bg": "magenta", "pose": "hero", "prompt": "elf forest scout, blonde hair, pointed elf ears, green tunic, dark green cape, simple modest outfit"}
+]

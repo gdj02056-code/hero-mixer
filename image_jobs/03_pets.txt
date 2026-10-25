@@ -1,0 +1,65 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: PART 3 of 7 - 24 pets (legendary pets look the most magical).
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+
+=== JOB LIST (24 images) ===
+[
+  {"file": "assets/pets/dragon.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute baby red dragon with small purple wings, tiny horns, yellow belly, radiant legendary aura with glowing particles"},
+  {"file": "assets/pets/phoenix.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute baby phoenix bird made of orange and yellow flames, radiant legendary aura with glowing particles"},
+  {"file": "assets/pets/icedragon.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute baby ice dragon, light blue scales, white crystal wings, radiant legendary aura with glowing particles"},
+  {"file": "assets/pets/starspirit.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute smiling yellow star spirit, glowing, tiny sparkles around, radiant legendary aura with glowing particles"},
+  {"file": "assets/pets/eagle.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute small bald eagle with spread brown wings, white head, yellow beak, faint magical glow"},
+  {"file": "assets/pets/wolf.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute frost wolf pup, light blue fur, fluffy tail, fierce eyes, faint magical glow"},
+  {"file": "assets/pets/jelly.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute glowing purple jellyfish with electric tentacles, faint magical glow"},
+  {"file": "assets/pets/golem.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute mini stone golem with glowing yellow eyes, faint magical glow"},
+  {"file": "assets/pets/kingslime.png", "size": "512x512", "bg": "magenta", "pose": "pet", "prompt": "cute golden king slime wearing a small crown, faint magical glow"},
+  {"file": "assets/pets/fairy.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute tiny pink healing fairy with translucent light blue wings, small sparkle accents"},
+  {"file": "assets/pets/ghost.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute small white ghost with a wavy bottom and black oval eyes, small sparkle accents"},
+  {"file": "assets/pets/turtle.png", "size": "512x512", "bg": "magenta", "pose": "pet", "prompt": "cute turtle with a green rock shell, small sparkle accents"},
+  {"file": "assets/pets/iceslime.png", "size": "512x512", "bg": "magenta", "pose": "pet", "prompt": "cute light cyan ice slime with frost sparkles, small sparkle accents"},
+  {"file": "assets/pets/owl.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute round brown owl with big yellow eyes, small sparkle accents"},
+  {"file": "assets/pets/fox.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute red fire fox with a fluffy tail and white chest, small sparkle accents"},
+  {"file": "assets/pets/robot.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute small hovering robot, grey metal box head, red glowing eye, antenna, small sparkle accents"},
+  {"file": "assets/pets/slime.png", "size": "512x512", "bg": "magenta", "pose": "pet", "prompt": "cute green slime blob pet with big shiny eyes, plain simple look"},
+  {"file": "assets/pets/cat.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute orange cat wearing a tiny silver knight helmet, plain simple look"},
+  {"file": "assets/pets/bunny.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute white bunny with long ears and pink inner ears, plain simple look"},
+  {"file": "assets/pets/penguin.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute baby penguin, black and white, orange beak and feet, plain simple look"},
+  {"file": "assets/pets/shroom.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute walking mushroom, red cap with white dots, cream stem with a face, plain simple look"},
+  {"file": "assets/pets/bee.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute chubby bumblebee, yellow and black stripes, small wings, plain simple look"},
+  {"file": "assets/pets/fireslime.png", "size": "512x512", "bg": "magenta", "pose": "pet", "prompt": "cute orange fire slime with a small flame on top, plain simple look"},
+  {"file": "assets/pets/puppy.png", "size": "512x512", "bg": "green", "pose": "pet", "prompt": "cute golden puppy with floppy brown ears and a red collar with a gold coin tag, plain simple look"}
+]

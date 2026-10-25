@@ -1,0 +1,119 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: PART 5 of 7 - 7 armor and accessory types x 10 grades.
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== GRADE RULES (very important) ===
+Items come in 10 grades. The file name ends with the grade: _F, _D, _C, _B, _A, _S, _SS, _SSS, _EPIC, _LEGEND.
+- All 10 grades of the same item must be the SAME KIND of object with the SAME overall shape, angle, size and position,
+  so they can be swapped in the game without moving. Only materials, colors, decorations and glow change.
+- Generate the 10 grades of one item back to back. If you can, use the F image as a reference (img2img / same seed)
+  for the higher grades and only add detail.
+- Higher grade = more ornate, more precious materials, stronger glow. F looks cheap and worn, LEGEND looks divine.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+
+=== JOB LIST (70 images) ===
+[
+  {"file": "assets/equip/armor_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/armor_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "fantasy chest plate armor, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/armor_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "fantasy chest plate armor, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/armor_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/armor_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/armor_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/armor_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/armor_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/armor_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/armor_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "fantasy chest plate armor, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/equip/helmet_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/helmet_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "knight helmet with a visor, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/helmet_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "knight helmet with a visor, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/helmet_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/helmet_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/helmet_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/helmet_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/helmet_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/helmet_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/helmet_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "knight helmet with a visor, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/equip/gloves_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/gloves_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "pair of gauntlets, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/gloves_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "pair of gauntlets, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/gloves_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/gloves_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/gloves_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/gloves_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/gloves_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/gloves_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/gloves_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of gauntlets, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/equip/ring_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/ring_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "ring with a gemstone, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/ring_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "ring with a gemstone, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/ring_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/ring_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/ring_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/ring_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/ring_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/ring_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/ring_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ring with a gemstone, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/equip/neck_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/neck_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "necklace with a pendant, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/neck_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "necklace with a pendant, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/neck_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/neck_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/neck_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/neck_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/neck_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/neck_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/neck_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "necklace with a pendant, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/equip/belt_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/belt_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "belt with a buckle, coiled, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/belt_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "belt with a buckle, coiled, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/belt_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/belt_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/belt_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/belt_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/belt_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/belt_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/belt_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "belt with a buckle, coiled, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/equip/boots_F.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/equip/boots_D.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "pair of adventurer boots, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/equip/boots_C.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "pair of adventurer boots, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/equip/boots_B.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/equip/boots_A.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/equip/boots_S.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/equip/boots_SS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/equip/boots_SSS.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/equip/boots_EPIC.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/equip/boots_LEGEND.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "pair of adventurer boots, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"}
+]

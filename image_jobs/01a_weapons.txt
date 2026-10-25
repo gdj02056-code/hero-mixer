@@ -1,0 +1,109 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: PART 1A of 7 - weapons x 10 grades (sword, dagger, bow, crossbow, gun, hammer).
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== GRADE RULES (very important) ===
+Items come in 10 grades. The file name ends with the grade: _F, _D, _C, _B, _A, _S, _SS, _SSS, _EPIC, _LEGEND.
+- All 10 grades of the same item must be the SAME KIND of object with the SAME overall shape, angle, size and position,
+  so they can be swapped in the game without moving. Only materials, colors, decorations and glow change.
+- Generate the 10 grades of one item back to back. If you can, use the F image as a reference (img2img / same seed)
+  for the higher grades and only add detail.
+- Higher grade = more ornate, more precious materials, stronger glow. F looks cheap and worn, LEGEND looks divine.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+
+=== JOB LIST (60 images) ===
+[
+  {"file": "assets/weapons/sword_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/sword_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/sword_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/sword_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/sword_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/sword_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/sword_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/sword_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/sword_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/sword_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "fantasy longsword with a crossguard, grip and pommel, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/dagger_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/dagger_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/dagger_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/dagger_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/dagger_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/dagger_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/dagger_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/dagger_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/dagger_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/dagger_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short curved dagger with a guard and a wrapped handle, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/bow_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/bow_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/bow_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/bow_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/bow_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/bow_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/bow_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/bow_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/bow_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/bow_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "recurve bow with an arrow nocked on the string, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/crossbow_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/crossbow_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "crossbow with a loaded bolt, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/crossbow_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "crossbow with a loaded bolt, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/crossbow_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/crossbow_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/crossbow_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/crossbow_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/crossbow_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/crossbow_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/crossbow_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "crossbow with a loaded bolt, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/gun_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/gun_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/gun_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/gun_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/gun_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/gun_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/gun_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/gun_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/gun_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/gun_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "flintlock musket rifle with a long barrel and a wooden stock, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/hammer_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/hammer_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/hammer_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/hammer_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/hammer_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/hammer_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/hammer_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/hammer_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/hammer_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/hammer_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "big two-handed war hammer with a heavy block head, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"}
+]

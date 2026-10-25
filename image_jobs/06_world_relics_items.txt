@@ -1,0 +1,73 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: PART 6 of 7 - 10 stage ground textures, 12 relics, 7 items, 3 UI images.
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+
+=== JOB LIST (32 images) ===
+[
+  {"file": "assets/stages/stage1.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "green grass meadow with tiny flowers"},
+  {"file": "assets/stages/stage2.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "desert sand with small pebbles"},
+  {"file": "assets/stages/stage3.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "ancient cracked stone tiles with moss"},
+  {"file": "assets/stages/stage4.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "icy blue frozen cave floor with frost"},
+  {"file": "assets/stages/stage5.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "dark volcanic rock with thin glowing lava cracks"},
+  {"file": "assets/stages/stage6.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "dark dungeon stone brick floor, slight purple tint"},
+  {"file": "assets/stages/stage7.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "muddy battlefield dirt with scattered broken arrows"},
+  {"file": "assets/stages/stage8.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "murky green swamp ground with small puddles"},
+  {"file": "assets/stages/stage9.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "soft white cloud floor with light blue sky gaps"},
+  {"file": "assets/stages/stage10.png", "size": "512x512", "bg": "full", "style": "ground", "prompt": "dark crimson cracked ground with faint magenta glow"},
+  {"file": "assets/relics/sheath.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ancient ornate sword sheath with gold trim"},
+  {"file": "assets/relics/grail.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "holy golden grail cup with a red glow"},
+  {"file": "assets/relics/whetstone.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "grey sharpening whetstone with sparks"},
+  {"file": "assets/relics/feather.png", "size": "512x512", "bg": "magenta", "pose": "icon", "prompt": "light green wind feather with swirling wind"},
+  {"file": "assets/relics/coin.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "big ancient gold coin with a crown emblem"},
+  {"file": "assets/relics/scroll.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "rolled ancient parchment scroll with a red ribbon"},
+  {"file": "assets/relics/lens.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "golden monocle lens showing an eagle eye"},
+  {"file": "assets/relics/hourglass.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "ornate golden hourglass with glowing blue sand"},
+  {"file": "assets/relics/shield.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "round guardian shield with a golden lion emblem"},
+  {"file": "assets/relics/orb.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "glowing blue mana crystal orb on a small stand"},
+  {"file": "assets/relics/heart.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "burning phoenix heart wrapped in flames"},
+  {"file": "assets/relics/crown.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "royal golden crown with red and blue jewels"},
+  {"file": "assets/items/gold.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "shiny gold coin"},
+  {"file": "assets/items/gem.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "sparkling blue diamond gem"},
+  {"file": "assets/items/energy.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "yellow lightning bolt energy icon"},
+  {"file": "assets/items/chest.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "golden treasure chest, slightly open, glowing light inside"},
+  {"file": "assets/items/meat.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "roasted meat on the bone"},
+  {"file": "assets/items/magnet_item.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "big red horseshoe magnet"},
+  {"file": "assets/items/bomb.png", "size": "512x512", "bg": "green", "pose": "icon", "prompt": "round black bomb with a lit fuse"},
+  {"file": "assets/ui/lobby_bg.png", "size": "1080x1920", "bg": "full", "style": "scene", "prompt": "fantasy castle town at dusk, purple and orange sky, mobile game lobby background, darker empty bottom area"},
+  {"file": "assets/ui/app_icon.png", "size": "1024x1024", "bg": "full", "prompt": "two crossed swords over a glowing golden round emblem, deep purple background, app icon"},
+  {"file": "assets/ui/logo.png", "size": "1024x512", "bg": "green", "pose": "icon", "prompt": "game title logo reading HERO MIXER, bold golden letters with a sword. Skip this job if the text comes out misspelled"}
+]

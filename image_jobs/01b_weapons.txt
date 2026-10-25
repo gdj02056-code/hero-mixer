@@ -1,0 +1,109 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: PART 1B of 7 - weapons x 10 grades (axe, spear, scythe, spellbook, wand, staff).
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== GRADE RULES (very important) ===
+Items come in 10 grades. The file name ends with the grade: _F, _D, _C, _B, _A, _S, _SS, _SSS, _EPIC, _LEGEND.
+- All 10 grades of the same item must be the SAME KIND of object with the SAME overall shape, angle, size and position,
+  so they can be swapped in the game without moving. Only materials, colors, decorations and glow change.
+- Generate the 10 grades of one item back to back. If you can, use the F image as a reference (img2img / same seed)
+  for the higher grades and only add detail.
+- Higher grade = more ornate, more precious materials, stronger glow. F looks cheap and worn, LEGEND looks divine.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+
+=== JOB LIST (60 images) ===
+[
+  {"file": "assets/weapons/axe_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/axe_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/axe_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/axe_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/axe_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/axe_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/axe_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/axe_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/axe_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/axe_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "battle axe with a single wide curved blade, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/spear_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/spear_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/spear_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/spear_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/spear_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/spear_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/spear_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/spear_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/spear_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/spear_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long spear with a leaf-shaped tip and a tassel, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/scythe_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/scythe_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/scythe_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/scythe_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/scythe_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/scythe_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/scythe_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/scythe_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/scythe_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/scythe_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "grim reaper scythe with a large curved blade and a long handle, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/spellbook_F.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/spellbook_D.png", "size": "512x512", "bg": "magenta", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/spellbook_C.png", "size": "512x512", "bg": "magenta", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/spellbook_B.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/spellbook_A.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/spellbook_S.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/spellbook_SS.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/spellbook_SSS.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/spellbook_EPIC.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/spellbook_LEGEND.png", "size": "512x512", "bg": "green", "pose": "book", "prompt": "magic spellbook, closed thick tome with an emblem on the cover, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/wand_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/wand_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/wand_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/wand_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/wand_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/wand_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/wand_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/wand_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/wand_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/wand_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "short magic wand with a star crystal tip, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"},
+  {"file": "assets/weapons/staff_F.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, crude old worn version, rusty dull iron and rough plain wood, dull grey-brown colors, no decoration"},
+  {"file": "assets/weapons/staff_D.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, simple basic version, clean plain iron and wood, a small green cloth wrap, minimal decoration"},
+  {"file": "assets/weapons/staff_C.png", "size": "512x512", "bg": "magenta", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, sturdy version, clean steel, teal accents, one small teal gem, neat leather wrap"},
+  {"file": "assets/weapons/staff_B.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, polished steel version, blue accents, a blue gemstone, simple engraved patterns"},
+  {"file": "assets/weapons/staff_A.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, fine silver mithril version, purple accents, a glowing purple gem, elegant engravings"},
+  {"file": "assets/weapons/staff_S.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, ornate enchanted version, pink and magenta accents, glowing pink crystals, faint magic sparkles"},
+  {"file": "assets/weapons/staff_SS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, heroic ornate version, orange and gold trim, glowing orange runes, small fiery sparkles"},
+  {"file": "assets/weapons/staff_SSS.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, masterwork ornate version, crimson red and gold, glowing red runes, soft red aura"},
+  {"file": "assets/weapons/staff_EPIC.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, epic artifact version, violet and magenta crystal parts, swirling arcane purple energy, strong purple glow"},
+  {"file": "assets/weapons/staff_LEGEND.png", "size": "512x512", "bg": "green", "pose": "weapon", "prompt": "long wizard staff with an orb held by claws at the top, divine legendary relic version, radiant gold and white, holy light rays, rainbow sparkles, intense golden glow"}
+]
