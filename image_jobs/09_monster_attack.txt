@@ -1,0 +1,76 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: EXTRA - attack poses: 10 bosses x 2 (charge, cast), elite, 4 normal monsters.
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== MONSTER ATTACK POSE RULES (very important) ===
+Each job is an ATTACK POSE of a monster or boss that already exists as an idle picture. The idle picture is named in the job's "reference" field.
+- It must be the SAME CREATURE: same body, colors, face, horns, armor and accessories as the idle picture.
+- Same scale and framing as the idle picture: same overall size, feet at the same height near the bottom, centered.
+- If your tool can use a reference image (img2img, IP-Adapter, reference-only, etc.), use the idle picture as the reference.
+- Only the pose and expression change (plus the effect described in the prompt). The game swaps to this picture at the moment of the attack.
+- Do the bosses first, then the elite, then the normal monsters (bosses are the most visible in game).
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+attack  : 2-heads-tall chibi, full body, side view FACING RIGHT, dynamic attack lunge: front foot stepping forward, body leaning forward, the FRONT arm stretched straight forward at chest height ending in an EMPTY closed fist (as if gripping a handle) placed at about 72% from the left and 55% from the top of the image, the other arm pulled back, NO weapon, feet near the bottom of the image
+monster_attack: full body, facing the viewer (front view) like its idle picture, caught in the middle of an attack, same size and same feet height as the idle picture
+
+=== JOB LIST (25 images) ===
+[
+  {"file": "assets/bosses/boss1_charge.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "giant king slime boss wearing a golden crown, green, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss1.png"},
+  {"file": "assets/bosses/boss1_cast.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "giant king slime boss wearing a golden crown, green, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss1.png"},
+  {"file": "assets/bosses/boss2_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "giant desert scorpion king boss, golden armor plates, raised stinger, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss2.png"},
+  {"file": "assets/bosses/boss2_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "giant desert scorpion king boss, golden armor plates, raised stinger, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss2.png"},
+  {"file": "assets/bosses/boss3_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "ancient stone guardian golem boss with glowing blue runes, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss3.png"},
+  {"file": "assets/bosses/boss3_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "ancient stone guardian golem boss with glowing blue runes, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss3.png"},
+  {"file": "assets/bosses/boss4_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "frost giant boss, icy blue skin, ice armor, frozen beard, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss4.png"},
+  {"file": "assets/bosses/boss4_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "frost giant boss, icy blue skin, ice armor, frozen beard, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss4.png"},
+  {"file": "assets/bosses/boss5_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "lava golem boss, black rock body with glowing orange magma cracks, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss5.png"},
+  {"file": "assets/bosses/boss5_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "lava golem boss, black rock body with glowing orange magma cracks, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss5.png"},
+  {"file": "assets/bosses/boss6_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "dark lord boss, black spiked armor, purple flames, glowing red eyes, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss6.png"},
+  {"file": "assets/bosses/boss6_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "dark lord boss, black spiked armor, purple flames, glowing red eyes, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss6.png"},
+  {"file": "assets/bosses/boss7_charge.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "ghostly undead knight commander boss, tattered banner, spectral green glow, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss7.png"},
+  {"file": "assets/bosses/boss7_cast.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "ghostly undead knight commander boss, tattered banner, spectral green glow, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss7.png"},
+  {"file": "assets/bosses/boss8_charge.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "swamp hydra boss with three snake heads, green scales, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss8.png"},
+  {"file": "assets/bosses/boss8_cast.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "swamp hydra boss with three snake heads, green scales, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss8.png"},
+  {"file": "assets/bosses/boss9_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "sky griffin boss, white eagle head, golden lion body, large wings, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss9.png"},
+  {"file": "assets/bosses/boss9_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "sky griffin boss, white eagle head, golden lion body, large wings, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss9.png"},
+  {"file": "assets/bosses/boss10_charge.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "chaos demon king boss, crimson and black, four horns, swirling dark aura, charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines", "reference": "assets/bosses/boss10.png"},
+  {"file": "assets/bosses/boss10_cast.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "chaos demon king boss, crimson and black, four horns, swirling dark aura, casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring", "reference": "assets/bosses/boss10.png"},
+  {"file": "assets/monsters/elite_attack.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "big red horned demon brute, angry, muscular, charging forward with head and horns lowered, fists clenched, red rage aura", "reference": "assets/monsters/elite.png"},
+  {"file": "assets/monsters/golem_attack.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "small brown rock golem, blocky body, glowing yellow eyes, both stone fists raised high overhead, about to slam the ground", "reference": "assets/monsters/golem.png"},
+  {"file": "assets/monsters/archer_attack.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "small orange goblin archer holding a short bow, drawing the bow string fully back, aiming straight at the viewer", "reference": "assets/monsters/archer.png"},
+  {"file": "assets/monsters/bat_attack.png", "size": "512x512", "bg": "green", "pose": "monster_attack", "prompt": "purple bat monster with spread wings, red eyes, diving bite: wings swept back, fangs bared, lunging forward", "reference": "assets/monsters/bat.png"},
+  {"file": "assets/monsters/slime_attack.png", "size": "512x512", "bg": "magenta", "pose": "monster_attack", "prompt": "green slime monster with an angry cute face, pouncing: body stretched tall, mouth wide open, leaping forward", "reference": "assets/monsters/slime.png"}
+]

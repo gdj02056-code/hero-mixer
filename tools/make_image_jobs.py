@@ -28,7 +28,21 @@ POSES = {
     'attack': ('2-heads-tall chibi, full body, side view FACING RIGHT, dynamic attack lunge: front foot stepping forward, body leaning forward, '
                'the FRONT arm stretched straight forward at chest height ending in an EMPTY closed fist (as if gripping a handle) placed at about '
                '72% from the left and 55% from the top of the image, the other arm pulled back, NO weapon, feet near the bottom of the image'),
+    'monster_attack': 'full body, facing the viewer (front view) like its idle picture, caught in the middle of an attack, same size and same feet height as the idle picture',
 }
+
+# monster attack poses: (file id, idle picture, description, action)
+MONSTER_ATTACKS = [
+    ('monsters/slime_attack', 'monsters/slime', 'green slime monster with an angry cute face', 'pouncing: body stretched tall, mouth wide open, leaping forward'),
+    ('monsters/bat_attack', 'monsters/bat', 'purple bat monster with spread wings, red eyes', 'diving bite: wings swept back, fangs bared, lunging forward'),
+    ('monsters/archer_attack', 'monsters/archer', 'small orange goblin archer holding a short bow', 'drawing the bow string fully back, aiming straight at the viewer'),
+    ('monsters/golem_attack', 'monsters/golem', 'small brown rock golem, blocky body, glowing yellow eyes', 'both stone fists raised high overhead, about to slam the ground'),
+    ('monsters/elite_attack', 'monsters/elite', 'big red horned demon brute, angry, muscular', 'charging forward with head and horns lowered, fists clenched, red rage aura'),
+]
+BOSS_ACTIONS = [
+    ('charge', 'charging attack: crouched low and lunging forward toward the viewer, furious, red rage aura, motion lines'),
+    ('cast', 'casting a spell: arms or limbs raised high, glowing purple magic energy swirling around the body, mouth open roaring'),
+]
 
 # 10 equipment grades: file suffix, Korean name, what changes with the grade
 GRADES = [
@@ -284,6 +298,17 @@ Each job is the ATTACK POSE of a hero that already exists as an idle picture: as
 """
 
 
+MONSTER_ATTACK_RULES = """
+=== MONSTER ATTACK POSE RULES (very important) ===
+Each job is an ATTACK POSE of a monster or boss that already exists as an idle picture. The idle picture is named in the job's "reference" field.
+- It must be the SAME CREATURE: same body, colors, face, horns, armor and accessories as the idle picture.
+- Same scale and framing as the idle picture: same overall size, feet at the same height near the bottom, centered.
+- If your tool can use a reference image (img2img, IP-Adapter, reference-only, etc.), use the idle picture as the reference.
+- Only the pose and expression change (plus the effect described in the prompt). The game swaps to this picture at the moment of the attack.
+- Do the bosses first, then the elite, then the normal monsters (bosses are the most visible in game).
+"""
+
+
 def write(name, title, jobs, extra=''):
     os.makedirs(OUT, exist_ok=True)
     lines = ',\n'.join('  ' + json.dumps(j, ensure_ascii=False) for j in jobs)
@@ -331,6 +356,18 @@ def main():
     jobs = [job(f'assets/heroes/{hid}_attack.png', f'{desc}, {HERO_RARITY[r][1]}, attacking pose, empty hands', 'attack')
             for hid, r, desc in HEROES]
     total += write('08_hero_attack.txt', 'EXTRA - 36 hero attack poses (shown at the moment the hero attacks)', jobs, ATTACK_RULES)
+
+    jobs = []
+    for bid, _, desc in BOSSES:
+        for action, text in BOSS_ACTIONS:
+            j = job(f'assets/bosses/{bid}_{action}.png', f'{desc}, {text}', 'monster_attack')
+            j['reference'] = f'assets/bosses/{bid}.png'
+            jobs.append(j)
+    for fid, ref, desc, action in reversed(MONSTER_ATTACKS):  # elite first, then normal monsters
+        j = job(f'assets/{fid}.png', f'{desc}, {action}', 'monster_attack')
+        j['reference'] = f'assets/{ref}.png'
+        jobs.append(j)
+    total += write('09_monster_attack.txt', 'EXTRA - attack poses: 10 bosses x 2 (charge, cast), elite, 4 normal monsters', jobs, MONSTER_ATTACK_RULES)
     print('total', total)
 
 

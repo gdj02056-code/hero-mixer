@@ -44,6 +44,7 @@ pet     : tiny cute creature, full body, facing right
 monster : full body, facing the viewer (front view)
 icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
 attack  : 2-heads-tall chibi, full body, side view FACING RIGHT, dynamic attack lunge: front foot stepping forward, body leaning forward, the FRONT arm stretched straight forward at chest height ending in an EMPTY closed fist (as if gripping a handle) placed at about 72% from the left and 55% from the top of the image, the other arm pulled back, NO weapon, feet near the bottom of the image
+monster_attack: full body, facing the viewer (front view) like its idle picture, caught in the middle of an attack, same size and same feet height as the idle picture
 
 === JOB LIST (36 images) ===
 [
