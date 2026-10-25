@@ -123,6 +123,12 @@ small{opacity:.8}
 .reward{display:flex;justify-content:center;gap:16px;font-size:20px;font-weight:800;margin:12px 0}
 .bigicon{font-size:64px;text-align:center}
 
+/* generated art inside lobby elements */
+#lobby{background-size:cover;background-position:center top}
+.res span img{width:20px;height:20px;vertical-align:-5px;object-fit:contain}
+.rtile .ri img{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+.bigicon img{width:110px;height:110px;object-fit:contain}
+
 /* top bar settings */
 #btnSettings{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid #2e3366;background:rgba(0,0,0,.45);font-size:15px;align-self:center}
 

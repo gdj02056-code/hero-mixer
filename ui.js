@@ -21,6 +21,7 @@ function itemTile(it, cls = '', style = '') {
 }
 const heroTile = (id, extra = '') => `<div class="htile" data-hero="${id}" style="--c:${HRAR[HERO[id].r].c}"><img src="${heroIcon(id)}" alt=""><span class="gb">${HRAR[HERO[id].r].n}</span>${extra}</div>`;
 const petTile = (id, extra = '') => `<div class="htile" data-pet="${id}" style="--c:${PRAR[PET[id].r].c}"><img src="${petIcon(id)}" alt=""><span class="gb">${PRAR[PET[id].r].n}</span>${extra}</div>`;
+const relicArt = r => { const u = imgURL('relics/' + r.id); return u ? `<img src="${u}" alt="">` : r.icon; };
 const starsHTML = n => `<span class="stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</span>`;
 
 // ---------- animated hero preview canvases ----------
@@ -422,7 +423,7 @@ function growRelic(el) {
   el.innerHTML = `<h3 style="margin-top:4px">🏺 유물 (${owned}/${RELICS.length}) <small>탭해서 강화</small></h3>
     <div class="rgrid">${RELICS.map(r => {
       const lv = S.relics[r.id] || 0;
-      return `<div class="rtile ${lv ? '' : 'locked'}" data-r="${r.id}" style="--c:${PRAR[r.r].c}"><div class="ri">${r.icon}</div><div class="rn">${r.name}</div><div class="rl">${lv ? `Lv.${lv}/${RELIC_MAX}` : '🔒'}</div><div class="rs">${STAT_NAMES[r.key]} ${fmtBonus(r.key, relicVal(r, Math.max(1, lv)))}</div></div>`;
+      return `<div class="rtile ${lv ? '' : 'locked'}" data-r="${r.id}" style="--c:${PRAR[r.r].c}"><div class="ri">${relicArt(r)}</div><div class="rn">${r.name}</div><div class="rl">${lv ? `Lv.${lv}/${RELIC_MAX}` : '🔒'}</div><div class="rs">${STAT_NAMES[r.key]} ${fmtBonus(r.key, relicVal(r, Math.max(1, lv)))}</div></div>`;
     }).join('')}</div>
     <h3>🎁 유물 상자 <small>중복 획득 시 레벨 +1</small></h3>
     <div class="row"><button class="btn green" data-rs="0">무료 1회</button><button class="btn" data-rs="1">1회 💎200</button><button class="btn purple" data-rs="10">10회 💎1,800</button></div>`;
@@ -433,7 +434,7 @@ function relicDetail(r) {
   const lv = S.relics[r.id] || 0;
   if (!lv) { toast('🔒 유물 상자에서 먼저 획득하세요'); return; }
   const cost = relicCost(lv), maxed = lv >= RELIC_MAX;
-  const box = showModal(`<div class="bigicon">${r.icon}</div><h2 style="color:${PRAR[r.r].c}">${r.name}</h2>
+  const box = showModal(`<div class="bigicon">${relicArt(r)}</div><h2 style="color:${PRAR[r.r].c}">${r.name}</h2>
     <div class="center">Lv.${lv}/${RELIC_MAX}<br>${STAT_NAMES[r.key]} <b>${fmtBonus(r.key, relicVal(r, lv))}</b>${maxed ? '' : ` → <b style="color:#4ade80">${fmtBonus(r.key, relicVal(r, lv + 1))}</b>`}</div>
     <div class="row"><button class="btn gold" id="up" ${maxed ? 'disabled' : ''}>${maxed ? 'MAX' : `강화 🪙${fmt(cost)}`}</button><button class="btn gray" id="close">닫기</button></div>`);
   box.querySelector('#up').onclick = () => { if (!spend('gold', cost)) return; S.relics[r.id]++; save(); refreshTop(); relicDetail(r); renderLobby(); };
@@ -445,7 +446,7 @@ function relicGacha(n) {
   for (let i = 0; i < Math.max(1, n); i++) { const r = rollFrom(RELICS, RELIC_W); const isNew = !S.relics[r.id]; addRelic(r.id); got.push({ r, isNew }); }
   save(); refreshTop();
   const box = showModal(`<h2>🏺 유물 획득!</h2>
-    <div class="rgrid">${got.map((g, i) => `<div class="rtile pop" style="--c:${PRAR[g.r.r].c};animation-delay:${i * 0.07}s"><div class="ri">${g.r.icon}</div><div class="rn">${g.r.name}</div><div class="rl">${g.isNew ? '<b class="newtxt">NEW</b>' : 'Lv.' + S.relics[g.r.id]}</div></div>`).join('')}</div>
+    <div class="rgrid">${got.map((g, i) => `<div class="rtile pop" style="--c:${PRAR[g.r.r].c};animation-delay:${i * 0.07}s"><div class="ri">${relicArt(g.r)}</div><div class="rn">${g.r.name}</div><div class="rl">${g.isNew ? '<b class="newtxt">NEW</b>' : 'Lv.' + S.relics[g.r.id]}</div></div>`).join('')}</div>
     <div class="row"><button class="btn gray" id="ok">확인</button><button class="btn purple" id="again">한 번 더</button></div>`);
   box.querySelector('#ok').onclick = () => { closeModal(); renderLobby(); };
   box.querySelector('#again').onclick = () => { closeModal(); relicGacha(n); };
@@ -488,8 +489,18 @@ function frame(now) {
   else drawPreviews(now / 1000);
   requestAnimationFrame(frame);
 }
+// generated art for the lobby: background picture and currency icons
+function applyLobbyArt() {
+  const bg = imgURL('ui/lobby_bg');
+  if (bg) $('#lobby').style.backgroundImage = `linear-gradient(rgba(14,15,31,.55), rgba(14,15,31,.88) 45%, #0e0f1f 85%), url(${bg})`;
+  [['#rGold', 'items/gold'], ['#rGems', 'items/gem'], ['#rEnergy', 'items/energy']].forEach(([sel, k]) => {
+    const u = imgURL(k), span = $(sel).previousElementSibling;
+    if (u && span) span.innerHTML = `<img src="${u}" alt="">`;
+  });
+}
 loadSave();
 resize();
+applyLobbyArt();
 selStage = Math.min(S.cleared + 1, 999);
 renderLobby();
 requestAnimationFrame(frame);

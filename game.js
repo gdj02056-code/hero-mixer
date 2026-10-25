@@ -1074,6 +1074,8 @@ function render() {
     const pat = groundPattern(bi);
     if (pat) {
       ctx.fillStyle = pat; ctx.fillRect(i * T, j * T, T, T);
+      // calm the texture with the biome color so monsters and bullets stay readable
+      ctx.globalAlpha = 0.4; ctx.fillStyle = b.g1; ctx.fillRect(i * T, j * T, T, T); ctx.globalAlpha = 1;
       if (locked) { ctx.fillStyle = 'rgba(5,6,13,.72)'; ctx.fillRect(i * T, j * T, T, T); }
       continue;
     }
