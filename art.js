@@ -162,6 +162,23 @@ function imgReady(k) {
   return im.complete && im.naturalWidth ? im : null;
 }
 const imgURL = k => k && IMG_SET.has(k) ? `img/${k}.webp` : null;
+// a picture exists but is still downloading: draw nothing for a moment instead of the old canvas art
+function imgPending(k) { if (!k || !IMG_SET.has(k)) return false; imgReady(k); return !IMGS[k].complete; }
+function preloadImages(keys) { for (const k of keys) imgReady(k); }
+
+// battle skill icons: the picture when it exists, the emoji otherwise
+const PASSIVE_IMG = { book: 'book', glove: 'glove', clock: 'clock', armor: 'armor_p', boots: 'boots_p', magnet: 'magnet' };
+const skillImgKey = (id, evo) => WEAPONS[id] ? `skills/${id}${evo ? '_evo' : ''}` : `skills/${PASSIVE_IMG[id]}`;
+const skillEmoji = (id, evo) => WEAPONS[id] ? (evo ? WEAPONS[id].evoIcon : WEAPONS[id].icon) : PASSIVES[id].icon;
+function skillIconHTML(id, evo, cls = '') {
+  const u = imgURL(skillImgKey(id, evo));
+  return u ? `<img class="ski ${cls}" src="${u}" alt="">` : skillEmoji(id, evo);
+}
+function drawSkillIcon(c, id, evo, x, y, s) {
+  const k = skillImgKey(id, evo), im = imgReady(k);
+  if (im) c.drawImage(im, x - s / 2, y - s / 2, s, s);
+  else if (!imgPending(k)) c.fillText(skillEmoji(id, evo), x, y);
+}
 // fraction of the image height where the character's feet are (from tools/process_assets.py)
 const imgBottom = k => (typeof IMG_BOTTOM !== 'undefined' && IMG_BOTTOM[k]) || 0.94;
 // pet pictures that were drawn facing left, and pets that hover instead of walking
@@ -215,8 +232,8 @@ function drawHeld(c, o, t) {
   if (A.held === 'float') {
     c.save(); c.translate((o.face || 1) * 20, -16 + Math.sin(t * 3) * 2.5);
     if (sw >= 0) { c.shadowColor = '#c084fc'; c.shadowBlur = 20; }
-    const fim = imgReady(weaponKey(wt, o.grade || 0));
-    if (fim) c.drawImage(fim, -14, -14, 28, 28); else { c.scale(0.6, 0.6); A.draw(c, col); }
+    const fk = weaponKey(wt, o.grade || 0), fim = imgReady(fk);
+    if (fim) c.drawImage(fim, -14, -14, 28, 28); else if (!imgPending(fk)) { c.scale(0.6, 0.6); A.draw(c, col); }
     c.restore();
     if (!o.img) { circ(c, hx, hy, 3.6); paint(c, o.look.skin); }
     return;
@@ -232,12 +249,12 @@ function drawHeld(c, o, t) {
   }
   c.save(); c.translate(hx, hy); c.rotate(rot);
   if ((o.grade || 0) >= 5) { c.shadowColor = col; c.shadowBlur = 12; }
-  const wim = imgReady(weaponKey(wt, o.grade || 0));
+  const wk = weaponKey(wt, o.grade || 0), wim = imgReady(wk);
   if (wim) {
     const [gx, gy] = WEAPON_GRIP[wt] || [0.2, 0.8], S = WEAPON_IMG_SIZE;
     c.rotate(-Math.PI / 4); // image points up-right; turn it to point along the aim
     c.drawImage(wim, -gx * S, -gy * S, S, S);
-  } else { const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k); A.draw(c, col); }
+  } else if (!imgPending(wk)) { const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k); A.draw(c, col); }
   c.restore();
   if (!o.img) { circ(c, hx, hy, 3.6); paint(c, o.look.skin); }
 }
@@ -300,6 +317,7 @@ function drawHeroImg(c, x, y, o, t, im) {
 function drawHero(c, x, y, o, t) {
   const him = o.id && imgReady('heroes/' + o.id);
   if (him) return drawHeroImg(c, x, y, o, t, him);
+  if (o.id && imgPending('heroes/' + o.id)) return; // picture still downloading
   const L = o.look, face = o.face || 1;
   c.save(); c.translate(x, y);
   c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 15, 14, 5, 0, 0, TAU); c.fill();
@@ -361,6 +379,7 @@ function drawPet(c, id, x, y, t, face = 1) {
   c.save(); c.translate(x, y); c.scale(face, 1);
   c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 11, 9, 3, 0, 0, TAU); c.fill();
   const pim = imgReady('pets/' + id);
+  if (!pim && imgPending('pets/' + id)) { c.restore(); return; } // picture still downloading
   if (pim) {
     const S = 32, lift = PET_FLYERS.has(id) ? 7 + Math.sin(t * 4) * 2.5 : Math.abs(Math.sin(t * 8)) * 1.5;
     if (PET_IMG_FACES_LEFT.has(id)) c.scale(-1, 1);

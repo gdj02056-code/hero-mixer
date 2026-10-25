@@ -97,7 +97,7 @@ function tryStart(stage) {
 let battleMode = 'world', selSec = null;
 const modesHTML = () => `<div class="subtabs"><button data-m="world" class="${battleMode === 'world' ? 'on' : ''}">🗺️ 모험 (오픈월드)</button><button data-m="stage" class="${battleMode === 'stage' ? 'on' : ''}">⚔️ 스테이지</button></div>`;
 const wireModes = pg => pg.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { battleMode = b.dataset.m; renderLobby(); });
-const skillIcon = id => S.skills[id] && S.skills[id].evo ? WEAPONS[id].evoIcon : WEAPONS[id].icon;
+const skillIcon = id => skillIconHTML(id, !!(S.skills[id] && S.skills[id].evo));
 function pageWorld(pg) {
   const m = metaStats(), cl = S.world.cleared;
   if (selSec == null || selSec > cl) selSec = cl;
@@ -148,7 +148,7 @@ function pageBattle(pg) {
     </div>
     <button class="btn gold big" id="startBtn">⚔️ 전투 시작 <small>⚡${EN_COST}</small></button>
     <div class="tips">💡 레벨업 스킬을 <b>최대 레벨(${MAX_WLV})</b>까지 올리고 짝이 되는 보조 아이템이 있으면 <b>⚗️ 스킬 믹스</b>로 진화!
-      <div class="mix">${Object.values(WEAPONS).map(x => `<div>${x.icon} + ${PASSIVES[x.pair].icon} = ${x.evoIcon}<b>${x.evo}</b></div>`).join('')}</div>
+      <div class="mix">${Object.keys(WEAPONS).map(id => `<div>${skillIconHTML(id, false, 'sm')} + ${skillIconHTML(WEAPONS[id].pair, false, 'sm')} = ${skillIconHTML(id, true, 'sm')}<b>${WEAPONS[id].evo}</b></div>`).join('')}</div>
     </div>`;
   wireModes(pg);
   pg.querySelector('#sPrev').onclick = () => { selStage--; renderLobby(); };
@@ -498,9 +498,23 @@ function applyLobbyArt() {
     if (u && span) span.innerHTML = `<img src="${u}" alt="">`;
   });
 }
+function preloadBattleArt() {
+  const keys = ['monsters/slime', 'monsters/bat', 'monsters/archer', 'monsters/golem', 'monsters/elite'];
+  for (let i = 1; i <= BOSSES.length; i++) keys.push('bosses/boss' + i);
+  for (let i = 1; i <= STAGES.length; i++) keys.push('stages/stage' + i);
+  for (const k of ['gold', 'chest', 'meat', 'magnet_item', 'bomb']) keys.push('items/' + k);
+  for (const id in WEAPONS) keys.push(skillImgKey(id, false), skillImgKey(id, true));
+  for (const id in PASSIVES) keys.push(skillImgKey(id, false));
+  keys.push('heroes/' + S.hero);
+  if (S.pet) keys.push('pets/' + S.pet);
+  const w = getItem(S.equip.weapon);
+  if (w) keys.push(weaponKey(w.wt, w.g));
+  preloadImages(keys.filter(k => k && IMG_SET.has(k)));
+}
 loadSave();
 resize();
 applyLobbyArt();
+preloadBattleArt();
 selStage = Math.min(S.cleared + 1, 999);
 renderLobby();
 requestAnimationFrame(frame);

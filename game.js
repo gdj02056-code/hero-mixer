@@ -192,6 +192,7 @@ let G = null;
 const xpFor = lv => Math.floor(4 + lv * 3 + Math.pow(lv, 1.5));
 
 function startRun(stage, world = false) {
+  preloadBattleArt(); // hero, pet or weapon may have changed since the lobby opened
   const m = metaStats();
   const p = {
     x: 0, y: 0, r: 16, maxBase: m.hpTotal, maxHp: m.hpTotal, hp: m.hpTotal, atk: m.atkTotal, crit: m.crit, critDmg: m.critDmg,
@@ -1454,8 +1455,8 @@ function drawEnemy(e) {
     ctx.fillStyle = g; circle(e.x, y, r * 1.8); ctx.fill();
   }
   const col = e.flash > 0 ? '#ffffff' : e.color;
-  const imKey = enemyImgKey(e), im = imgReady(imKey);
-  if (e.type === 'bat' && !im) {
+  const imKey = enemyImgKey(e), im = imgReady(imKey), noArt = im || imgPending(imKey);
+  if (e.type === 'bat' && !noArt) {
     const flap = Math.sin(G.time * 20 + e.wob) * 6;
     ctx.fillStyle = e.flash > 0 ? '#fff' : '#6b21a8';
     ctx.beginPath(); ctx.moveTo(e.x - r * 0.5, y); ctx.lineTo(e.x - r * 2, y - 6 + flap); ctx.lineTo(e.x - r * 1.2, y + 6); ctx.fill();
@@ -1471,7 +1472,7 @@ function drawEnemy(e) {
     const ix = e.x - S / 2, iy = y + r * 0.95 - S * imgBottom(imKey) - lift;
     ctx.drawImage(im, ix, iy, S, S);
     if (e.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(whiteOf(im), ix, iy, S, S); ctx.globalAlpha = 1; } // hit flash over the picture
-  } else {
+  } else if (!noArt) {
   ctx.fillStyle = col;
   if (e.type === 'golem') { rr(e.x - r, y - r, r * 2, r * 2, r * 0.4); ctx.fill(); }
   else if (e.type === 'slime') { ctx.beginPath(); ctx.ellipse(e.x, y + r * 0.15, r * 1.1, r * 0.9, 0, 0, TAU); ctx.fill(); }
@@ -1484,12 +1485,12 @@ function drawEnemy(e) {
   if (e.type === 'archer') { ctx.strokeStyle = '#78350f'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(e.x + lx * 5, y + ly * 5, r * 0.9, Math.atan2(dy, dx) - 1, Math.atan2(dy, dx) + 1); ctx.stroke(); }
   }
   if (e.stunUntil > G.time) { ctx.fillStyle = '#fde047'; for (let i = 0; i < 3; i++) { const a = G.time * 6 + i * TAU / 3; star(ctx, e.x + Math.cos(a) * r * 0.8, y - r - 4 + Math.sin(a) * 3, 4, 1.6); ctx.fill(); } }
-  if (e.elite && !im) {
+  if (e.elite && !noArt) {
     ctx.fillStyle = '#fef3c7';
     ctx.beginPath(); ctx.moveTo(e.x - r * 0.7, y - r * 0.6); ctx.lineTo(e.x - r * 0.9, y - r * 1.4); ctx.lineTo(e.x - r * 0.3, y - r * 0.85); ctx.fill();
     ctx.beginPath(); ctx.moveTo(e.x + r * 0.7, y - r * 0.6); ctx.lineTo(e.x + r * 0.9, y - r * 1.4); ctx.lineTo(e.x + r * 0.3, y - r * 0.85); ctx.fill();
   }
-  if (e.boss && !im) {
+  if (e.boss && !noArt) {
     ctx.fillStyle = '#facc15';
     ctx.beginPath(); ctx.moveTo(e.x - r * 0.6, y - r * 0.75);
     for (let i = 0; i <= 4; i++) ctx.lineTo(e.x - r * 0.6 + i * r * 0.3, y - r * (i % 2 ? 1.0 : 1.45));
@@ -1545,13 +1546,13 @@ function drawHUD() {
   p.weapons.forEach((w, i) => {
     const x = 44 + i * 30, y = 92;
     slot(x, y, w.evo ? 'rgba(251,191,36,.45)' : 'rgba(0,0,0,.45)');
-    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText(w.evo ? WEAPONS[w.id].evoIcon : WEAPONS[w.id].icon, x + 13, y);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; drawSkillIcon(ctx, w.id, w.evo, x + 13, y, 22);
     ctx.font = '900 9px sans-serif'; ctx.fillText(w.evo ? 'MAX' : w.lv, x + 20, y + 10); ctx.font = '18px serif';
   });
   p.passives.forEach((q, i) => {
     const x = 44 + i * 30, y = 122;
     slot(x, y, 'rgba(0,0,0,.45)');
-    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText(PASSIVES[q.id].icon, x + 13, y);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; drawSkillIcon(ctx, q.id, false, x + 13, y, 22);
     ctx.font = '900 9px sans-serif'; ctx.fillText(q.lv, x + 21, y + 10); ctx.font = '18px serif';
   });
   if (G.world) drawMinimap();
@@ -1644,11 +1645,11 @@ function optInfo(o) {
       const extra = b.extra > a.extra ? ` · <b>${{ slash: '양방향 베기', spin: '범위 확대', thrust: '3갈래 찌르기', slam: '충격파 확대', orbs: '마법구 +1', bounce: '튕김 +1', axe: '도끼 +1' }[W.kind] || '발사 수 +1'}</b>` : '';
       return { icon, name: `${W.name} 숙련`, tag: `Lv.${p.mlv + 1}`, up: true, cls: 'mainup', desc: `<span class="pips">${pips(p.mlv + 1)}</span><br>주무기 피해 ${fmt(a.dmg)}→<b>${fmt(b.dmg)}</b>${extra}` };
     }
-    case 'evo': { const d = WEAPONS[o.id], q = PASSIVES[d.pair]; return { icon: d.evoIcon, name: d.evo, tag: '⚗️ 스킬 믹스!', cls: 'evo', desc: `${d.icon}${d.name} + ${q.icon}${q.name} → ${d.evoInfo}` }; }
-    case 'wnew': { const d = WEAPONS[o.id]; return { icon: d.icon, name: d.name, tag: 'NEW', desc: `${d.info}<br><small>믹스 재료: ${PASSIVES[d.pair].icon}${PASSIVES[d.pair].name}</small>` }; }
-    case 'wup': { const d = WEAPONS[o.id], w = p.weapons.find(x => x.id === o.id); return { icon: d.icon, name: d.name, tag: `Lv.${w.lv + 1}`, up: true, desc: `<span class="pips">${pips(w.lv + 1)}</span><br>${upDesc(w)}` }; }
-    case 'pnew': { const d = PASSIVES[o.id], wid = Object.keys(WEAPONS).find(k => WEAPONS[k].pair === o.id); return { icon: d.icon, name: d.name, tag: 'NEW', desc: `${d.info}<br><small>믹스 재료: ${WEAPONS[wid].icon}${WEAPONS[wid].name}</small>` }; }
-    case 'pup': { const d = PASSIVES[o.id], q = p.passives.find(x => x.id === o.id); return { icon: d.icon, name: d.name, tag: `Lv.${q.lv + 1}`, up: true, desc: `<span class="pips">${pips(q.lv + 1)}</span><br>${d.info}` }; }
+    case 'evo': { const d = WEAPONS[o.id], q = PASSIVES[d.pair]; return { icon: skillIconHTML(o.id, true), name: d.evo, tag: '⚗️ 스킬 믹스!', cls: 'evo', desc: `${skillIconHTML(o.id, false, 'sm')}${d.name} + ${skillIconHTML(d.pair, false, 'sm')}${q.name} → ${d.evoInfo}` }; }
+    case 'wnew': { const d = WEAPONS[o.id]; return { icon: skillIconHTML(o.id, false), name: d.name, tag: 'NEW', desc: `${d.info}<br><small>믹스 재료: ${skillIconHTML(d.pair, false, 'sm')}${PASSIVES[d.pair].name}</small>` }; }
+    case 'wup': { const d = WEAPONS[o.id], w = p.weapons.find(x => x.id === o.id); return { icon: skillIconHTML(o.id, false), name: d.name, tag: `Lv.${w.lv + 1}`, up: true, desc: `<span class="pips">${pips(w.lv + 1)}</span><br>${upDesc(w)}` }; }
+    case 'pnew': { const d = PASSIVES[o.id], wid = Object.keys(WEAPONS).find(k => WEAPONS[k].pair === o.id); return { icon: skillIconHTML(o.id, false), name: d.name, tag: 'NEW', desc: `${d.info}<br><small>믹스 재료: ${skillIconHTML(wid, false, 'sm')}${WEAPONS[wid].name}</small>` }; }
+    case 'pup': { const d = PASSIVES[o.id], q = p.passives.find(x => x.id === o.id); return { icon: skillIconHTML(o.id, false), name: d.name, tag: `Lv.${q.lv + 1}`, up: true, desc: `<span class="pips">${pips(q.lv + 1)}</span><br>${d.info}` }; }
     case 'heal': return { icon: '🍖', name: '고기', tag: '회복', desc: '체력 50% 회복' };
     case 'gold': return { icon: '🪙', name: '금화 주머니', tag: '골드', desc: '골드 +50' };
   }
@@ -1695,7 +1696,7 @@ function openChest() {
 function buildSummary() {
   const p = G.p;
   const main = p.wt ? `<span><img src="${weaponIcon(p.wt, p.grade)}"> ${WT[p.wt].name} Lv${p.mlv}</span>` : `<span>👊 Lv${p.mlv}</span>`;
-  return `<div class="build">${main}${p.weapons.map(w => `<span>${w.evo ? WEAPONS[w.id].evoIcon + ' ' + WEAPONS[w.id].evo : WEAPONS[w.id].icon + ' Lv' + w.lv}</span>`).join('')}${p.passives.map(q => `<span>${PASSIVES[q.id].icon} Lv${q.lv}</span>`).join('')}</div>`;
+  return `<div class="build">${main}${p.weapons.map(w => `<span>${skillIconHTML(w.id, w.evo)} ${w.evo ? WEAPONS[w.id].evo : 'Lv' + w.lv}</span>`).join('')}${p.passives.map(q => `<span>${skillIconHTML(q.id, false)} Lv${q.lv}</span>`).join('')}</div>`;
 }
 function pauseGame() {
   if (!G || G.state !== 'play') return;
