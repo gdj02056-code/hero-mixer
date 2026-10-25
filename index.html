@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Hero Mixer</title>
+<meta name="theme-color" content="#0e0f1f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hero Mixer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hudBtns" class="hidden"><button id="btnPause" aria-label="일시정지">❚❚</button></div>
+
+<div id="lobby">
+  <header class="topbar">
+    <div class="res"><span>🪙</span><b id="rGold">0</b><button data-go="shop">+</button></div>
+    <div class="res"><span>💎</span><b id="rGems">0</b><button data-go="shop">+</button></div>
+    <div class="res"><span>⚡</span><b id="rEnergy">0</b><button data-go="shop">+</button></div>
+  </header>
+  <main id="page"></main>
+  <nav class="bottom">
+    <button data-tab="shop">🛒<span>상점</span></button>
+    <button data-tab="equip">🎒<span>장비</span></button>
+    <button data-tab="battle">⚔️<span>전투</span></button>
+    <button data-tab="hero">💪<span>강화</span></button>
+    <button data-tab="settings">⚙️<span>설정</span></button>
+  </nav>
+</div>
+
+<div id="modal" class="hidden"><div class="box" id="modalBox"></div></div>
+<div id="toast"></div>
+<div id="safeProbe"></div>
+
+<script src="game.js"></script>
+</body>
+</html>
