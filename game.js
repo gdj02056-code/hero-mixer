@@ -1398,7 +1398,7 @@ function drawEnemy(e) {
   const p = G.p, bob = Math.sin(G.time * 8 + e.wob) * 1.5, y = e.y + bob, r = e.r;
   ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(e.x, e.y + r * 0.85, r * 0.9, r * 0.3, 0, 0, TAU); ctx.fill();
   const col = e.flash > 0 ? '#ffffff' : e.color;
-  const im = imgReady(enemyImgKey(e));
+  const imKey = enemyImgKey(e), im = imgReady(imKey);
   if (e.type === 'bat' && !im) {
     const flap = Math.sin(G.time * 20 + e.wob) * 6;
     ctx.fillStyle = e.flash > 0 ? '#fff' : '#6b21a8';
@@ -1411,7 +1411,7 @@ function drawEnemy(e) {
   }
   if (im) {
     const S = r * 2.8;
-    ctx.drawImage(e.flash > 0 ? whiteOf(im) : im, e.x - S / 2, y + r * 0.95 - S * 0.94, S, S);
+    ctx.drawImage(e.flash > 0 ? whiteOf(im) : im, e.x - S / 2, y + r * 0.95 - S * imgBottom(imKey), S, S);
   } else {
   ctx.fillStyle = col;
   if (e.type === 'golem') { rr(e.x - r, y - r, r * 2, r * 2, r * 0.4); ctx.fill(); }

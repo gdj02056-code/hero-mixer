@@ -162,6 +162,11 @@ function imgReady(k) {
   return im.complete && im.naturalWidth ? im : null;
 }
 const imgURL = k => k && IMG_SET.has(k) ? `img/${k}.webp` : null;
+// fraction of the image height where the character's feet are (from tools/process_assets.py)
+const imgBottom = k => (typeof IMG_BOTTOM !== 'undefined' && IMG_BOTTOM[k]) || 0.94;
+// pet pictures that were drawn facing left, and pets that hover instead of walking
+const PET_IMG_FACES_LEFT = new Set(['turtle', 'bee']);
+const PET_FLYERS = new Set(['fairy', 'ghost', 'bee', 'jelly', 'starspirit']);
 // grade image, else the nearest lower grade, else the plain image
 function gradedKey(dir, id, g) {
   for (let i = g; i >= 0; i--) { const k = `${dir}/${id}_${GRADES[i].code}`; if (IMG_SET.has(k)) return k; }
@@ -287,7 +292,7 @@ function drawHeroImg(c, x, y, o, t, im) {
   const behind = Math.sin(aim) < -0.35;
   if (behind) drawHeld(c, o, t);
   c.save(); c.scale(face, 1);
-  c.drawImage(im, -H / 2, 17 - H * 0.94, H, H);
+  c.drawImage(im, -H / 2, 17 - H * imgBottom('heroes/' + o.id), H, H);
   c.restore();
   if (!behind) drawHeld(c, o, t);
   c.restore();
@@ -356,7 +361,12 @@ function drawPet(c, id, x, y, t, face = 1) {
   c.save(); c.translate(x, y); c.scale(face, 1);
   c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 11, 9, 3, 0, 0, TAU); c.fill();
   const pim = imgReady('pets/' + id);
-  if (pim) { const S = 32; c.drawImage(pim, -S / 2, 12 - S * 0.94 + Math.sin(t * 6) * 1.5, S, S); c.restore(); return; }
+  if (pim) {
+    const S = 32, lift = PET_FLYERS.has(id) ? 7 + Math.sin(t * 4) * 2.5 : Math.abs(Math.sin(t * 8)) * 1.5;
+    if (PET_IMG_FACES_LEFT.has(id)) c.scale(-1, 1);
+    c.drawImage(pim, -S / 2, 11 - S * imgBottom('pets/' + id) - lift, S, S);
+    c.restore(); return;
+  }
   const bob = Math.sin(t * 6) * 2, flap = Math.sin(t * 14);
   const eyes = (x1, x2, yy, r = 1.6) => { circ(c, x1, yy, r); paint(c, '#111', null); circ(c, x2, yy, r); paint(c, '#111', null); };
   switch (P.base) {
