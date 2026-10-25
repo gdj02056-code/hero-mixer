@@ -1,0 +1,303 @@
+'use strict';
+// ============================================================
+//  ART — weapons, heroes and pets drawn with canvas.
+//  The same drawing code is used for inventory icons and in battle.
+// ============================================================
+const TAU = Math.PI * 2;
+const OUT = 'rgba(15,15,30,.85)', METAL = '#e5e7eb', METAL_D = '#94a3b8', WOOD = '#92400e', DARK = '#3f3f46';
+
+function poly(c, p) { c.beginPath(); c.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) c.lineTo(p[i], p[i + 1]); c.closePath(); }
+function rect(c, x, y, w, h) { c.beginPath(); c.rect(x, y, w, h); }
+function circ(c, x, y, r) { c.beginPath(); c.arc(x, y, r, 0, TAU); }
+function paint(c, fill, stroke = OUT, lw = 1.5) { c.fillStyle = fill; c.fill(); if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw; c.stroke(); } }
+function line(c, pts, color, w) { c.beginPath(); c.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]); c.strokeStyle = color; c.lineWidth = w; c.lineCap = 'round'; c.stroke(); }
+function star(c, x, y, R, r, n = 5) { c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * TAU - Math.PI / 2, rr = i % 2 ? r : R; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.closePath(); }
+
+// Each weapon points up (-y) with the hand grip at (0,0). `a` = grade accent color.
+// mid/span/mx are used to center the drawing inside an icon.
+const WEAPON_ART = {
+  sword: {
+    mid: -17, span: 60, draw(c, a) {
+      poly(c, [-4.5, -3, 4.5, -3, 4.5, -38, 0, -48, -4.5, -38]); paint(c, METAL);
+      line(c, [0, -6, 0, -40], METAL_D, 1.5);
+      rect(c, -12, -5, 24, 5); paint(c, a);
+      rect(c, -2.2, 0, 4.4, 10); paint(c, WOOD);
+      circ(c, 0, 12, 3.4); paint(c, a);
+    },
+  },
+  dagger: {
+    mid: -9, span: 54, draw(c, a) {
+      c.beginPath(); c.moveTo(-3.5, -2); c.lineTo(3.5, -2); c.quadraticCurveTo(7, -16, 1, -31); c.quadraticCurveTo(-1, -17, -3.5, -2); c.closePath(); paint(c, METAL);
+      line(c, [0, -5, 1.5, -24], METAL_D, 1.2);
+      poly(c, [-9, -1, -6, -5, 6, -5, 9, -1, 6, 0, -6, 0]); paint(c, a);
+      rect(c, -2, 0, 4, 9); paint(c, '#1f2937');
+      line(c, [-2, 3, 2, 5], '#9ca3af', 1); line(c, [-2, 6, 2, 8], '#9ca3af', 1);
+      circ(c, 0, 11, 2.8); paint(c, a);
+    },
+  },
+  bow: {
+    mid: -1, span: 66, draw(c, a) {
+      c.save(); c.translate(0, 7);
+      line(c, [-22, 8, 0, 15, 22, 8], '#f8fafc', 1.2);
+      c.beginPath(); c.moveTo(-22, 8); c.quadraticCurveTo(0, -22, 22, 8);
+      c.strokeStyle = OUT; c.lineWidth = 7; c.stroke(); c.strokeStyle = WOOD; c.lineWidth = 4.5; c.stroke();
+      circ(c, -22, 8, 2.6); paint(c, a); circ(c, 22, 8, 2.6); paint(c, a);
+      rect(c, -3.5, -10, 7, 7); paint(c, a);
+      line(c, [0, 15, 0, -24], '#d6d3d1', 2);
+      poly(c, [0, -31, 4, -22, -4, -22]); paint(c, METAL);
+      poly(c, [0, 11, -4, 17, 0, 15]); paint(c, a, null); poly(c, [0, 11, 4, 17, 0, 15]); paint(c, a, null);
+      c.restore();
+    },
+  },
+  crossbow: {
+    mid: -13, span: 64, draw(c, a) {
+      rect(c, -3, -28, 6, 36); paint(c, WOOD);
+      poly(c, [-4, 6, 4, 6, 6, 15, -6, 15]); paint(c, WOOD);
+      line(c, [-20, -19, 0, -12, 20, -19], '#f8fafc', 1.2);
+      c.beginPath(); c.moveTo(-20, -18); c.quadraticCurveTo(0, -31, 20, -18);
+      c.strokeStyle = OUT; c.lineWidth = 6.5; c.stroke(); c.strokeStyle = '#64748b'; c.lineWidth = 4; c.stroke();
+      line(c, [0, -12, 0, -36], '#a8a29e', 2.5);
+      poly(c, [0, -42, 4, -34, -4, -34]); paint(c, METAL);
+      rect(c, -4.5, -10, 9, 5); paint(c, a);
+      line(c, [0, 0, 3, 5], DARK, 2);
+    },
+  },
+  gun: {
+    mid: -14, span: 62, draw(c, a) {
+      rect(c, -2.3, -45, 4.6, 40); paint(c, '#4b5563');
+      rect(c, -3.3, -32, 6.6, 3); paint(c, a); rect(c, -3.3, -18, 6.6, 3); paint(c, a);
+      poly(c, [-4, -7, 4, -7, 6.5, 16, -7, 16]); paint(c, WOOD);
+      rect(c, -4.5, -11, 9, 6); paint(c, '#9ca3af');
+      line(c, [2, -2, 5, 3], DARK, 2);
+      circ(c, 0, -45, 1.5); paint(c, '#111', null);
+    },
+  },
+  hammer: {
+    mid: -17, span: 70, draw(c, a) {
+      rect(c, -2.6, -34, 5.2, 46); paint(c, WOOD);
+      rect(c, -3.2, 4, 6.4, 8); paint(c, '#44403c');
+      rect(c, -16, -47, 32, 17); paint(c, '#6b7280');
+      rect(c, -16, -47, 6, 17); paint(c, '#9ca3af'); rect(c, 10, -47, 6, 17); paint(c, '#9ca3af');
+      rect(c, -4, -47, 8, 17); paint(c, a);
+    },
+  },
+  axe: {
+    mid: -18, mx: -5, span: 70, draw(c, a) {
+      rect(c, -2.2, -42, 4.4, 54); paint(c, WOOD);
+      poly(c, [2, -42, 17, -50, 23, -33, 17, -15, 2, -24]); paint(c, METAL);
+      line(c, [18, -48, 22, -33, 17, -17], '#ffffff', 1.5);
+      poly(c, [-2, -38, -11, -33, -2, -28]); paint(c, METAL_D);
+      rect(c, -3.2, -27, 6.4, 3.5); paint(c, a);
+    },
+  },
+  spear: {
+    mid: -18, span: 74, draw(c, a) {
+      rect(c, -1.7, -36, 3.4, 54); paint(c, WOOD);
+      poly(c, [0, -56, 6.5, -41, 0, -36, -6.5, -41]); paint(c, METAL);
+      line(c, [0, -53, 0, -39], METAL_D, 1.2);
+      poly(c, [-2.5, -35, 2.5, -35, 6, -24, -6, -24]); paint(c, a);
+      circ(c, 0, 18, 2.6); paint(c, METAL);
+    },
+  },
+  scythe: {
+    mid: -18, mx: 10, span: 70, draw(c, a) {
+      rect(c, -2, -46, 4, 60); paint(c, DARK);
+      c.beginPath(); c.moveTo(2, -46); c.quadraticCurveTo(-26, -60, -40, -27); c.quadraticCurveTo(-24, -44, 2, -38); c.closePath(); paint(c, METAL);
+      c.beginPath(); c.moveTo(-6, -50); c.quadraticCurveTo(-28, -54, -38, -30); c.strokeStyle = '#fff'; c.lineWidth = 1.2; c.stroke();
+      circ(c, 0, -42, 3.4); paint(c, a);
+      rect(c, -2.8, 6, 5.6, 6); paint(c, a);
+    },
+  },
+  spellbook: {
+    mid: -2, span: 52, noRot: true, held: 'float', draw(c, a) {
+      c.save(); c.rotate(-0.12);
+      rect(c, -12, -16, 27, 31); paint(c, '#fef3c7');
+      line(c, [-9, -12, 12, -12], '#d6c7a0', 1); line(c, [-9, 11, 12, 11], '#d6c7a0', 1);
+      rect(c, -15, -19, 27, 33); paint(c, a);
+      rect(c, -15, -19, 5, 33); paint(c, 'rgba(0,0,0,.28)', null);
+      circ(c, 1, -2, 7); paint(c, '#fde68a');
+      star(c, 1, -2, 5, 2.2); paint(c, a, null);
+      rect(c, 8, -4, 4, 5); paint(c, '#fde68a');
+      c.restore();
+    },
+  },
+  wand: {
+    mid: -15, span: 54, draw(c, a) {
+      rect(c, -1.7, -30, 3.4, 40); paint(c, '#3f2a1d');
+      rect(c, -2.4, 1, 4.8, 9); paint(c, a);
+      line(c, [-1.7, -10, 1.7, -14], '#fde68a', 1);
+      star(c, 0, -35, 8.5, 3.6); paint(c, a);
+      circ(c, 0, -35, 2.2); paint(c, '#fff', null);
+    },
+  },
+  staff: {
+    mid: -20, span: 74, draw(c, a) {
+      rect(c, -2.1, -42, 4.2, 58); paint(c, WOOD);
+      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 2, -42); c.quadraticCurveTo(s * 11, -50, s * 4, -58); c.strokeStyle = OUT; c.lineWidth = 4.5; c.stroke(); c.strokeStyle = WOOD; c.lineWidth = 2.8; c.stroke(); }
+      circ(c, 0, -50, 7.5); paint(c, a);
+      circ(c, -2.5, -52.5, 2.4); paint(c, 'rgba(255,255,255,.85)', null);
+      rect(c, -2.8, -30, 5.6, 3); paint(c, a);
+    },
+  },
+};
+
+const ICONS = new Map();
+function iconURL(key, size, draw) {
+  let url = ICONS.get(key);
+  if (url) return url;
+  const cv = document.createElement('canvas'); cv.width = cv.height = size;
+  const c = cv.getContext('2d'); c.lineJoin = 'round';
+  draw(c, size);
+  url = cv.toDataURL(); ICONS.set(key, url);
+  return url;
+}
+function drawWeaponCentered(c, size, wt, g) {
+  const A = WEAPON_ART[wt], col = GRADES[g].c;
+  c.translate(size / 2, size / 2);
+  if (!A.noRot) c.rotate(Math.PI / 4);
+  const k = size * (A.noRot ? 0.75 : 1.05) / A.span;
+  c.scale(k, k); c.translate(A.mx || 0, -A.mid);
+  if (g >= 5) { c.shadowColor = col; c.shadowBlur = 6 + (g - 5) * 3; }
+  A.draw(c, col);
+}
+const weaponIcon = (wt, g) => iconURL(`w:${wt}:${g}`, 128, (c, s) => drawWeaponCentered(c, s, wt, g));
+
+// ---------- hero ----------
+const easeOut = t => 1 - (1 - t) * (1 - t);
+function drawHeld(c, o, t) {
+  const wt = o.wt, aim = o.aim || 0, sw = o.swing == null ? -1 : o.swing;
+  let hx = Math.cos(aim) * 12, hy = 5 + Math.sin(aim) * 7;
+  if (!wt) {
+    const ext = sw >= 0 ? Math.sin(sw * Math.PI) * 12 : 0;
+    circ(c, hx + Math.cos(aim) * ext, hy + Math.sin(aim) * ext, 4.5); paint(c, o.look.skin);
+    return;
+  }
+  const A = WEAPON_ART[wt], W = WT[wt], col = GRADES[o.grade || 0].c;
+  if (A.held === 'float') {
+    c.save(); c.translate((o.face || 1) * 20, -16 + Math.sin(t * 3) * 2.5); c.scale(0.6, 0.6);
+    if (sw >= 0) { c.shadowColor = '#c084fc'; c.shadowBlur = 20; }
+    A.draw(c, col); c.restore();
+    circ(c, hx, hy, 3.6); paint(c, o.look.skin);
+    return;
+  }
+  let rot = aim + Math.PI / 2;
+  switch (W.kind) {
+    case 'slash': rot += sw >= 0 ? -1.4 + 2.8 * easeOut(sw) : -0.9; break;
+    case 'spin': rot += sw >= 0 ? sw * TAU : -0.9; break;
+    case 'slam': rot += sw >= 0 ? (sw < 0.4 ? -1.8 * (sw / 0.4) : -1.8 + 1.8 * easeOut((sw - 0.4) / 0.6)) : -0.6; break;
+    case 'thrust': { const ext = sw >= 0 ? Math.sin(sw * Math.PI) * 18 : 0; hx += Math.cos(aim) * ext; hy += Math.sin(aim) * ext; if (sw < 0) rot -= 0.25; break; }
+    case 'axe': rot += sw >= 0 ? -1.6 + 2.4 * sw : -0.6; break;
+    default: if (sw >= 0) { hx -= Math.cos(aim) * 4 * (1 - sw); hy -= Math.sin(aim) * 4 * (1 - sw); }
+  }
+  c.save(); c.translate(hx, hy); c.rotate(rot);
+  const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k);
+  if ((o.grade || 0) >= 5) { c.shadowColor = col; c.shadowBlur = 12; }
+  A.draw(c, col); c.restore();
+  circ(c, hx, hy, 3.6); paint(c, o.look.skin);
+}
+// o: { look, wt, grade, aim, face, walk, swing, alpha }
+function drawHero(c, x, y, o, t) {
+  const L = o.look, face = o.face || 1;
+  c.save(); c.translate(x, y);
+  c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 15, 14, 5, 0, 0, TAU); c.fill();
+  c.translate(0, -Math.abs(Math.sin(o.walk || 0)) * 2.5);
+  if (o.alpha != null) c.globalAlpha = o.alpha;
+  const behind = Math.sin(o.aim || 0) < -0.35;
+  if (behind) drawHeld(c, o, t);
+  // cape
+  poly(c, [-10, -4, 10, -4, -face * 7 + 13, 15, -face * 7 - 13, 15]); paint(c, L.cape, OUT, 1.2);
+  // feet
+  const st = Math.sin(o.walk || 0) * 3;
+  circ(c, -5, 15 + st * 0.3, 3.5); paint(c, '#3f2a1d', null); circ(c, 5, 15 - st * 0.3, 3.5); paint(c, '#3f2a1d', null);
+  // body
+  circ(c, 0, 4, 12); paint(c, L.body, OUT, 1.2);
+  rect(c, -11, 7, 22, 3); paint(c, 'rgba(0,0,0,.3)', null);
+  // head
+  if (L.hood) { circ(c, 0, -10, 14); paint(c, L.hood, OUT, 1.2); }
+  circ(c, 0, -9, 11); paint(c, L.skin, OUT, 1.2);
+  if (!L.bald && !L.hood && !L.helmet) { c.beginPath(); c.arc(0, -11, 11.6, Math.PI, TAU); c.closePath(); paint(c, L.hair, null); rect(c, -11.6, -12, 6, 7); paint(c, L.hair, null); rect(c, 5.6, -12, 6, 7); paint(c, L.hair, null); }
+  if (L.helmet) { c.beginPath(); c.arc(0, -10, 12.5, Math.PI * 1.02, TAU * 0.99); c.closePath(); paint(c, L.helmet, OUT, 1.2); rect(c, -12, -11, 24, 3); paint(c, 'rgba(0,0,0,.25)', null); }
+  if (L.horns) { poly(c, [-8, -17, -15, -27, -4, -20]); paint(c, '#fef3c7', OUT, 1); poly(c, [8, -17, 15, -27, 4, -20]); paint(c, '#fef3c7', OUT, 1); }
+  if (L.mask) { rect(c, -10, -6, 20, 6); paint(c, L.hair === '#111827' ? '#1e293b' : '#111827', null); }
+  // eyes
+  const ex = face * 3;
+  circ(c, -4 + ex, -9, 1.9); paint(c, '#111', null); circ(c, 4 + ex, -9, 1.9); paint(c, '#111', null);
+  if (L.hat === 'wizard') { poly(c, [-14, -15, 14, -15, face * 4, -40]); paint(c, L.hatColor, OUT, 1.2); rect(c, -12, -17, 24, 3); paint(c, '#fbbf24', null); }
+  if (L.hat === 'cowboy') { c.beginPath(); c.ellipse(0, -17, 17, 4, 0, 0, TAU); paint(c, '#78350f', OUT, 1.2); rect(c, -8, -27, 16, 10); paint(c, '#78350f', OUT, 1.2); rect(c, -8, -20, 16, 2.5); paint(c, '#f59e0b', null); }
+  if (!behind) drawHeld(c, o, t);
+  c.restore();
+}
+const heroLookOpts = (h, g = 3) => ({ look: h.look, wt: h.wt, grade: g, aim: 0.5, face: 1, walk: 0 });
+const heroIcon = id => iconURL(`h:${id}`, 160, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(2.6, 2.6); drawHero(c, 0, 0, heroLookOpts(HERO[id]), 0); });
+
+// ---------- pets ----------
+function drawPet(c, id, x, y, t, face = 1) {
+  c.save(); c.translate(x, y); c.scale(face, 1);
+  c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 11, 9, 3, 0, 0, TAU); c.fill();
+  const bob = Math.sin(t * 6) * 2;
+  switch (id) {
+    case 'slime': {
+      const sq = 1 + Math.sin(t * 8) * 0.08;
+      c.beginPath(); c.ellipse(0, 3, 10 * sq, 8 / sq, 0, 0, TAU); paint(c, '#4ade80', OUT, 1.2);
+      circ(c, -4, 0, 2.4); paint(c, '#fff', null); circ(c, -4, -2, 1.2); paint(c, '#bbf7d0', null);
+      circ(c, 2, 2, 1.6); paint(c, '#111', null); circ(c, 6, 2, 1.6); paint(c, '#111', null);
+      break;
+    }
+    case 'cat': {
+      c.translate(0, bob * 0.5);
+      c.beginPath(); c.moveTo(-8, 6); c.quadraticCurveTo(-18, 0, -14, -10); c.strokeStyle = '#ea580c'; c.lineWidth = 3; c.stroke();
+      circ(c, 0, 4, 7); paint(c, '#fb923c', OUT, 1.2);
+      poly(c, [-7, -7, -5, -16, 0, -9]); paint(c, '#fb923c', OUT, 1); poly(c, [7, -7, 5, -16, 0, -9]); paint(c, '#fb923c', OUT, 1);
+      circ(c, 0, -4, 8); paint(c, '#fb923c', OUT, 1.2);
+      circ(c, -1, -5, 1.6); paint(c, '#111', null); circ(c, 4, -5, 1.6); paint(c, '#111', null);
+      line(c, [6, -2, 11, -3], '#fff', 0.8); line(c, [6, -1, 11, 1], '#fff', 0.8);
+      rect(c, -6, -13, 12, 3); paint(c, '#94a3b8', null);
+      break;
+    }
+    case 'fairy': {
+      c.translate(0, bob - 6);
+      const g = c.createRadialGradient(0, 0, 1, 0, 0, 16); g.addColorStop(0, 'rgba(251,207,232,.8)'); g.addColorStop(1, 'rgba(251,207,232,0)');
+      c.fillStyle = g; circ(c, 0, 0, 16); c.fill();
+      const fl = Math.abs(Math.sin(t * 18));
+      c.globalAlpha = 0.7; c.beginPath(); c.ellipse(-7, -3, 7, 3 + fl * 3, -0.5, 0, TAU); paint(c, '#bae6fd', null);
+      c.beginPath(); c.ellipse(7, -3, 7, 3 + fl * 3, 0.5, 0, TAU); paint(c, '#bae6fd', null); c.globalAlpha = 1;
+      circ(c, 0, 2, 4.5); paint(c, '#f9a8d4', OUT, 1);
+      circ(c, 0, -5, 4); paint(c, '#fde4c8', OUT, 1);
+      circ(c, 1.5, -5, 0.9); paint(c, '#111', null);
+      break;
+    }
+    case 'ghost': {
+      c.translate(0, bob - 4); c.globalAlpha = 0.9;
+      c.beginPath(); c.arc(0, -2, 9, Math.PI, TAU); c.lineTo(9, 8);
+      for (let i = 0; i < 4; i++) { const xx = 9 - (i + 1) * 4.5; c.quadraticCurveTo(xx + 2.25, 4 + Math.sin(t * 8 + i) * 2, xx, 8); }
+      c.closePath(); paint(c, '#f1f5f9', OUT, 1.2);
+      c.beginPath(); c.ellipse(-1, -2, 1.6, 2.6, 0, 0, TAU); paint(c, '#111', null); c.beginPath(); c.ellipse(4, -2, 1.6, 2.6, 0, 0, TAU); paint(c, '#111', null);
+      break;
+    }
+    case 'eagle': {
+      c.translate(0, bob - 6);
+      const fl = Math.sin(t * 14) * 7;
+      poly(c, [-3, 0, -18, -4 + fl, -12, 4]); paint(c, '#78350f', OUT, 1); poly(c, [3, 0, 18, -4 + fl, 12, 4]); paint(c, '#78350f', OUT, 1);
+      c.beginPath(); c.ellipse(0, 2, 6, 8, 0, 0, TAU); paint(c, '#92400e', OUT, 1.2);
+      circ(c, 0, -7, 5); paint(c, '#f8fafc', OUT, 1);
+      poly(c, [4, -8, 9, -6, 4, -5]); paint(c, '#facc15', OUT, 0.8);
+      circ(c, 2, -8, 1); paint(c, '#111', null);
+      break;
+    }
+    case 'dragon': {
+      c.translate(0, bob - 4);
+      const fl = Math.sin(t * 10) * 5;
+      poly(c, [-2, -2, -16, -12 + fl, -12, 2]); paint(c, '#7c3aed', OUT, 1);
+      c.beginPath(); c.moveTo(-6, 6); c.quadraticCurveTo(-16, 10, -18, 2); c.strokeStyle = '#dc2626'; c.lineWidth = 3; c.stroke();
+      circ(c, -1, 3, 8); paint(c, '#dc2626', OUT, 1.2);
+      c.beginPath(); c.ellipse(1, 5, 4, 5, 0, 0, TAU); paint(c, '#fde68a', null);
+      circ(c, 6, -5, 6.5); paint(c, '#dc2626', OUT, 1.2);
+      poly(c, [3, -10, 1, -17, 6, -11]); paint(c, '#fef3c7', OUT, 0.8); poly(c, [7, -11, 8, -18, 10, -10]); paint(c, '#fef3c7', OUT, 0.8);
+      circ(c, 8, -6, 1.4); paint(c, '#111', null);
+      poly(c, [2, -2, 16, -12 + fl, 12, 2]); paint(c, '#8b5cf6', OUT, 1);
+      break;
+    }
+  }
+  c.restore();
+}
+const petIcon = id => iconURL(`p:${id}`, 128, (c, s) => { c.translate(s / 2, s / 2 + 6); c.scale(3.6, 3.6); drawPet(c, id, 0, 0, 0.3, 1); });
