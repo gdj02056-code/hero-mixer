@@ -504,3 +504,4 @@ applyLobbyArt();
 selStage = Math.min(S.cleared + 1, 999);
 renderLobby();
 requestAnimationFrame(frame);
+window.__booted = true; // started fine: later errors no longer show the reload screen

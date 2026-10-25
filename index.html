@@ -13,6 +13,27 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
+<script>
+// If the game fails while starting (e.g. a half-updated offline cache), show a button that clears the
+// cached files and reloads instead of leaving a blank screen. Saved progress is not touched.
+window.addEventListener('error', function () {
+  if (window.__booted || window.__bootFail) return;
+  window.__bootFail = true;
+  var show = function () {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;z-index:99;background:#0e0f1f;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:sans-serif;text-align:center;padding:20px';
+    d.innerHTML = '<div style="font-size:44px">⚠️</div><b style="font-size:18px">불러오는 중에 문제가 생겼어요</b><div style="opacity:.8;font-size:14px;line-height:1.5">새 버전으로 바뀌는 중일 수 있어요.<br>플레이 기록은 지워지지 않아요.</div><button style="font-size:17px;padding:12px 24px;border-radius:12px;border:0;background:#facc15;color:#3b1d00;font-weight:800">🔄 새로 불러오기</button>';
+    d.querySelector('button').onclick = function () {
+      var done = function () { location.reload(); };
+      var clear = window.caches ? caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }) : Promise.resolve();
+      var unreg = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }) : Promise.resolve();
+      Promise.all([clear, unreg]).then(done, done);
+    };
+    document.body.appendChild(d);
+  };
+  if (document.body) show(); else document.addEventListener('DOMContentLoaded', show);
+}, true);
+</script>
 </head>
 <body>
 <canvas id="game"></canvas>
