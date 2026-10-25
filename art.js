@@ -199,7 +199,8 @@ const weaponIcon = (wt, g) => imgURL(weaponKey(wt, g)) || iconURL(`w:${wt}:${g}`
 const easeOut = t => 1 - (1 - t) * (1 - t);
 function drawHeld(c, o, t) {
   const wt = o.wt, aim = o.aim || 0, sw = o.swing == null ? -1 : o.swing;
-  let hx = Math.cos(aim) * 12, hy = 5 + Math.sin(aim) * 7;
+  // hero pictures hold the weapon at the hand on the facing side; drawn heroes orbit it around the body
+  let hx = o.img ? (o.face || 1) * 8 + Math.cos(aim) * 6 : Math.cos(aim) * 12, hy = o.img ? 4 + Math.sin(aim) * 4 : 5 + Math.sin(aim) * 7;
   if (!wt) {
     const ext = sw >= 0 ? Math.sin(sw * Math.PI) * 12 : 0;
     circ(c, hx + Math.cos(aim) * ext, hy + Math.sin(aim) * ext, 4.5); paint(c, o.look.skin);
@@ -236,16 +237,56 @@ function drawHeld(c, o, t) {
   if (!o.img) { circ(c, hx, hy, 3.6); paint(c, o.look.skin); }
 }
 // o: { look, wt, grade, aim, face, walk, swing, alpha }
+// Whole-body motion for a hero picture, by attack type. sw = attack progress 0..1 (-1 = not attacking).
+// dx: step along the aim, dy: up/down, rot: lean toward the facing side, sx/sy: squash and stretch.
+function heroPose(kind, sw, t) {
+  const p = { dx: 0, dy: 0, rot: 0, sx: 1, sy: 1, spin: 0, glow: 0 };
+  const breathe = Math.sin(t * 3) * 0.015;
+  p.sy += breathe; p.sx -= breathe;
+  if (sw < 0) return p;
+  const arc = Math.sin(sw * Math.PI); // 0 → 1 → 0
+  switch (kind) {
+    case 'slash': // wind up back, then lunge into the swing
+      if (sw < 0.3) { const k = sw / 0.3; p.dx = -2 * k; p.rot = -0.14 * k; }
+      else { const k = Math.sin((sw - 0.3) / 0.7 * Math.PI); p.dx = 7 * k; p.rot = 0.2 * k; p.sx += 0.08 * k; p.sy -= 0.05 * k; }
+      break;
+    case 'thrust': p.dx = 10 * arc; p.sx += 0.12 * arc; p.sy -= 0.07 * arc; p.rot = 0.1 * arc; break;
+    case 'spin': p.spin = sw * TAU; p.sy -= 0.06 * arc; break;
+    case 'slam': // jump, then land on the impact with a squash
+      if (sw < 0.4) { const k = sw / 0.4; p.dy = -16 * Math.sin(k * Math.PI); p.rot = -0.12 * Math.sin(k * Math.PI); p.sy += 0.08 * Math.sin(k * Math.PI); }
+      else { const k = 1 - (sw - 0.4) / 0.6; p.sy -= 0.18 * k; p.sx += 0.14 * k; }
+      break;
+    case 'axe':
+      if (sw < 0.4) { const k = sw / 0.4; p.rot = -0.22 * k; p.dx = -3 * k; }
+      else { const k = Math.sin((sw - 0.4) / 0.6 * Math.PI); p.rot = 0.22 * k; p.dx = 5 * k; }
+      break;
+    case 'fireball': case 'bounce': case 'orbs': // cast: rise a little with a glow
+      p.dy = -4 * arc; p.sy += 0.05 * arc; p.glow = arc; break;
+    default: // bow, crossbow, gun, daggers: recoil
+      p.dx = -4 * (1 - sw); p.rot = -0.06 * (1 - sw); p.sx += 0.05 * (1 - sw);
+  }
+  return p;
+}
 function drawHeroImg(c, x, y, o, t, im) {
-  const face = o.face || 1, H = 50, walk = o.walk || 0;
+  const face = o.face || 1, H = 50, walk = o.walk || 0, aim = o.aim || 0, sw = o.swing == null ? -1 : o.swing;
+  const kind = o.wt ? WT[o.wt].kind : 'slash';
+  const P = heroPose(kind, sw, t);
   o = Object.assign({}, o, { img: true });
   c.save(); c.translate(x, y);
-  c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 15, 14, 5, 0, 0, TAU); c.fill();
-  c.translate(0, -Math.abs(Math.sin(walk)) * 2.5);
+  c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 15, 14 * (1 + P.dy / 40), 5, 0, 0, TAU); c.fill();
   if (o.alpha != null) c.globalAlpha = o.alpha;
-  const behind = Math.sin(o.aim || 0) < -0.35;
+  // pose: step along the aim, hop, lean and squash around the feet so the hero stays planted
+  c.translate(P.dx * Math.cos(aim), P.dx * Math.sin(aim) * 0.5 + P.dy - Math.abs(Math.sin(walk)) * 2.5);
+  if (P.spin) { c.translate(0, -6); c.rotate(face * P.spin); c.translate(0, 6); }
+  c.translate(0, 16); c.rotate(face * P.rot + Math.sin(walk) * 0.06); c.scale(P.sx, P.sy); c.translate(0, -16);
+  if (P.glow) {
+    const g = c.createRadialGradient(face * 9, 2, 1, face * 9, 2, 22);
+    g.addColorStop(0, `rgba(216,180,254,${0.8 * P.glow})`); g.addColorStop(1, 'rgba(216,180,254,0)');
+    c.fillStyle = g; circ(c, face * 9, 2, 22); c.fill();
+  }
+  const behind = Math.sin(aim) < -0.35;
   if (behind) drawHeld(c, o, t);
-  c.save(); c.scale(face, 1); c.rotate(Math.sin(walk) * 0.06);
+  c.save(); c.scale(face, 1);
   c.drawImage(im, -H / 2, 17 - H * 0.94, H, H);
   c.restore();
   if (!behind) drawHeld(c, o, t);
