@@ -125,11 +125,13 @@ function metaStats() {
   for (const s of SLOTS) { const it = getItem(S.equip[s.id]); if (it) m[s.key] += itemVal(it); }
   const h = HERO[S.hero], hs = S.heroes[S.hero];
   if (h && hs) {
-    const k = heroMult(hs);
+    const k = heroPower(h, hs), flat = heroFlat(h, hs);
     for (const key in h.bonus) m[key] += h.bonus[key] * k;
-    m.atk += (hs.lv - 1) * 2; m.hp += (hs.lv - 1) * 12;
+    m.atk += flat.atk; m.hp += flat.hp;
   }
-  for (const r of RELICS) m[r.key] += (S.relics[r.id] || 0) * r.per;
+  for (const r of RELICS) m[r.key] += relicVal(r, S.relics[r.id] || 0);
+  const wItem = getItem(S.equip.weapon);
+  if (wItem) m.aspd += weaponGradeBonus(wItem.g).aspd;
   const vip = vipLevel(S.spent);
   m.goldGain += vip * 0.05 + (S.goldBoost ? 1 : 0); m.exp += vip * 0.03;
   m.spd = Math.min(m.spd, 1.2); m.crit = Math.min(m.crit, 1);
@@ -138,7 +140,7 @@ function metaStats() {
   m.drTotal = Math.min(0.75, m.def / (m.def + 200) + m.dr);
   const w = getItem(S.equip.weapon);
   m.wt = w ? w.wt : null; m.wg = w ? w.g : 0;
-  m.power = Math.floor(m.atkTotal * 10 * (1 + m.crit * (m.critDmg - 1)) * (1 + m.aspd) + m.hpTotal * 2 + m.def * 15 + m.regen * 40);
+  m.power = Math.floor(m.atkTotal * 10 * (1 + m.crit * (m.critDmg - 1)) * (1 + m.aspd) + m.hpTotal * 2 + m.def * 5 + m.regen * 40);
   return m;
 }
 function petDmg(m, id) {
@@ -387,8 +389,8 @@ function upDesc(w) {
   return out.join(', ') || '성능 강화';
 }
 function mainStats(L = G.p.mlv) {
-  const p = G.p, W = curWT();
-  return { dmg: p.atk * W.coef * (1 + 0.3 * (L - 1)) * p.mainMul, cd: W.cd * p.atkCd, extra: Math.floor((L - 1) / 2), size: 1 + 0.1 * (L - 1) };
+  const p = G.p, W = curWT(), gb = weaponGradeBonus(p.wt ? p.grade : 0);
+  return { dmg: p.atk * W.coef * (1 + 0.3 * (L - 1)) * p.mainMul, cd: W.cd * p.atkCd, extra: Math.floor((L - 1) / 2) + gb.extra, size: (1 + 0.1 * (L - 1)) * (1 + gb.size) };
 }
 
 // ---------- spatial grid ----------
@@ -816,7 +818,7 @@ function updatePet(dt) {
   if (q.cd > 0 || q.mode !== 'follow') return;
   const e = nearestEnemy(q.x, q.y, melee ? 40 : 420);
   if (!e) { q.cd = 0.15; return; }
-  const a = Math.atan2(e.y - q.y, e.x - q.x), big = 1 + P.r * 0.15;
+  const a = Math.atan2(e.y - q.y, e.x - q.x), big = 1 + P.r * 0.35;
   const fireball = (dmg, boom, spd = 380) => G.proj.push({ k: 'fireball', x: q.x, y: q.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, r: 6 + boom / 10, dmg, boom, life: 1.4, hit: new Set() });
   switch (P.kind) {
     case 'goo': petShot(q, 'goo', a, q.dmg * (P.crown ? 1.6 : 1), { slow: true, r: P.crown ? 10 : 6 }); q.cd = 1.1; break;
@@ -865,6 +867,7 @@ function updatePet(dt) {
       q.cd = 1.3; break;
     }
   }
+  q.cd *= 1 - 0.1 * P.r; // rarer pets attack faster
 }
 
 // ---------- projectiles ----------

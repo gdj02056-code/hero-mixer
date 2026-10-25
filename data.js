@@ -32,17 +32,19 @@ const ETYPES = {
 // ---------- equipment grades (10) ----------
 const GRADES = [
   { n: 'F', c: '#9ca3af', mult: 1 },
-  { n: 'D', c: '#4ade80', mult: 1.5 },
-  { n: 'C', c: '#2dd4bf', mult: 2.2 },
-  { n: 'B', c: '#60a5fa', mult: 3.2 },
-  { n: 'A', c: '#a78bfa', mult: 4.6 },
-  { n: 'S', c: '#f472b6', mult: 6.5 },
-  { n: 'SS', c: '#fb923c', mult: 9 },
-  { n: 'SSS', c: '#f87171', mult: 12.5 },
-  { n: '에픽', c: '#e879f9', mult: 17 },
-  { n: '전설', c: '#fbbf24', mult: 24 },
+  { n: 'D', c: '#4ade80', mult: 1.6 },
+  { n: 'C', c: '#2dd4bf', mult: 2.6 },
+  { n: 'B', c: '#60a5fa', mult: 4.2 },
+  { n: 'A', c: '#a78bfa', mult: 7 },
+  { n: 'S', c: '#f472b6', mult: 12 },
+  { n: 'SS', c: '#fb923c', mult: 20 },
+  { n: 'SSS', c: '#f87171', mult: 35 },
+  { n: '에픽', c: '#e879f9', mult: 60 },
+  { n: '전설', c: '#fbbf24', mult: 100 },
 ];
 const MAX_GRADE = GRADES.length - 1;
+// higher-grade weapons also attack faster, hit wider and fire more
+const weaponGradeBonus = g => ({ aspd: g * 0.03, size: g * 0.04, extra: g >= 8 ? 2 : g >= 5 ? 1 : 0 });
 // image file suffix per grade: assets/weapons/sword_EPIC.png
 ['F', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'EPIC', 'LEGEND'].forEach((code, i) => { GRADES[i].code = code; });
 // 에픽·전설은 뽑기로 안 나옴 → 합성으로만 획득
@@ -121,11 +123,12 @@ const PCT_KEYS = new Set(['crit', 'critDmg', 'aspd', 'spd', 'magnet', 'exp', 'go
 function fmtBonus(key, v) { return PCT_KEYS.has(key) ? `+${+(v * 100).toFixed(1)}%` : key === 'regen' ? `+${v.toFixed(1)}/초` : `+${Math.round(v)}`; }
 
 // ---------- heroes ----------
+// m = how strongly the hero's bonuses and base stats scale with rarity
 const HRAR = [
-  { n: 'R', c: '#60a5fa' },
-  { n: 'SR', c: '#a78bfa' },
-  { n: 'SSR', c: '#fbbf24' },
-  { n: 'UR', c: '#f43f5e' },
+  { n: 'R', c: '#60a5fa', m: 1 },
+  { n: 'SR', c: '#a78bfa', m: 1.8 },
+  { n: 'SSR', c: '#fbbf24', m: 3.5 },
+  { n: 'UR', c: '#f43f5e', m: 6 },
 ];
 const HERO_GACHA_W = [7500, 2200, 290, 10];
 const HEROES = [
@@ -176,13 +179,15 @@ const HERO_STAR_SHARDS = [1, 2, 3, 5, 8];
 const heroMaxLv = st => 20 + st.stars * 10;
 const heroLvCost = lv => Math.floor(200 * Math.pow(lv, 1.4));
 const heroMult = st => 1 + 0.05 * (st.lv - 1) + 0.25 * st.stars;
+const heroPower = (h, st) => heroMult(st) * HRAR[h.r].m;
+const heroFlat = (h, st) => ({ atk: (5 + 2 * (st.lv - 1)) * HRAR[h.r].m, hp: (40 + 12 * (st.lv - 1)) * HRAR[h.r].m });
 
 // ---------- pets ----------
 const PRAR = [
   { n: '일반', c: '#9ca3af', m: 1 },
-  { n: '희귀', c: '#60a5fa', m: 1.5 },
-  { n: '영웅', c: '#a78bfa', m: 2.2 },
-  { n: '전설', c: '#fbbf24', m: 3.2 },
+  { n: '희귀', c: '#60a5fa', m: 2 },
+  { n: '영웅', c: '#a78bfa', m: 4 },
+  { n: '전설', c: '#fbbf24', m: 8 },
 ];
 const PET_GACHA_W = [7000, 2500, 490, 10];
 // base = body drawing, kind = how it fights, c = colors
@@ -234,6 +239,7 @@ const RELICS = [
 ];
 const RELIC_W = [7000, 2500, 490, 10];
 const RELIC_MAX = 50;
+const relicVal = (r, lv) => lv * r.per * PRAR[r.r].m;
 const relicCost = lv => Math.floor(300 * Math.pow(lv, 1.5));
 
 // ---------- VIP (grows with the money "saved" in the ₩0 shop) ----------

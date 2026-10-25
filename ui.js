@@ -203,7 +203,7 @@ function itemDetail(it) {
     <h2 style="margin-top:10px;color:${GRADES[it.g].c}">${itemName(it)}</h2>
     <div class="gradebar">${GRADES.map((g, i) => `<span style="color:${g.c};${i === it.g ? 'text-decoration:underline;font-size:15px' : 'opacity:.45'}">${g.n}</span>`).join('›')}</div>
     <div class="center">${s.name} · Lv ${it.lv}/${itemMaxLv(it)}<br>${s.label} <b>${fmtStat(it.slot, itemVal(it))}</b>${maxed ? '' : ` → <b style="color:#4ade80">${fmtStat(it.slot, itemVal({ ...it, lv: it.lv + 1 }))}</b>`}</div>
-    ${W ? `<div class="tips">🗡️ <b>${W.name}</b> 공격 방식: ${W.desc}</div>` : ''}
+    ${W ? (() => { const gb = weaponGradeBonus(it.g); return `<div class="tips">🗡️ <b>${W.name}</b> 공격 방식: ${W.desc}<br>✨ 등급 보너스: 공격속도 +${Math.round(gb.aspd * 100)}% · 범위 +${Math.round(gb.size * 100)}%${gb.extra ? ` · 공격 수 +${gb.extra}` : ''}</div>`; })() : ''}
     <div class="row"><button class="btn gold" id="up" ${maxed ? 'disabled' : ''}>${maxed ? '최대 레벨' : `강화 🪙${fmt(cost)}`}</button>
       <button class="btn gold" id="up10" ${maxed ? 'disabled' : ''}>+10 강화</button></div>
     <div class="row"><button class="btn purple" id="mg" ${canMerge ? '' : 'disabled'}>⚗️ 합성 (${Math.min(mats, 2)}/2)</button>
@@ -254,16 +254,17 @@ function pageHero(pg) {
   const h = HERO[viewHero], st = heroState(viewHero), rar = HRAR[h.r];
   let body;
   if (st) {
-    const k = heroMult(st), maxLv = heroMaxLv(st), cost = heroLvCost(st.lv), need = HERO_STAR_SHARDS[st.stars];
-    body = `<div class="center">Lv <b>${st.lv}</b>/${maxLv} · ${starsHTML(st.stars)}</div>
+    const k = heroPower(h, st), flat = heroFlat(h, st), maxLv = heroMaxLv(st), cost = heroLvCost(st.lv), need = HERO_STAR_SHARDS[st.stars];
+    body = `<div class="center">Lv <b>${st.lv}</b>/${maxLv} · ${starsHTML(st.stars)} · 등급 배율 <b style="color:${rar.c}">×${rar.m}</b></div>
       <div class="bonus">${Object.entries(h.bonus).map(([key, v]) => `<span>${STAT_NAMES[key]} <b>${fmtBonus(key, v * k)}</b></span>`).join('')}
-        <span>공격력 <b>+${(st.lv - 1) * 2}</b></span><span>체력 <b>+${(st.lv - 1) * 12}</b></span></div>
+        <span>공격력 <b>+${fmt(flat.atk)}</b></span><span>체력 <b>+${fmt(flat.hp)}</b></span></div>
       <div class="row"><button class="btn ${S.hero === viewHero ? 'gray' : 'green'}" id="use" ${S.hero === viewHero ? 'disabled' : ''}>${S.hero === viewHero ? '✅ 사용 중' : '이 영웅 사용'}</button>
         <button class="btn gold" id="lvup" ${st.lv >= maxLv ? 'disabled' : ''}>${st.lv >= maxLv ? '레벨 MAX' : `레벨업 🪙${fmt(cost)}`}</button></div>
       <div class="row"><button class="btn purple" id="star" ${st.stars >= 5 || st.shards < need ? 'disabled' : ''}>${st.stars >= 5 ? '★ 최대 승급' : `★ 승급 (조각 ${st.shards}/${need})`}</button>
         <button class="btn gold" id="lvmax" ${st.lv >= maxLv ? 'disabled' : ''}>최대 레벨업</button></div>`;
   } else {
-    body = `<div class="tips center">🔒 아직 없는 영웅이에요. 아래 <b>영웅 소환</b>으로 획득!<br>${Object.entries(h.bonus).map(([key, v]) => `${STAT_NAMES[key]} ${fmtBonus(key, v)}`).join(' · ')}</div>`;
+    const st1 = { lv: 1, stars: 0 }, flat = heroFlat(h, st1);
+    body = `<div class="tips center">🔒 아직 없는 영웅이에요. 아래 <b>영웅 소환</b>으로 획득!<br>${Object.entries(h.bonus).map(([key, v]) => `${STAT_NAMES[key]} ${fmtBonus(key, v * heroPower(h, st1))}`).join(' · ')} · 공격력 +${fmt(flat.atk)} · 체력 +${fmt(flat.hp)}</div>`;
   }
   pg.innerHTML = `
     <div class="herobox big"><canvas class="preview" data-hero="${viewHero}" data-pet=""></canvas></div>
@@ -421,7 +422,7 @@ function growRelic(el) {
   el.innerHTML = `<h3 style="margin-top:4px">🏺 유물 (${owned}/${RELICS.length}) <small>탭해서 강화</small></h3>
     <div class="rgrid">${RELICS.map(r => {
       const lv = S.relics[r.id] || 0;
-      return `<div class="rtile ${lv ? '' : 'locked'}" data-r="${r.id}" style="--c:${PRAR[r.r].c}"><div class="ri">${r.icon}</div><div class="rn">${r.name}</div><div class="rl">${lv ? `Lv.${lv}/${RELIC_MAX}` : '🔒'}</div><div class="rs">${STAT_NAMES[r.key]} ${fmtBonus(r.key, Math.max(1, lv) * r.per)}</div></div>`;
+      return `<div class="rtile ${lv ? '' : 'locked'}" data-r="${r.id}" style="--c:${PRAR[r.r].c}"><div class="ri">${r.icon}</div><div class="rn">${r.name}</div><div class="rl">${lv ? `Lv.${lv}/${RELIC_MAX}` : '🔒'}</div><div class="rs">${STAT_NAMES[r.key]} ${fmtBonus(r.key, relicVal(r, Math.max(1, lv)))}</div></div>`;
     }).join('')}</div>
     <h3>🎁 유물 상자 <small>중복 획득 시 레벨 +1</small></h3>
     <div class="row"><button class="btn green" data-rs="0">무료 1회</button><button class="btn" data-rs="1">1회 💎200</button><button class="btn purple" data-rs="10">10회 💎1,800</button></div>`;
@@ -433,7 +434,7 @@ function relicDetail(r) {
   if (!lv) { toast('🔒 유물 상자에서 먼저 획득하세요'); return; }
   const cost = relicCost(lv), maxed = lv >= RELIC_MAX;
   const box = showModal(`<div class="bigicon">${r.icon}</div><h2 style="color:${PRAR[r.r].c}">${r.name}</h2>
-    <div class="center">Lv.${lv}/${RELIC_MAX}<br>${STAT_NAMES[r.key]} <b>${fmtBonus(r.key, lv * r.per)}</b>${maxed ? '' : ` → <b style="color:#4ade80">${fmtBonus(r.key, (lv + 1) * r.per)}</b>`}</div>
+    <div class="center">Lv.${lv}/${RELIC_MAX}<br>${STAT_NAMES[r.key]} <b>${fmtBonus(r.key, relicVal(r, lv))}</b>${maxed ? '' : ` → <b style="color:#4ade80">${fmtBonus(r.key, relicVal(r, lv + 1))}</b>`}</div>
     <div class="row"><button class="btn gold" id="up" ${maxed ? 'disabled' : ''}>${maxed ? 'MAX' : `강화 🪙${fmt(cost)}`}</button><button class="btn gray" id="close">닫기</button></div>`);
   box.querySelector('#up').onclick = () => { if (!spend('gold', cost)) return; S.relics[r.id]++; save(); refreshTop(); relicDetail(r); renderLobby(); };
   box.querySelector('#close').onclick = closeModal;
