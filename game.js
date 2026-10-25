@@ -1442,6 +1442,7 @@ function enemyPose(e) {
   }
   return P;
 }
+const FLYING_MONSTERS = new Set(['monsters/bat', 'bosses/boss9']);
 const enemyImgKey = e => e.boss ? `bosses/boss${(e.lvl - 1) % BOSSES.length + 1}` : `monsters/${e.elite ? 'elite' : e.type}`;
 function drawEnemy(e) {
   const p = G.p, bob = Math.sin(G.time * 8 + e.wob) * 1.5, y = e.y + bob, r = e.r;
@@ -1470,7 +1471,10 @@ function drawEnemy(e) {
   }
   if (im) {
     const S = r * 2.8;
-    ctx.drawImage(e.flash > 0 ? whiteOf(im) : im, e.x - S / 2, y + r * 0.95 - S * imgBottom(imKey), S, S);
+    const lift = FLYING_MONSTERS.has(imKey) ? r * 0.5 + Math.sin(G.time * 5 + e.wob) * 3 : 0;
+    const ix = e.x - S / 2, iy = y + r * 0.95 - S * imgBottom(imKey) - lift;
+    ctx.drawImage(im, ix, iy, S, S);
+    if (e.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(whiteOf(im), ix, iy, S, S); ctx.globalAlpha = 1; } // hit flash over the picture
   } else {
   ctx.fillStyle = col;
   if (e.type === 'golem') { rr(e.x - r, y - r, r * 2, r * 2, r * 0.4); ctx.fill(); }
