@@ -492,14 +492,14 @@ function updateEnemies(dt) {
       if (e.phaseT <= 0 && e.dashT <= 0 && e.windT <= 0) {
         e.pat++;
         if (e.pat % 3 === 0) e.windT = 0.8;
-        else if (e.pat % 3 === 1) { const n = 14 + Math.min(10, e.lvl); const off = Math.random(); for (let i = 0; i < n; i++) shootAt(e, (i + off) / n * TAU, 190, e.dmg * 0.6); }
-        else { for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; spawnEnemy('bat', e.x + Math.cos(a) * 80, e.y + Math.sin(a) * 80); } const a = Math.atan2(dy, dx); for (let i = -2; i <= 2; i++) shootAt(e, a + i * 0.18, 260, e.dmg * 0.6); }
+        else if (e.pat % 3 === 1) { e.castT = 0.45; const n = 14 + Math.min(10, e.lvl); const off = Math.random(); for (let i = 0; i < n; i++) shootAt(e, (i + off) / n * TAU, 190, e.dmg * 0.6); }
+        else { e.castT = 0.45; for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; spawnEnemy('bat', e.x + Math.cos(a) * 80, e.y + Math.sin(a) * 80); } const a = Math.atan2(dy, dx); for (let i = -2; i <= 2; i++) shootAt(e, a + i * 0.18, 260, e.dmg * 0.6); }
         e.phaseT = 2.4;
       }
     } else if (e.ranged) {
       if (d < 200) dir = -0.6; else if (d < 320) dir = 0;
       e.shootT -= dt;
-      if (e.shootT <= 0 && d < 480 && spd > 0) { e.shootT = 2.6; shootAt(e, Math.atan2(dy, dx), 210, e.dmg); }
+      if (e.shootT <= 0 && d < 480 && spd > 0) { e.shootT = 2.6; e.recoilT = 0.2; shootAt(e, Math.atan2(dy, dx), 210, e.dmg); }
     }
     let mx = dx / d * dir, my = dy / d * dir;
     // field/leader bosses don't chase you out of their territory; they walk home and heal
@@ -512,6 +512,17 @@ function updateEnemies(dt) {
     e.y += (my * spd + e.ky) * dt;
     const decay = Math.max(0, 1 - dt * 9); e.kx *= decay; e.ky *= decay;
     if (e.flash > 0) e.flash -= dt;
+    // attack animation timers — visual only, damage still comes from touching / shooting as before
+    e.pd = d;
+    for (const k of ['atkT', 'atkCd', 'hitT', 'recoilT', 'castT']) if (e[k] > 0) e[k] -= dt;
+    if (!e.ranged && !e.boss && !(e.atkCd > 0) && d < e.r + p.r + 30) {
+      e.atkDur = e.atkT = e.elite ? 0.6 : e.type === 'golem' ? 0.55 : 0.4;
+      e.atkCd = e.atkDur + 0.45; e.slammed = false;
+    }
+    if (e.type === 'golem' && e.atkT > 0 && !e.slammed && 1 - e.atkT / e.atkDur > 0.55) {
+      e.slammed = true;
+      G.fx.push({ type: 'pop', x: e.x + (dx / d) * e.r, y: e.y + e.r * 0.6, r: e.r * 0.7, t: 0, life: 0.3, color: '#d6d3d1' });
+    }
     if (!e.boss) {
       forNear(e.x, e.y, e.r, o => {
         if (o === e) return;
@@ -530,7 +541,7 @@ function hitEnemy(e, dmg, kx = 0, ky = 0) {
   if (e.dead) return;
   const crit = Math.random() < G.p.crit;
   if (crit) dmg *= G.p.critDmg;
-  e.hp -= dmg; e.flash = 0.08;
+  e.hp -= dmg; e.flash = 0.08; e.hitT = 0.12;
   const kb = e.boss ? 0.03 : e.elite ? 0.3 : 1;
   e.kx += kx * kb; e.ky += ky * kb;
   if (crit || G.texts.length < 70) G.texts.push({ x: e.x + rand(-8, 8), y: e.y - e.r, txt: fmt(dmg), color: crit ? '#fde047' : '#fff', big: crit, t: 0 });
@@ -1393,10 +1404,58 @@ function drawFx() {
   ctx.lineCap = 'butt';
 }
 
+// Monster body motion. dx: toward the player, dy: up/down, rot: lean toward the player, sx/sy: squash.
+function enemyPose(e) {
+  const P = { dx: 0, dy: 0, rot: 0, sx: 1, sy: 1, glow: 0, glowColor: '' };
+  if (e.hitT > 0) { const k = e.hitT / 0.12; P.sx += 0.14 * k; P.sy -= 0.12 * k; }
+  if (e.boss) {
+    if (e.windT > 0) { const k = Math.min(1, (0.8 - e.windT) / 0.5); P.sy -= 0.16 * k; P.sx += 0.12 * k; P.rot = -0.08 * k; P.glow = k; P.glowColor = 'rgba(239,68,68,A)'; }
+    else if (e.dashT > 0) { P.sx += 0.18; P.sy -= 0.1; P.rot = 0.15; }
+    if (e.castT > 0) { const k = Math.sin(e.castT / 0.45 * Math.PI); P.sx += 0.1 * k; P.sy += 0.1 * k; P.dy -= 6 * k; P.glow = Math.max(P.glow, k); P.glowColor = P.glowColor || 'rgba(192,132,252,A)'; }
+    return P;
+  }
+  if (e.ranged) {
+    if (e.recoilT > 0) { const k = e.recoilT / 0.2; P.dx = -5 * k; P.rot = -0.12 * k; }
+    else if (e.shootT < 0.45 && e.pd < 480) { const k = 1 - e.shootT / 0.45; P.dx = -3 * k; P.rot = -0.18 * k; P.sx += 0.06 * k; }
+    return P;
+  }
+  if (!(e.atkT > 0)) return P;
+  const s = 1 - e.atkT / e.atkDur; // 0 → 1 through the attack
+  if (e.elite) { // charge up red, then a heavy lunge
+    if (s < 0.5) { const k = s / 0.5; P.sy -= 0.12 * k; P.sx += 0.1 * k; P.dx = -4 * k; P.glow = k; P.glowColor = 'rgba(239,68,68,A)'; }
+    else { const k = Math.sin((s - 0.5) / 0.5 * Math.PI); P.dx = 14 * k; P.rot = 0.2 * k; P.sx += 0.12 * k; }
+    return P;
+  }
+  switch (e.type) {
+    case 'slime': // squish down, then hop onto the player
+      if (s < 0.35) { const k = s / 0.35; P.sy -= 0.28 * k; P.sx += 0.22 * k; }
+      else { const k = Math.sin((s - 0.35) / 0.65 * Math.PI); P.dy = -12 * k; P.dx = 10 * k; P.sy += 0.18 * k; P.sx -= 0.1 * k; }
+      break;
+    case 'bat': // pull back, then dart in for a bite
+      if (s < 0.3) { const k = s / 0.3; P.dx = -5 * k; P.rot = -0.2 * k; }
+      else { const k = Math.sin((s - 0.3) / 0.7 * Math.PI); P.dx = 14 * k; P.rot = 0.3 * k; P.sx += 0.1 * k; }
+      break;
+    case 'golem': // rear up, then slam down
+      if (s < 0.55) { const k = s / 0.55; P.sy += 0.14 * k; P.rot = -0.15 * k; P.dy = -4 * k; }
+      else { const k = 1 - (s - 0.55) / 0.45; P.sy -= 0.2 * k; P.sx += 0.18 * k; P.dx = 6 * k; P.rot = 0.12 * k; }
+      break;
+  }
+  return P;
+}
 const enemyImgKey = e => e.boss ? `bosses/boss${(e.lvl - 1) % BOSSES.length + 1}` : `monsters/${e.elite ? 'elite' : e.type}`;
 function drawEnemy(e) {
   const p = G.p, bob = Math.sin(G.time * 8 + e.wob) * 1.5, y = e.y + bob, r = e.r;
   ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(e.x, e.y + r * 0.85, r * 0.9, r * 0.3, 0, 0, TAU); ctx.fill();
+  // attack pose: step toward the player, hop, lean and squash around the feet
+  const pd = Math.hypot(p.x - e.x, p.y - e.y) || 1, ux = (p.x - e.x) / pd, uy = (p.y - e.y) / pd, P = enemyPose(e);
+  ctx.save();
+  ctx.translate(P.dx * ux, P.dx * uy * 0.6 + P.dy);
+  ctx.translate(e.x, e.y + r * 0.85); ctx.rotate(P.rot * (ux >= 0 ? 1 : -1)); ctx.scale(P.sx, P.sy); ctx.translate(-e.x, -(e.y + r * 0.85));
+  if (P.glow) {
+    const g = ctx.createRadialGradient(e.x, y, r * 0.3, e.x, y, r * 1.8);
+    g.addColorStop(0, P.glowColor.replace('A', 0.55 * P.glow)); g.addColorStop(1, P.glowColor.replace('A', 0));
+    ctx.fillStyle = g; circle(e.x, y, r * 1.8); ctx.fill();
+  }
   const col = e.flash > 0 ? '#ffffff' : e.color;
   const imKey = enemyImgKey(e), im = imgReady(imKey);
   if (e.type === 'bat' && !im) {
@@ -1436,6 +1495,7 @@ function drawEnemy(e) {
     for (let i = 0; i <= 4; i++) ctx.lineTo(e.x - r * 0.6 + i * r * 0.3, y - r * (i % 2 ? 1.0 : 1.45));
     ctx.lineTo(e.x + r * 0.6, y - r * 0.75); ctx.fill();
   }
+  ctx.restore();
   if (e.elite && e.hp < e.maxHp) {
     ctx.fillStyle = '#000'; ctx.fillRect(e.x - r, y + r + 6, r * 2, 5);
     ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x - r, y + r + 6, r * 2 * e.hp / e.maxHp, 5);
