@@ -151,6 +151,34 @@ function iconURL(key, size, draw) {
   url = cv.toDataURL(); ICONS.set(key, url);
   return url;
 }
+// ---------- generated images (img/, listed in imglist.js); canvas art is the fallback ----------
+const IMG_SET = new Set(typeof IMG_LIST !== 'undefined' ? IMG_LIST : []);
+const IMGS = {};
+for (const k of IMG_SET) { const im = new Image(); im.src = `img/${k}.webp`; IMGS[k] = im; }
+const imgReady = k => { const im = k && IMGS[k]; return im && im.complete && im.naturalWidth ? im : null; };
+const imgURL = k => k && IMG_SET.has(k) ? `img/${k}.webp` : null;
+// grade image, else the nearest lower grade, else the plain image
+function gradedKey(dir, id, g) {
+  for (let i = g; i >= 0; i--) { const k = `${dir}/${id}_${GRADES[i].code}`; if (IMG_SET.has(k)) return k; }
+  return IMG_SET.has(`${dir}/${id}`) ? `${dir}/${id}` : null;
+}
+const weaponKey = (wt, g) => gradedKey('weapons', wt, g);
+const equipKey = (slot, g) => gradedKey('equip', slot, g);
+// where the hand holds each weapon image (fraction of the image; images are drawn diagonally, grip bottom-left)
+const WEAPON_GRIP = { bow: [0.38, 0.55], crossbow: [0.3, 0.72], gun: [0.32, 0.7], hammer: [0.22, 0.78], axe: [0.22, 0.78], spear: [0.3, 0.7], scythe: [0.26, 0.74], staff: [0.28, 0.72] };
+const WEAPON_IMG_SIZE = 44;
+// white silhouette of an image, for the hit flash
+const WHITE = new Map();
+function whiteOf(im) {
+  let w = WHITE.get(im);
+  if (!w) {
+    w = document.createElement('canvas'); w.width = im.naturalWidth; w.height = im.naturalHeight;
+    const x = w.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#fff'; x.fillRect(0, 0, w.width, w.height);
+    WHITE.set(im, w);
+  }
+  return w;
+}
+
 function drawWeaponCentered(c, size, wt, g) {
   const A = WEAPON_ART[wt], col = GRADES[g].c;
   c.translate(size / 2, size / 2);
@@ -160,7 +188,7 @@ function drawWeaponCentered(c, size, wt, g) {
   if (g >= 5) { c.shadowColor = col; c.shadowBlur = 6 + (g - 5) * 3; }
   A.draw(c, col);
 }
-const weaponIcon = (wt, g) => iconURL(`w:${wt}:${g}`, 128, (c, s) => drawWeaponCentered(c, s, wt, g));
+const weaponIcon = (wt, g) => imgURL(weaponKey(wt, g)) || iconURL(`w:${wt}:${g}`, 128, (c, s) => drawWeaponCentered(c, s, wt, g));
 
 // ---------- hero ----------
 const easeOut = t => 1 - (1 - t) * (1 - t);
@@ -174,10 +202,12 @@ function drawHeld(c, o, t) {
   }
   const A = WEAPON_ART[wt], W = WT[wt], col = GRADES[o.grade || 0].c;
   if (A.held === 'float') {
-    c.save(); c.translate((o.face || 1) * 20, -16 + Math.sin(t * 3) * 2.5); c.scale(0.6, 0.6);
+    c.save(); c.translate((o.face || 1) * 20, -16 + Math.sin(t * 3) * 2.5);
     if (sw >= 0) { c.shadowColor = '#c084fc'; c.shadowBlur = 20; }
-    A.draw(c, col); c.restore();
-    circ(c, hx, hy, 3.6); paint(c, o.look.skin);
+    const fim = imgReady(weaponKey(wt, o.grade || 0));
+    if (fim) c.drawImage(fim, -14, -14, 28, 28); else { c.scale(0.6, 0.6); A.draw(c, col); }
+    c.restore();
+    if (!o.img) { circ(c, hx, hy, 3.6); paint(c, o.look.skin); }
     return;
   }
   let rot = aim + Math.PI / 2;
@@ -190,13 +220,35 @@ function drawHeld(c, o, t) {
     default: if (sw >= 0) { hx -= Math.cos(aim) * 4 * (1 - sw); hy -= Math.sin(aim) * 4 * (1 - sw); }
   }
   c.save(); c.translate(hx, hy); c.rotate(rot);
-  const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k);
   if ((o.grade || 0) >= 5) { c.shadowColor = col; c.shadowBlur = 12; }
-  A.draw(c, col); c.restore();
-  circ(c, hx, hy, 3.6); paint(c, o.look.skin);
+  const wim = imgReady(weaponKey(wt, o.grade || 0));
+  if (wim) {
+    const [gx, gy] = WEAPON_GRIP[wt] || [0.2, 0.8], S = WEAPON_IMG_SIZE;
+    c.rotate(-Math.PI / 4); // image points up-right; turn it to point along the aim
+    c.drawImage(wim, -gx * S, -gy * S, S, S);
+  } else { const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k); A.draw(c, col); }
+  c.restore();
+  if (!o.img) { circ(c, hx, hy, 3.6); paint(c, o.look.skin); }
 }
 // o: { look, wt, grade, aim, face, walk, swing, alpha }
+function drawHeroImg(c, x, y, o, t, im) {
+  const face = o.face || 1, H = 50, walk = o.walk || 0;
+  o = Object.assign({}, o, { img: true });
+  c.save(); c.translate(x, y);
+  c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 15, 14, 5, 0, 0, TAU); c.fill();
+  c.translate(0, -Math.abs(Math.sin(walk)) * 2.5);
+  if (o.alpha != null) c.globalAlpha = o.alpha;
+  const behind = Math.sin(o.aim || 0) < -0.35;
+  if (behind) drawHeld(c, o, t);
+  c.save(); c.scale(face, 1); c.rotate(Math.sin(walk) * 0.06);
+  c.drawImage(im, -H / 2, 17 - H * 0.94, H, H);
+  c.restore();
+  if (!behind) drawHeld(c, o, t);
+  c.restore();
+}
 function drawHero(c, x, y, o, t) {
+  const him = o.id && imgReady('heroes/' + o.id);
+  if (him) return drawHeroImg(c, x, y, o, t, him);
   const L = o.look, face = o.face || 1;
   c.save(); c.translate(x, y);
   c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 15, 14, 5, 0, 0, TAU); c.fill();
@@ -234,7 +286,7 @@ function drawHero(c, x, y, o, t) {
   c.restore();
 }
 const heroLookOpts = (h, g = 3) => ({ look: h.look, wt: h.wt, grade: g, aim: 0.5, face: 1, walk: 0 });
-const heroIcon = id => iconURL(`h:${id}`, 160, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(2.6, 2.6); drawHero(c, 0, 0, heroLookOpts(HERO[id]), 0); });
+const heroIcon = id => imgURL('heroes/' + id) || iconURL(`h:${id}`, 160, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(2.6, 2.6); drawHero(c, 0, 0, heroLookOpts(HERO[id]), 0); });
 
 // ---------- pets ----------
 // four-legged critters share one body: cat, dog, fox, wolf, bunny
@@ -257,6 +309,8 @@ function drawPet(c, id, x, y, t, face = 1) {
   const P = PET[id], [c1, c2, c3] = P.c;
   c.save(); c.translate(x, y); c.scale(face, 1);
   c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 11, 9, 3, 0, 0, TAU); c.fill();
+  const pim = imgReady('pets/' + id);
+  if (pim) { const S = 32; c.drawImage(pim, -S / 2, 12 - S * 0.94 + Math.sin(t * 6) * 1.5, S, S); c.restore(); return; }
   const bob = Math.sin(t * 6) * 2, flap = Math.sin(t * 14);
   const eyes = (x1, x2, yy, r = 1.6) => { circ(c, x1, yy, r); paint(c, '#111', null); circ(c, x2, yy, r); paint(c, '#111', null); };
   switch (P.base) {
@@ -429,4 +483,4 @@ function drawPet(c, id, x, y, t, face = 1) {
   }
   c.restore();
 }
-const petIcon = id => iconURL(`p:${id}`, 128, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(3.1, 3.1); drawPet(c, id, 0, 0, 0.3, 1); });
+const petIcon = id => imgURL('pets/' + id) || iconURL(`p:${id}`, 128, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(3.1, 3.1); drawPet(c, id, 0, 0, 0.3, 1); });

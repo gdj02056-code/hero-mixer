@@ -1,1 +1,3 @@
 .claude/
+# original 512px art lives only on this PC; tools/process_assets.py publishes img/
+assets/

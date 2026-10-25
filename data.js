@@ -43,6 +43,8 @@ const GRADES = [
   { n: '전설', c: '#fbbf24', mult: 24 },
 ];
 const MAX_GRADE = GRADES.length - 1;
+// image file suffix per grade: assets/weapons/sword_EPIC.png
+['F', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'EPIC', 'LEGEND'].forEach((code, i) => { GRADES[i].code = code; });
 // 에픽·전설은 뽑기로 안 나옴 → 합성으로만 획득
 const GACHA_W = [420, 300, 160, 75, 32, 10, 2.5, 0.5, 0, 0];
 

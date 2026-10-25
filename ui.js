@@ -10,7 +10,11 @@ let toastTimer = 0;
 function toast(msg) { const t = $('#toast'); t.innerHTML = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }
 
 // ---------- tiles ----------
-function itemArt(it) { return it.slot === 'weapon' ? `<img src="${weaponIcon(it.wt, it.g)}" alt="">` : `<span class="emo">${SLOT[it.slot].icon}</span>`; }
+function itemArt(it) {
+  if (it.slot === 'weapon') return `<img src="${weaponIcon(it.wt, it.g)}" alt="">`;
+  const url = imgURL(equipKey(it.slot, it.g));
+  return url ? `<img src="${url}" alt="">` : `<span class="emo">${SLOT[it.slot].icon}</span>`;
+}
 function itemTile(it, cls = '', style = '') {
   const gr = GRADES[it.g];
   return `<div class="itile g${it.g} ${cls}" data-id="${it.id}" style="--c:${gr.c};${style}">${itemArt(it)}<span class="gb">${gr.n}</span><span class="lv">Lv${it.lv}</span>${isEquipped(it) ? '<span class="eq">E</span>' : ''}</div>`;
@@ -34,7 +38,7 @@ function drawPreviews(t) {
     x.fillStyle = 'rgba(255,255,255,.06)'; x.beginPath(); x.ellipse(w / 2, h / 2 + sc * 18, sc * 30, sc * 7, 0, 0, TAU); x.fill();
     if (hero) {
       x.save(); x.translate(w / 2 - (pet ? sc * 9 : 0), h / 2 + sc * 4); x.scale(sc, sc);
-      drawHero(x, 0, 0, { look: hero.look, wt: wItem ? wItem.wt : null, grade: wItem ? wItem.g : 0, aim: 0, face: 1, walk: 0, swing }, t);
+      drawHero(x, 0, 0, { id: hero.id, look: hero.look, wt: wItem ? wItem.wt : null, grade: wItem ? wItem.g : 0, aim: 0, face: 1, walk: 0, swing }, t);
       x.restore();
     }
     if (pet) { x.save(); x.translate(w / 2 + sc * (hero ? 22 : 0), h / 2 + sc * 4); x.scale(sc, sc); drawPet(x, pet, 0, 0, t, hero ? -1 : 1); x.restore(); }
