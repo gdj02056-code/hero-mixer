@@ -1,0 +1,76 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This is PART 2: 24 new heroes and 18 new pets. Use the exact same style as part 1 so everything matches.
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt".
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job.
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+4. Size: 512x512 PNG for every job.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly.
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose, holding a weapon), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed, weapon in hand, holding sword, holding bow
+
+=== POSE NOTES ===
+hero : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet  : tiny cute creature, full body, facing right
+
+=== JOB LIST (42 images) ===
+[
+  {"file": "assets/heroes/squire.png",      "bg": "green",   "pose": "hero", "prompt": "young shield soldier, brown hair, round steel helmet, grey tunic, blue cape"},
+  {"file": "assets/heroes/hunter.png",      "bg": "magenta", "pose": "hero", "prompt": "hunter, grey hair, red headband, olive green leather outfit, brown cape"},
+  {"file": "assets/heroes/farmer.png",      "bg": "green",   "pose": "hero", "prompt": "brave farmer boy, yellow straw hat, blue overalls, green cape"},
+  {"file": "assets/heroes/apprentice.png",  "bg": "green",   "pose": "hero", "prompt": "apprentice wizard girl, purple hair, tall dark purple wizard hat, violet robe, lilac cape"},
+  {"file": "assets/heroes/sailor.png",      "bg": "green",   "pose": "hero", "prompt": "pirate sailor, black hair, red bandana, white striped shirt, navy blue cape"},
+  {"file": "assets/heroes/scout.png",       "bg": "magenta", "pose": "hero", "prompt": "elf forest scout, blonde hair, pointed elf ears, green tunic, dark green cape"},
+
+  {"file": "assets/heroes/priest.png",      "bg": "green",   "pose": "hero", "prompt": "kind priest girl, light blonde hair, golden halo above head, white robe, light blue cape"},
+  {"file": "assets/heroes/samurai.png",     "bg": "green",   "pose": "hero", "prompt": "samurai, black topknot hair, white headband, red samurai armor, black cape"},
+  {"file": "assets/heroes/catgirl.png",     "bg": "green",   "pose": "hero", "prompt": "cat girl swordswoman, orange hair, orange cat ears, cream outfit, orange cape"},
+  {"file": "assets/heroes/viking.png",      "bg": "green",   "pose": "hero", "prompt": "viking warrior, orange braided beard, horned helmet, grey fur armor, blue cape"},
+  {"file": "assets/heroes/elfarcher.png",   "bg": "magenta", "pose": "hero", "prompt": "elf archer, pale blonde long hair, pointed elf ears, light green outfit, dark green cape"},
+  {"file": "assets/heroes/alchemist.png",   "bg": "green",   "pose": "hero", "prompt": "alchemist, dark teal hood, teal robe, mint green cape, small potion bottles on belt"},
+
+  {"file": "assets/heroes/stormmage.png",   "bg": "green",   "pose": "hero", "prompt": "storm mage, light blue hair, tall dark blue wizard hat, navy robe, sky blue cape, tiny sparks"},
+  {"file": "assets/heroes/commander.png",   "bg": "green",   "pose": "hero", "prompt": "knight commander, grey beard, dark steel helmet, black plate armor, red cape"},
+  {"file": "assets/heroes/shadowqueen.png", "bg": "green",   "pose": "hero", "prompt": "shadow queen, dark purple hair, small golden crown, black dress armor, purple cape, pale skin"},
+  {"file": "assets/heroes/sniper.png",      "bg": "magenta", "pose": "hero", "prompt": "sniper ranger, green camouflage hood, olive outfit, dark green cape"},
+  {"file": "assets/heroes/saint.png",       "bg": "green",   "pose": "hero", "prompt": "holy saint girl, cream hair, golden halo, small crown, white and gold robe, golden cape"},
+  {"file": "assets/heroes/tiger.png",       "bg": "green",   "pose": "hero", "prompt": "tiger warrior, orange hair, tiger ears, black headband, brown armor, orange cape"},
+
+  {"file": "assets/heroes/sunking.png",     "bg": "green",   "pose": "hero", "prompt": "sun king, golden hair, big golden crown, shining gold armor, red royal cape"},
+  {"file": "assets/heroes/lich.png",        "bg": "green",   "pose": "hero", "prompt": "lich lord, icy cyan hair, crown, pale blue skin, dark indigo robe, teal cape, glowing eyes"},
+  {"file": "assets/heroes/archangel.png",   "bg": "green",   "pose": "hero", "prompt": "archangel, light blonde hair, golden halo, golden helmet, white armor, small white wings, yellow cape"},
+  {"file": "assets/heroes/demonlord.png",   "bg": "green",   "pose": "hero", "prompt": "demon lord, black hair, red horns, small dark crown, pinkish red skin, dark crimson armor, red cape"},
+  {"file": "assets/heroes/gunqueen.png",    "bg": "green",   "pose": "hero", "prompt": "gun queen, crimson red hair, black cowboy hat, black coat, crimson cape"},
+  {"file": "assets/heroes/titan.png",       "bg": "green",   "pose": "hero", "prompt": "titan giant warrior, grey beard, stone grey helmet, heavy grey armor, bronze cape, muscular"},
+
+  {"file": "assets/pets/bunny.png",      "bg": "green",   "pose": "pet", "prompt": "cute white bunny with long ears and pink inner ears"},
+  {"file": "assets/pets/penguin.png",    "bg": "green",   "pose": "pet", "prompt": "cute baby penguin, black and white, orange beak and feet"},
+  {"file": "assets/pets/shroom.png",     "bg": "green",   "pose": "pet", "prompt": "cute walking mushroom, red cap with white dots, cream stem with a face"},
+  {"file": "assets/pets/bee.png",        "bg": "green",   "pose": "pet", "prompt": "cute chubby bumblebee, yellow and black stripes, small wings"},
+  {"file": "assets/pets/fireslime.png",  "bg": "green",   "pose": "pet", "prompt": "cute orange fire slime with a small flame on top"},
+  {"file": "assets/pets/puppy.png",      "bg": "green",   "pose": "pet", "prompt": "cute golden puppy with floppy brown ears and a red collar with a gold coin tag"},
+  {"file": "assets/pets/turtle.png",     "bg": "magenta", "pose": "pet", "prompt": "cute turtle with a green rock shell"},
+  {"file": "assets/pets/iceslime.png",   "bg": "magenta", "pose": "pet", "prompt": "cute light cyan ice slime with frost sparkles"},
+  {"file": "assets/pets/owl.png",        "bg": "green",   "pose": "pet", "prompt": "cute round brown owl with big yellow eyes"},
+  {"file": "assets/pets/fox.png",        "bg": "green",   "pose": "pet", "prompt": "cute red fire fox with a fluffy tail and white chest"},
+  {"file": "assets/pets/robot.png",      "bg": "green",   "pose": "pet", "prompt": "cute small hovering robot, grey metal box head, red glowing eye, antenna"},
+  {"file": "assets/pets/wolf.png",       "bg": "green",   "pose": "pet", "prompt": "cute frost wolf pup, light blue fur, fluffy tail, fierce eyes"},
+  {"file": "assets/pets/jelly.png",      "bg": "green",   "pose": "pet", "prompt": "cute glowing purple jellyfish with electric tentacles"},
+  {"file": "assets/pets/golem.png",      "bg": "green",   "pose": "pet", "prompt": "cute mini stone golem with glowing yellow eyes"},
+  {"file": "assets/pets/kingslime.png",  "bg": "magenta", "pose": "pet", "prompt": "cute golden king slime wearing a small crown"},
+  {"file": "assets/pets/phoenix.png",    "bg": "green",   "pose": "pet", "prompt": "cute baby phoenix bird made of orange and yellow flames"},
+  {"file": "assets/pets/icedragon.png",  "bg": "magenta", "pose": "pet", "prompt": "cute baby ice dragon, light blue scales, white crystal wings"},
+  {"file": "assets/pets/starspirit.png", "bg": "green",   "pose": "pet", "prompt": "cute smiling yellow star spirit, glowing, tiny sparkles around"}
+]

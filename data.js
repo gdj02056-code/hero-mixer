@@ -166,6 +166,7 @@ const HEROES = [
   { id: 'gunqueen', name: '총의 여제', r: 3, wt: 'gun', look: { hair: '#e11d48', body: '#1f2937', cape: '#be123c', skin: '#fde4c8', hat: 'cowboy', hatColor: '#111827' }, bonus: { aspd: 0.25, crit: 0.15 } },
   { id: 'titan', name: '거신', r: 3, wt: 'hammer', look: { hair: '#78716c', body: '#57534e', cape: '#a16207', skin: '#e7b98f', helmet: '#a8a29e', beard: true }, bonus: { hpPct: 0.5, def: 50, atkPct: 0.15 } },
 ];
+HEROES.sort((a, b) => a.r - b.r); // list grouped by grade: R → SR → SSR → UR
 const HERO = Object.fromEntries(HEROES.map(h => [h.id, h]));
 const HERO_STAR_SHARDS = [1, 2, 3, 5, 8];
 const heroMaxLv = st => 20 + st.stars * 10;
