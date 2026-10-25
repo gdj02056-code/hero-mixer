@@ -267,7 +267,7 @@ function pageHero(pg) {
     <div class="center sub">기본 무기 성향: ${WT[h.wt].name}</div>
     ${body}
     <h3>🦸 영웅 목록 (${Object.keys(S.heroes).length}/${HEROES.length})</h3>
-    <div class="chips">${['all', 0, 1, 2, 3].map(r => `<button data-hf="${r}" class="${heroFilter === r ? 'on' : ''}">${r === 'all' ? '전체' : HRAR[r].n}</button>`).join('')}</div>
+    <div class="chips">${['all', 3, 2, 1, 0].map(r => `<button data-hf="${r}" class="${heroFilter === r ? 'on' : ''}">${r === 'all' ? '전체' : HRAR[r].n}</button>`).join('')}</div>
     <div class="hgrid">${HEROES.filter(x => heroFilter === 'all' || x.r === heroFilter).map(x => heroTile(x.id, `${S.heroes[x.id] ? `<span class="lv">Lv${S.heroes[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.hero === x.id ? '<span class="eq">사용</span>' : ''}`)).join('')}</div>
     <h3>✨ 영웅 소환</h3>
     <div class="row"><button class="btn green" data-hs="0">무료 1회</button><button class="btn" data-hs="1">1회 💎300</button><button class="btn purple" data-hs="10">10회 💎2,700</button></div>
@@ -318,7 +318,7 @@ function pagePet(pg) {
     <div class="center sub">${P.desc}</div>
     ${body}
     <h3>🐾 펫 목록 (${owned.length}/${PETS.length})</h3>
-    <div class="chips">${['all', 0, 1, 2, 3].map(r => `<button data-pf="${r}" class="${petFilter === r ? 'on' : ''}">${r === 'all' ? '전체' : PRAR[r].n}</button>`).join('')}</div>
+    <div class="chips">${['all', 3, 2, 1, 0].map(r => `<button data-pf="${r}" class="${petFilter === r ? 'on' : ''}">${r === 'all' ? '전체' : PRAR[r].n}</button>`).join('')}</div>
     <div class="hgrid">${PETS.filter(x => petFilter === 'all' || x.r === petFilter).map(x => petTile(x.id, `${S.pets[x.id] ? `<span class="lv">Lv${S.pets[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.pet === x.id ? '<span class="eq">동행</span>' : ''}`)).join('')}</div>
     <h3>🥚 펫 알 부화</h3>
     <div class="row"><button class="btn green" data-ps="0">무료 1회</button><button class="btn" data-ps="1">1회 💎250</button><button class="btn purple" data-ps="10">10회 💎2,250</button></div>`;

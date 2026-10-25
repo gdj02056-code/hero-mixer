@@ -166,7 +166,7 @@ const HEROES = [
   { id: 'gunqueen', name: '총의 여제', r: 3, wt: 'gun', look: { hair: '#e11d48', body: '#1f2937', cape: '#be123c', skin: '#fde4c8', hat: 'cowboy', hatColor: '#111827' }, bonus: { aspd: 0.25, crit: 0.15 } },
   { id: 'titan', name: '거신', r: 3, wt: 'hammer', look: { hair: '#78716c', body: '#57534e', cape: '#a16207', skin: '#e7b98f', helmet: '#a8a29e', beard: true }, bonus: { hpPct: 0.5, def: 50, atkPct: 0.15 } },
 ];
-HEROES.sort((a, b) => a.r - b.r); // list grouped by grade: R → SR → SSR → UR
+HEROES.sort((a, b) => b.r - a.r); // list grouped by grade, best first: UR → SSR → SR → R
 const HERO = Object.fromEntries(HEROES.map(h => [h.id, h]));
 const HERO_STAR_SHARDS = [1, 2, 3, 5, 8];
 const heroMaxLv = st => 20 + st.stars * 10;
@@ -208,6 +208,7 @@ const PETS = [
   { id: 'icedragon', name: '얼음 용', r: 3, base: 'dragon', kind: 'frost', c: ['#38bdf8', '#e0f2fe', '#f0f9ff'], desc: '거대한 얼음 숨결' },
   { id: 'starspirit', name: '별의 정령', r: 3, base: 'star', kind: 'starfall', c: ['#fde047', '#fef9c3'], desc: '하늘에서 별을 떨어뜨려요' },
 ];
+PETS.sort((a, b) => b.r - a.r); // best first: 전설 → 영웅 → 희귀 → 일반
 const PET = Object.fromEntries(PETS.map(p => [p.id, p]));
 const petMaxLv = st => 20 + st.stars * 10;
 const petLvCost = lv => Math.floor(250 * Math.pow(lv, 1.4));
