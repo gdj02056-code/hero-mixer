@@ -1,0 +1,86 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: EXTRA - 36 hero attack poses (shown at the moment the hero attacks).
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== ATTACK POSE RULES (very important) ===
+Each job is the ATTACK POSE of a hero that already exists as an idle picture: assets/heroes/<id>.png (same id, without "_attack").
+- It must be the SAME CHARACTER: same face, hair, outfit, colors and accessories as the idle picture.
+- Same scale as the idle picture: same head size, same overall height, feet at the same height near the bottom.
+- If your tool can use a reference image (img2img, IP-Adapter, reference-only, etc.), use the idle picture as the reference.
+- The hand must be EMPTY. The game puts the equipped weapon into that fist, so a drawn weapon would show twice.
+- Keep the fist roughly in the same place in every picture (about 72% from the left, 55% from the top).
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+attack  : 2-heads-tall chibi, full body, side view FACING RIGHT, dynamic attack lunge: front foot stepping forward, body leaning forward, the FRONT arm stretched straight forward at chest height ending in an EMPTY closed fist (as if gripping a handle) placed at about 72% from the left and 55% from the top of the image, the other arm pulled back, NO weapon, feet near the bottom of the image
+
+=== JOB LIST (36 images) ===
+[
+  {"file": "assets/heroes/sunking_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "sun king, golden hair, big golden crown, shining gold armor, red royal cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/lich_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "lich lord, icy cyan hair, crown, pale blue skin, dark indigo robe, teal cape, glowing eyes, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/archangel_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "archangel, light blonde hair, golden halo, golden helmet, white armor, small white wings, yellow cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/demonlord_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "demon lord, black hair, red horns, small dark crown, pinkish red skin, dark crimson armor, red cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/gunqueen_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "gun queen, crimson red hair, black cowboy hat, black coat, crimson cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/titan_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "titan giant warrior, grey beard, stone grey helmet, heavy grey armor, bronze cape, muscular, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/reaper_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "grim reaper girl, white hair, dark hood, black robe, purple cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/dragoon_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "dragon knight, red dragon helmet with horns, crimson armor, golden cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/archmage_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "archmage, long white hair, tall dark indigo wizard hat, indigo robe, lavender cape, epic legendary outfit with ornate gold details and a glowing magical aura, attacking pose, empty hands"},
+  {"file": "assets/heroes/paladin_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "holy paladin, silver helmet, white plate armor, golden cape, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/berserker_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "berserker warrior, red hair, horned helmet, grey fur armor, dark red cape, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/ninja_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "wind ninja, black hair, face mask, navy blue outfit, light blue scarf, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/stormmage_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "storm mage, light blue hair, tall dark blue wizard hat, navy robe, sky blue cape, tiny sparks, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/commander_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "knight commander, grey beard, dark steel helmet, black plate armor, red cape, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/shadowqueen_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "shadow queen, dark purple hair, small golden crown, black dress armor, purple cape, pale skin, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/sniper_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "sniper ranger, green camouflage hood, olive outfit, dark green cape, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/saint_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "holy saint girl, cream hair, golden halo, small crown, white and gold robe, golden cape, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/tiger_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "tiger warrior, orange hair, tiger ears, black headband, brown armor, orange cape, ornate outfit with gold trim and a faint magical glow, attacking pose, empty hands"},
+  {"file": "assets/heroes/rogue_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "shadow thief, black hair, dark cloth mask over the mouth, dark grey outfit, purple cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/mage_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "fire mage, red hair, tall dark orange wizard hat, brown robe, orange cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/monk_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "bald monk, tan skin, golden yellow robe, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/priest_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "kind priest girl, light blonde hair, golden halo above head, white robe, light blue cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/samurai_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "samurai, black topknot hair, white headband, red samurai armor, black cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/catgirl_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "cat girl swordswoman, orange hair, orange cat ears, cream outfit, orange cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/viking_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "viking warrior, orange braided beard, horned helmet, grey fur armor, blue cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/elfarcher_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "elf archer, pale blonde long hair, pointed elf ears, light green outfit, dark green cape, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/alchemist_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "alchemist, dark teal hood, teal robe, mint green cape, small potion bottles on belt, nicer outfit with small decorative details, attacking pose, empty hands"},
+  {"file": "assets/heroes/knight_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "young knight boy, orange hair, blue tunic, red cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/archer_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "forest archer girl, green hood, green leather outfit, brown cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/gunner_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "gunslinger, brown cowboy hat, grey long coat, brown cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/squire_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "young shield soldier, brown hair, round steel helmet, grey tunic, blue cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/hunter_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "hunter, grey hair, red headband, olive green leather outfit, brown cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/farmer_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "brave farmer boy, yellow straw hat, blue overalls, green cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/apprentice_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "apprentice wizard girl, purple hair, tall dark purple wizard hat, violet robe, lilac cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/sailor_attack.png", "size": "512x512", "bg": "green", "pose": "attack", "prompt": "pirate sailor, black hair, red bandana, white striped shirt, navy blue cape, simple modest outfit, attacking pose, empty hands"},
+  {"file": "assets/heroes/scout_attack.png", "size": "512x512", "bg": "magenta", "pose": "attack", "prompt": "elf forest scout, blonde hair, pointed elf ears, green tunic, dark green cape, simple modest outfit, attacking pose, empty hands"}
+]

@@ -25,6 +25,9 @@ POSES = {
     'pet': 'tiny cute creature, full body, facing right',
     'monster': 'full body, facing the viewer (front view)',
     'icon': 'simple game icon, one big clear symbol, front view, filling about 80% of the image',
+    'attack': ('2-heads-tall chibi, full body, side view FACING RIGHT, dynamic attack lunge: front foot stepping forward, body leaning forward, '
+               'the FRONT arm stretched straight forward at chest height ending in an EMPTY closed fist (as if gripping a handle) placed at about '
+               '72% from the left and 55% from the top of the image, the other arm pulled back, NO weapon, feet near the bottom of the image'),
 }
 
 # 10 equipment grades: file suffix, Korean name, what changes with the grade
@@ -270,6 +273,17 @@ Items come in 10 grades. The file name ends with the grade: _F, _D, _C, _B, _A, 
 """
 
 
+ATTACK_RULES = """
+=== ATTACK POSE RULES (very important) ===
+Each job is the ATTACK POSE of a hero that already exists as an idle picture: assets/heroes/<id>.png (same id, without "_attack").
+- It must be the SAME CHARACTER: same face, hair, outfit, colors and accessories as the idle picture.
+- Same scale as the idle picture: same head size, same overall height, feet at the same height near the bottom.
+- If your tool can use a reference image (img2img, IP-Adapter, reference-only, etc.), use the idle picture as the reference.
+- The hand must be EMPTY. The game puts the equipped weapon into that fist, so a drawn weapon would show twice.
+- Keep the fist roughly in the same place in every picture (about 72% from the left, 55% from the top).
+"""
+
+
 def write(name, title, jobs, extra=''):
     os.makedirs(OUT, exist_ok=True)
     lines = ',\n'.join('  ' + json.dumps(j, ensure_ascii=False) for j in jobs)
@@ -313,6 +327,10 @@ def main():
 
     jobs = [job(f'assets/skills/{sid}.png', d, 'icon') for sid, d in SKILLS]
     total += write('07_skills.txt', 'PART 7 of 7 - 18 battle skill icons', jobs)
+
+    jobs = [job(f'assets/heroes/{hid}_attack.png', f'{desc}, {HERO_RARITY[r][1]}, attacking pose, empty hands', 'attack')
+            for hid, r, desc in HEROES]
+    total += write('08_hero_attack.txt', 'EXTRA - 36 hero attack poses (shown at the moment the hero attacks)', jobs, ATTACK_RULES)
     print('total', total)
 
 
