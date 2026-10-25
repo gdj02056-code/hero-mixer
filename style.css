@@ -197,6 +197,20 @@ small{opacity:.8}
 .rtile .rs{font-size:10px;color:#9aa0cc}
 .lvup{color:#facc15;font-weight:900;font-size:17px;margin-bottom:6px}
 
+/* open world */
+.worldmap{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.wcell{position:relative;aspect-ratio:1;border-radius:12px;border:2px solid rgba(255,255,255,.18);background:linear-gradient(150deg,var(--a),var(--b));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-shadow:0 1px 3px #000}
+.wcell.locked{background:#1a1c33;border-style:dashed;opacity:.6}
+.wcell.sel{border-color:#facc15;box-shadow:0 0 12px #facc15}
+.wcell .wn{position:absolute;top:2px;left:5px;font-size:11px;font-weight:900}
+.wcell .we{font-size:24px}
+.wcell .ws{font-size:11px;font-weight:800}
+.secinfo{background:rgba(0,0,0,.3);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px;line-height:1.6}
+.skillrow{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:20px}
+.btn.mini{padding:4px 8px;font-size:11px;margin-left:4px}
+.slotsbar{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.sslot{width:54px;height:54px;border-radius:14px;border:2px dashed #4a51a0;display:grid;place-items:center;font-size:28px;background:rgba(0,0,0,.3);color:#555a88}
+
 /* shop */
 .sbtns{display:flex;gap:4px}
 .sbtns .btn{flex:1}

@@ -22,12 +22,14 @@ const defaultSave = () => ({
   stats: {}, items: [{ id: 1, slot: 'weapon', wt: 'sword', g: 0, lv: 1 }], equip: { weapon: 1 }, nextId: 2,
   heroes: { knight: { lv: 1, stars: 0, shards: 0 } }, hero: 'knight', pets: {}, pet: null, relics: {},
   clv: 1, cexp: 0, noAds: false, pass: false, starter: false, spent: 0,
+  skills: { knife: { lv: 1, evo: false } }, skillSlots: ['knife'], world: { cleared: 0, fb: {} },
 });
 let S;
 function loadSave() {
   let raw = null;
   try { raw = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { }
   S = Object.assign(defaultSave(), raw || {});
+  S.world = Object.assign({ cleared: 0, fb: {} }, S.world);
 }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { } }
 function tickEnergy() {
@@ -185,7 +187,7 @@ cv.addEventListener('pointercancel', endJoy);
 let G = null;
 const xpFor = lv => Math.floor(4 + lv * 3 + Math.pow(lv, 1.5));
 
-function startRun(stage) {
+function startRun(stage, world = false) {
   const m = metaStats();
   const p = {
     x: 0, y: 0, r: 16, maxBase: m.hpTotal, maxHp: m.hpTotal, hp: m.hpTotal, atk: m.atkTotal, crit: m.crit, critDmg: m.critDmg,
@@ -205,7 +207,135 @@ function startRun(stage) {
   joy.active = false;
   $('#lobby').classList.add('hidden');
   $('#hudBtns').classList.remove('hidden');
-  showBanner(`STAGE ${stage} · ${STAGES[(stage - 1) % STAGES.length].name}`);
+  if (!world) showBanner(`STAGE ${stage} · ${STAGES[(stage - 1) % STAGES.length].name}`);
+}
+function backToLobby() { closeModal(); G = null; $('#hudBtns').classList.add('hidden'); $('#lobby').classList.remove('hidden'); renderLobby(); }
+
+// ---------- open world ----------
+const accessible = s => s >= 0 && s <= S.world.cleared;
+const fbDone = s => (S.world.fb[s] || 0) === 7;
+const worldMainLv = () => clamp(1 + Math.floor(S.clv / 8), 1, MAX_WLV);
+function startWorld(sec) {
+  startRun(sec + 1, true);
+  const c = secCenter(sec), l = lairSpot(sec), p = G.p;
+  p.x = c.x - (l.x - c.x) * 0.8; p.y = c.y - (l.y - c.y) * 0.8;
+  p.weapons = S.skillSlots.filter(id => S.skills[id]).map(id => ({ id, lv: S.skills[id].lv, evo: S.skills[id].evo, t: 0, ang: 0, spin: 0 }));
+  p.mlv = worldMainLv();
+  G.world = { fb: {}, leader: {}, saveT: 10, lastSec: -1, loot: { gold: 0, gems: 0, cexp: 0, items: [], ups: 0 } };
+  if (G.pet) { G.pet.x = p.x - 30; G.pet.y = p.y; }
+  pStat();
+}
+// re-read permanent stats mid-run (after a character level up)
+function refreshMeta() {
+  const m = metaStats(), p = G.p, ratio = p.hp / p.maxHp;
+  Object.assign(p, { maxBase: m.hpTotal, atk: m.atkTotal, crit: m.crit, critDmg: m.critDmg, aspd: m.aspd, baseDr: m.drTotal, regen: m.regen, spdBase: 190 * (1 + m.spd), magBase: 70 * (1 + m.magnet), expMul: 1 + m.exp, goldMul: 1 + m.goldGain, skillMul: 1 + m.skillDmg });
+  pStat();
+  p.hp = p.maxHp * ratio;
+  if (G.pet) G.pet.dmg = petDmg(m, G.pet.id);
+}
+function worldSpawnPos() {
+  const R = Math.hypot(VW, VH) / 2 / ZOOM + 60;
+  for (let i = 0; i < 8; i++) {
+    const a = Math.random() * TAU, x = G.p.x + Math.cos(a) * R, y = G.p.y + Math.sin(a) * R;
+    if (accessible(secAt(x, y))) return [x, y];
+  }
+  return null;
+}
+function chooseWorldType(s) {
+  const r = Math.random();
+  if (s === 0) return r < 0.7 ? 'slime' : 'bat';
+  if (s === 1) return r < 0.4 ? 'slime' : r < 0.7 ? 'bat' : 'archer';
+  return r < 0.25 ? 'slime' : r < 0.5 ? 'bat' : r < 0.75 ? 'archer' : 'golem';
+}
+function spawnFieldBoss(s, k, pt) {
+  const e = spawnEnemy('elite', pt.x, pt.y, s + 1);
+  e.hp = e.maxHp = e.hp * 4; e.r = 34; e.spd *= 0.85;
+  e.fb = { s, k }; e.home = pt;
+  e.name = `${secBiome(s).name.split(' ').pop()}의 ${FB_NAMES[k]}`;
+  e.color = ['#dc2626', '#ea580c', '#be185d'][k];
+  return e;
+}
+function spawnLeader(s, l) {
+  const e = spawnEnemy('boss', l.x, l.y, s + 1);
+  e.leader = s; e.home = l;
+  e.name = (s >= BOSSES.length ? '지옥의 ' : '') + BOSSES[s % BOSSES.length];
+  G.boss = e;
+  showBanner('👑 대장 보스 등장: ' + e.name, '#fcd34d'); addShake(10);
+  return e;
+}
+function updateWorld(dt) {
+  const W = G.world, p = G.p, cur = secAt(p.x, p.y);
+  if (cur !== W.lastSec && cur >= 0) { W.lastSec = cur; showBanner(`🗺️ ${cur + 1}. ${secName(cur)}${cur < S.world.cleared ? ' ✅' : ''}`, '#fde68a'); }
+  for (const s of [cur - 1, cur, cur + 1]) {
+    if (!accessible(s)) continue;
+    fbSpots(s).forEach((pt, k) => {
+      const st = W.fb[s + ':' + k] || (W.fb[s + ':' + k] = { e: null, at: 0 });
+      if (!st.e && G.time >= st.at && Math.hypot(pt.x - p.x, pt.y - p.y) < 900) st.e = spawnFieldBoss(s, k, pt);
+    });
+    const l = lairSpot(s), ls = W.leader[s] || (W.leader[s] = { e: null, at: 0 });
+    if (!ls.e && G.time >= ls.at && fbDone(s) && Math.hypot(l.x - p.x, l.y - p.y) < 320) ls.e = spawnLeader(s, l);
+  }
+  const target = Math.min(130, 30 + Math.max(0, cur) * 5);
+  G.spawnT -= dt;
+  if (G.spawnT <= 0) {
+    G.spawnT = 0.15;
+    const n = Math.min(4, target - G.enemies.length);
+    for (let i = 0; i < n; i++) { const pos = worldSpawnPos(); if (pos) spawnEnemy(chooseWorldType(secAt(pos[0], pos[1])), pos[0], pos[1]); }
+  }
+  W.saveT -= dt;
+  if (W.saveT <= 0) { W.saveT = 10; save(); }
+}
+function worldLoot(gold, gems, items) {
+  const L = G.world.loot;
+  for (let i = 0; i < 8; i++) G.items.push({ type: 'gold', x: G.p.x + rand(-60, 60), y: G.p.y + rand(-60, 60), v: gold / 8 });
+  S.gems += gems; L.gems += gems;
+  for (const g of items) L.items.push(newItem(g));
+}
+function fieldBossDown(e) {
+  const { s, k } = e.fb, W = G.world;
+  W.fb[s + ':' + k] = { e: null, at: G.time + FB_RESPAWN };
+  const was = fbDone(s);
+  S.world.fb[s] = (S.world.fb[s] || 0) | (1 << k);
+  worldLoot(50 * (s + 1), 20 + s * 5, [rollGrade(s + 1)]);
+  G.fx.push({ type: 'boom', x: e.x, y: e.y, r: 90, t: 0, life: 0.45 });
+  if (!was && fbDone(s)) showBanner('👑 대장 보스의 봉인이 풀렸습니다!', '#fca5a5');
+  else showBanner(`⚔️ ${e.name} 처치! (${bits3(S.world.fb[s])}/3)`, '#fdba74');
+  save();
+}
+function leaderDown(e) {
+  const s = e.leader;
+  G.world.leader[s] = { e: null, at: G.time + LEADER_RESPAWN };
+  G.boss = null;
+  worldLoot(300 * (s + 1), 100 + s * 30, [rollGrade(s + 3), rollGrade(s + 3), rollGrade(s + 3)]);
+  addShake(14);
+  for (const o of G.enemies) if (!o.dead && !o.home && Math.hypot(o.x - e.x, o.y - e.y) < 600) { o.dead = true; dropGem(o.x, o.y, o.xp); }
+  if (s === S.world.cleared) { S.world.cleared++; showBanner(`🎉 새 지역 개방: ${secName(S.world.cleared)}`, '#fde047'); }
+  else showBanner('🏆 대장 보스 처치!', '#fde047');
+  save();
+}
+function worldObjective() {
+  const p = G.p, s = secAt(p.x, p.y);
+  if (s < 0) return null;
+  if (!fbDone(s)) {
+    let best = null, bd = Infinity;
+    fbSpots(s).forEach((pt, k) => { if ((S.world.fb[s] >> k) & 1) return; const d = (pt.x - p.x) ** 2 + (pt.y - p.y) ** 2; if (d < bd) { bd = d; best = { x: pt.x, y: pt.y, icon: '💀' }; } });
+    return best;
+  }
+  if (s === S.world.cleared) { const l = lairSpot(s); return { x: l.x, y: l.y, icon: '👑' }; }
+  return null;
+}
+function endWorld() {
+  if (G.state === 'over') return;
+  G.state = 'over'; joy.active = false; save();
+  const L = G.world.loot, sec = Math.max(0, secAt(G.p.x, G.p.y));
+  const box = showModal(`<div class="bigicon">🏕️</div><h2>마을로 귀환</h2>
+    <div class="center">💀 ${G.kills} 처치 · ⏱ ${fmtTime(G.time)} · 🗺️ 정복 ${S.world.cleared}지역</div>
+    <div class="reward"><span>🪙 ${fmt(L.gold)}</span><span>💎 ${fmt(L.gems)}</span><span>📘 ${fmt(L.cexp)}</span></div>
+    ${L.ups ? `<div class="center lvup">🎉 캐릭터 레벨 +${L.ups} → Lv.${S.clv}</div>` : ''}
+    ${L.items.length ? `<div class="ggrid">${L.items.slice(0, 20).map(it => itemTile(it)).join('')}</div>` : '<div class="center sub">장비는 필드 보스와 대장 보스가 떨어뜨려요</div>'}
+    <div class="row"><button class="btn green" id="home">로비로</button><button class="btn gold" id="again">다시 출발 ▶</button></div>`);
+  box.querySelector('#home').onclick = backToLobby;
+  box.querySelector('#again').onclick = () => { backToLobby(); startWorld(Math.min(sec, S.world.cleared)); };
 }
 function addWeapon(id) { G.p.weapons.push({ id, lv: 1, evo: false, t: 0, ang: 0, spin: 0 }); }
 function pLv(id) { const q = G.p.passives.find(x => x.id === id); return q ? q.lv : 0; }
@@ -291,11 +421,11 @@ function onScreen(e) { const hw = VW / 2 / ZOOM + 20, hh = VH / 2 / ZOOM + 20; r
 
 // ---------- enemies ----------
 function spawnRingPos() { const a = Math.random() * TAU, R = Math.hypot(VW, VH) / 2 / ZOOM + 60; return [G.p.x + Math.cos(a) * R, G.p.y + Math.sin(a) * R]; }
-function spawnEnemy(type, x, y) {
-  const T = ETYPES[type], s = G.stage;
-  const hpMul = (1 + (s - 1) * 0.75) * (1 + G.time / 60 * 0.55);
+function spawnEnemy(type, x, y, lvl) {
+  const T = ETYPES[type], s = lvl || (G.world ? Math.max(0, secAt(x, y)) + 1 : G.stage);
+  const hpMul = (1 + (s - 1) * 0.75) * (G.world ? 1.3 : 1 + G.time / 60 * 0.55);
   const e = {
-    id: G.nextEid++, type, x, y, r: T.r, hp: T.hp * hpMul, spd: T.spd * rand(0.9, 1.1), dmg: T.dmg * (1 + (s - 1) * 0.3), xp: T.xp,
+    id: G.nextEid++, type, x, y, lvl: s, r: T.r, hp: T.hp * hpMul, spd: T.spd * rand(0.9, 1.1), dmg: T.dmg * (1 + (s - 1) * 0.3), xp: T.xp,
     color: T.color, flash: 0, kx: 0, ky: 0, slowUntil: 0, stunUntil: 0, ocd: 0, shootT: rand(1, 3), elite: !!T.elite, boss: !!T.boss, ranged: !!T.ranged, wob: Math.random() * TAU,
   };
   if (e.boss) { e.hp = T.hp * (1 + (s - 1) * 1.1); e.phaseT = 3; e.pat = 0; e.dashT = 0; e.windT = 0; e.name = BOSSES[(s - 1) % BOSSES.length]; }
@@ -358,7 +488,7 @@ function updateEnemies(dt) {
       if (e.phaseT <= 0 && e.dashT <= 0 && e.windT <= 0) {
         e.pat++;
         if (e.pat % 3 === 0) e.windT = 0.8;
-        else if (e.pat % 3 === 1) { const n = 14 + Math.min(10, G.stage); const off = Math.random(); for (let i = 0; i < n; i++) shootAt(e, (i + off) / n * TAU, 190, e.dmg * 0.6); }
+        else if (e.pat % 3 === 1) { const n = 14 + Math.min(10, e.lvl); const off = Math.random(); for (let i = 0; i < n; i++) shootAt(e, (i + off) / n * TAU, 190, e.dmg * 0.6); }
         else { for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; spawnEnemy('bat', e.x + Math.cos(a) * 80, e.y + Math.sin(a) * 80); } const a = Math.atan2(dy, dx); for (let i = -2; i <= 2; i++) shootAt(e, a + i * 0.18, 260, e.dmg * 0.6); }
         e.phaseT = 2.4;
       }
@@ -367,8 +497,15 @@ function updateEnemies(dt) {
       e.shootT -= dt;
       if (e.shootT <= 0 && d < 480 && spd > 0) { e.shootT = 2.6; shootAt(e, Math.atan2(dy, dx), 210, e.dmg); }
     }
-    e.x += (dx / d * spd * dir + e.kx) * dt;
-    e.y += (dy / d * spd * dir + e.ky) * dt;
+    let mx = dx / d * dir, my = dy / d * dir;
+    // field/leader bosses don't chase you out of their territory; they walk home and heal
+    if (e.home && Math.hypot(e.home.x - p.x, e.home.y - p.y) > 700) {
+      const hx = e.home.x - e.x, hy = e.home.y - e.y, hd = Math.hypot(hx, hy);
+      if (hd > 15) { mx = hx / hd; my = hy / hd; } else { mx = my = 0; e.hp = e.maxHp; }
+      if (e.boss) { e.dashT = 0; e.windT = 0; e.phaseT = 2; }
+    }
+    e.x += (mx * spd + e.kx) * dt;
+    e.y += (my * spd + e.ky) * dt;
     const decay = Math.max(0, 1 - dt * 9); e.kx *= decay; e.ky *= decay;
     if (e.flash > 0) e.flash -= dt;
     if (!e.boss) {
@@ -377,7 +514,10 @@ function updateEnemies(dt) {
         const ox = e.x - o.x, oy = e.y - o.y, od = Math.hypot(ox, oy) || 0.01, ov = e.r + o.r - od;
         if (ov > 0) { const f = o.boss ? 0.6 : 0.25; e.x += ox / od * ov * f; e.y += oy / od * ov * f; }
       });
-      if (d > farR) { const [nx, ny] = spawnRingPos(); e.x = nx; e.y = ny; }
+      if (d > farR && !e.home) {
+        const pos = G.world ? worldSpawnPos() : spawnRingPos();
+        if (pos) { e.x = pos[0]; e.y = pos[1]; } else e.dead = true;
+      }
     }
     if (d < e.r + p.r - 3) hurtPlayer(e.dmg);
   }
@@ -396,6 +536,8 @@ function killEnemy(e) {
   e.dead = true; G.kills++;
   dropGem(e.x, e.y, e.xp);
   G.fx.push({ type: 'pop', x: e.x, y: e.y, r: e.r, t: 0, life: 0.3, color: e.color });
+  if (e.leader !== undefined) { leaderDown(e); return; }
+  if (e.fb) { fieldBossDown(e); return; }
   if (e.boss) {
     G.boss = null; G.winT = 2;
     for (let i = 0; i < 25; i++) G.items.push({ type: 'gold', x: e.x + rand(-90, 90), y: e.y + rand(-90, 90), v: 10 * G.stage });
@@ -405,7 +547,7 @@ function killEnemy(e) {
   }
   if (e.elite) { G.items.push({ type: 'chest', x: e.x, y: e.y }); return; }
   const r = Math.random();
-  if (r < 0.025) G.items.push({ type: 'gold', x: e.x, y: e.y, v: 1 + Math.floor(G.stage / 2) });
+  if (r < (G.world ? 0.06 : 0.025)) G.items.push({ type: 'gold', x: e.x, y: e.y, v: G.world ? 2 + e.lvl * 2 : 1 + Math.floor(G.stage / 2) });
   else if (r < 0.032) G.items.push({ type: 'meat', x: e.x, y: e.y });
   else if (r < 0.0345) G.items.push({ type: 'magnet', x: e.x, y: e.y });
   else if (r < 0.0365) G.items.push({ type: 'bomb', x: e.x, y: e.y });
@@ -439,14 +581,24 @@ function updatePlayer(dt) {
     if (jl > 6) { mx = jx / jl; my = jy / jl; mag = clamp(jl / 45, 0, 1); }
   }
   if (mag > 0) {
-    p.x += mx * p.spd * mag * dt; p.y += my * p.spd * mag * dt; p.fx = mx; p.fy = my; p.walk += dt * 12 * mag;
+    let nx = p.x + mx * p.spd * mag * dt, ny = p.y + my * p.spd * mag * dt;
+    if (G.world) { if (!accessible(secAt(nx, p.y))) nx = p.x; if (!accessible(secAt(nx, ny))) ny = p.y; }
+    p.x = nx; p.y = ny; p.fx = mx; p.fy = my; p.walk += dt * 12 * mag;
     if (p.anim <= 0) { p.aim = Math.atan2(my, mx); if (Math.abs(mx) > 0.2) p.face = Math.sign(mx); }
   }
   if (p.inv > 0) p.inv -= dt;
   p.hp = Math.min(p.maxHp, p.hp + p.regen * dt);
 }
 function gainXp(v) {
-  const p = G.p; p.xp += v * p.expMul;
+  const p = G.p;
+  if (G.world) {
+    // no level-up cards in the open world: XP goes straight to the character level
+    const amt = v * p.expMul * 2 * (1 + Math.max(0, secAt(p.x, p.y)) * 0.3), ups = addCexp(amt);
+    G.world.loot.cexp += amt;
+    if (ups) { G.world.loot.ups += ups; refreshMeta(); p.mlv = worldMainLv(); showBanner(`🎉 캐릭터 레벨 업! Lv.${S.clv}`, '#fde047'); G.fx.push({ type: 'heal', x: p.x, y: p.y, t: 0, life: 0.6 }); }
+    return;
+  }
+  p.xp += v * p.expMul;
   while (p.xp >= p.xpNext) { p.xp -= p.xpNext; p.lv++; p.xpNext = xpFor(p.lv); G.pendingLv++; }
 }
 
@@ -793,10 +945,15 @@ function updatePickups(dt) {
       if (it.type === 'chest' && G.state !== 'play') continue;
       it.dead = true;
       switch (it.type) {
-        case 'gold': G.gold += it.v * p.goldMul; break;
+        case 'gold': {
+          const v = it.v * p.goldMul;
+          G.gold += v;
+          if (G.world) { S.gold += Math.floor(v); G.world.loot.gold += Math.floor(v); }
+          break;
+        }
         case 'meat': p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.3); G.texts.push({ x: p.x, y: p.y - 30, txt: '+HP', color: '#4ade80', big: true, t: 0 }); break;
         case 'magnet': for (const g of G.gems) g.m = true; showBanner('🧲 경험치 전부 흡수!', '#93c5fd'); break;
-        case 'bomb': for (const e of G.enemies) if (!e.dead && onScreen(e)) hitEnemy(e, e.boss ? 300 * p.dmgMul : 99999); G.fx.push({ type: 'flash', t: 0, life: 0.4 }); addShake(12); break;
+        case 'bomb': for (const e of G.enemies) if (!e.dead && onScreen(e)) hitEnemy(e, e.boss || e.home ? 300 * p.dmgMul : 99999); G.fx.push({ type: 'flash', t: 0, life: 0.4 }); addShake(12); break;
         case 'chest': openChest(); break;
       }
     }
@@ -818,7 +975,7 @@ function updateFx(dt) {
 function update(dt) {
   G.time += dt;
   updatePlayer(dt);
-  updateSpawner(dt);
+  if (G.world) updateWorld(dt); else updateSpawner(dt);
   updateEnemies(dt);
   buildGrid();
   updateMain(dt);
@@ -842,25 +999,34 @@ function circle(x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); }
 function render() {
   const p = G.p, st = STAGES[(G.stage - 1) % STAGES.length];
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  ctx.fillStyle = st.g1; ctx.fillRect(0, 0, VW, VH);
+  ctx.fillStyle = G.world ? '#05060d' : st.g1; ctx.fillRect(0, 0, VW, VH);
   const sx = G.shake ? rand(-1, 1) * G.shake : 0, sy = G.shake ? rand(-1, 1) * G.shake : 0;
   ctx.setTransform(DPR * ZOOM, 0, 0, DPR * ZOOM, DPR * (VW / 2 - p.x * ZOOM + sx), DPR * (VH / 2 - p.y * ZOOM + sy));
   ctx.lineJoin = 'round';
   const hw = VW / 2 / ZOOM, hh = VH / 2 / ZOOM;
 
   // ground
-  const T = 80, i0 = Math.floor((p.x - hw) / T), i1 = Math.floor((p.x + hw) / T), j0 = Math.floor((p.y - hh) / T), j1 = Math.floor((p.y + hh) / T);
+  const T = 90, i0 = Math.floor((p.x - hw) / T), i1 = Math.floor((p.x + hw) / T), j0 = Math.floor((p.y - hh) / T), j1 = Math.floor((p.y + hh) / T);
   for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
-    if ((i + j) & 1) { ctx.fillStyle = st.g2; ctx.fillRect(i * T, j * T, T, T); }
+    let b = st, locked = false;
+    if (G.world) {
+      const s = secAt(i * T + T / 2, j * T + T / 2);
+      if (s < 0) continue;
+      b = secBiome(s); locked = !accessible(s);
+      ctx.fillStyle = b.g1; ctx.fillRect(i * T, j * T, T, T);
+    }
+    if ((i + j) & 1) { ctx.fillStyle = b.g2; ctx.fillRect(i * T, j * T, T, T); }
     const h = hash2(i, j);
     if (h < 0.3) {
-      ctx.fillStyle = st.deco; ctx.globalAlpha = 0.55;
+      ctx.fillStyle = b.deco; ctx.globalAlpha = 0.55;
       const dx = i * T + hash2(j, i) * T, dy = j * T + h * 3 * T;
       if (h < 0.15) { circle(dx, dy, 3 + h * 20); ctx.fill(); }
       else { ctx.fillRect(dx, dy, 3, 9); ctx.fillRect(dx + 5, dy + 2, 3, 7); ctx.fillRect(dx - 5, dy + 3, 3, 6); }
       ctx.globalAlpha = 1;
     }
+    if (locked) { ctx.fillStyle = 'rgba(5,6,13,.72)'; ctx.fillRect(i * T, j * T, T, T); }
   }
+  if (G.world) drawWorldFeatures(hw, hh);
 
   // aura skill
   for (const w of p.weapons) if (w.id === 'aura') {
@@ -941,6 +1107,58 @@ function render() {
   }
   ctx.globalAlpha = 1;
   drawHUD();
+}
+
+function drawWorldFeatures(hw, hh) {
+  const p = G.p, W = G.world, pulse = 0.6 + Math.sin(G.time * 4) * 0.3;
+  const c0 = Math.floor((p.x - hw) / SEC), c1 = Math.floor((p.x + hw) / SEC), r0 = Math.floor((p.y - hh) / SEC), r1 = Math.floor((p.y + hh) / SEC);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const label = (t, x, y, size, color) => { ctx.font = `900 ${size}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.strokeText(t, x, y); ctx.fillStyle = color; ctx.fillText(t, x, y); };
+  for (let col = c0; col <= c1; col++) for (let row = r0; row <= r1; row++) {
+    const s = secAt((col + 0.5) * SEC, (row + 0.5) * SEC);
+    if (s < 0) continue;
+    const x0 = col * SEC, y0 = row * SEC;
+    if (!accessible(s)) {
+      ctx.globalAlpha = 0.7;
+      label('🔒', x0 + SEC / 2, y0 + SEC / 2 - 40, 70, '#fff');
+      label(`${s + 1}. ${secName(s)}`, x0 + SEC / 2, y0 + SEC / 2 + 40, 36, '#cbd5ff');
+      ctx.globalAlpha = 1;
+      continue;
+    }
+    // walls to the void, glowing barriers to locked sections
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const n = secAt((col + dx + 0.5) * SEC, (row + dy + 0.5) * SEC);
+      if (accessible(n)) continue;
+      const ex = dx === 1 ? x0 + SEC : x0, ey = dy === 1 ? y0 + SEC : y0;
+      ctx.beginPath();
+      if (dy) { ctx.moveTo(x0, ey); ctx.lineTo(x0 + SEC, ey); } else { ctx.moveTo(ex, y0); ctx.lineTo(ex, y0 + SEC); }
+      if (n < 0) { ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 28; ctx.stroke(); ctx.strokeStyle = '#374151'; ctx.lineWidth = 8; ctx.stroke(); }
+      else {
+        ctx.globalAlpha = pulse; ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 16; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 24; ctx.stroke();
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+        const mx = dy ? x0 + SEC / 2 : ex, my = dy ? ey : y0 + SEC / 2;
+        label('🔒 대장 보스를 잡으면 열려요', mx - dx * 40, my - dy * 40, 22, '#e9d5ff');
+      }
+    }
+    // field boss spots
+    fbSpots(s).forEach((pt, k) => {
+      const st = W.fb[s + ':' + k];
+      if (st && st.e) return;
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; circle(pt.x, pt.y, 46); ctx.fill();
+      if (st && st.at > G.time) label(`⏳ ${Math.ceil(st.at - G.time)}s`, pt.x, pt.y, 18, '#cbd5e1');
+      else label('💀', pt.x, pt.y, 34, '#fff');
+    });
+    // leader lair
+    const l = lairSpot(s), done = fbDone(s), ls = W.leader[s];
+    ctx.fillStyle = '#292524'; circle(l.x, l.y, 86); ctx.fill();
+    ctx.strokeStyle = done ? `rgba(239,68,68,${pulse})` : '#57534e'; ctx.lineWidth = 6; ctx.stroke();
+    star(ctx, l.x, l.y, 66, 26, 5); ctx.lineWidth = 3; ctx.stroke();
+    if (!(ls && ls.e)) {
+      const t = !done ? `🔒 봉인 ${bits3(S.world.fb[s] || 0)}/3` : ls && ls.at > G.time ? `⏳ ${Math.ceil(ls.at - G.time)}s` : '👑 대장 보스';
+      label(t, l.x, l.y - 110, 20, done ? '#fca5a5' : '#d6d3d1');
+      label(done ? '👑' : '🗿', l.x, l.y, 40, '#fff');
+    }
+  }
 }
 
 function drawProjectiles() {
@@ -1117,6 +1335,11 @@ function drawEnemy(e) {
     ctx.fillStyle = '#000'; ctx.fillRect(e.x - r, y + r + 6, r * 2, 5);
     ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x - r, y + r + 6, r * 2 * e.hp / e.maxHp, 5);
   }
+  if (e.fb) {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '900 13px sans-serif';
+    ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeText('💀 ' + e.name, e.x, y - r * 1.5 - 8);
+    ctx.fillStyle = '#fdba74'; ctx.fillText('💀 ' + e.name, e.x, y - r * 1.5 - 8);
+  }
 }
 
 function drawHUD() {
@@ -1126,11 +1349,18 @@ function drawHUD() {
   const bx = 12, by = 10, bw = VW - 24;
   ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(bx, by, bw, 16, 8); ctx.fill();
   const gr = ctx.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#22d3ee'); gr.addColorStop(1, '#3b82f6');
-  ctx.fillStyle = gr; rr(bx + 2, by + 2, Math.max(0, (bw - 4) * clamp(p.xp / p.xpNext, 0, 1)), 12, 6); ctx.fill();
-  ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText('Lv.' + p.lv, VW / 2, by + 8.5);
-  ctx.font = '900 26px sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.6)';
-  const tt = G.bossSpawned ? 'BOSS' : fmtTime(G.time);
-  ctx.strokeText(tt, VW / 2, 48); ctx.fillStyle = G.bossSpawned ? '#f87171' : '#fff'; ctx.fillText(tt, VW / 2, 48);
+  const xpk = G.world ? S.cexp / cexpNeed(S.clv) : p.xp / p.xpNext;
+  ctx.fillStyle = gr; rr(bx + 2, by + 2, Math.max(0, (bw - 4) * clamp(xpk, 0, 1)), 12, 6); ctx.fill();
+  ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText('Lv.' + (G.world ? S.clv : p.lv), VW / 2, by + 8.5);
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.6)';
+  if (G.world) {
+    const s = Math.max(0, secAt(p.x, p.y)), t = `${s + 1}. ${secName(s)}`;
+    ctx.font = '900 18px sans-serif'; ctx.strokeText(t, VW / 2, 46); ctx.fillStyle = '#fde68a'; ctx.fillText(t, VW / 2, 46);
+  } else {
+    ctx.font = '900 26px sans-serif';
+    const tt = G.bossSpawned ? 'BOSS' : fmtTime(G.time);
+    ctx.strokeText(tt, VW / 2, 48); ctx.fillStyle = G.bossSpawned ? '#f87171' : '#fff'; ctx.fillText(tt, VW / 2, 48);
+  }
   ctx.textAlign = 'left'; ctx.font = '800 14px sans-serif';
   const txt = (s, x, y) => { ctx.strokeText(s, x, y); ctx.fillStyle = '#fff'; ctx.fillText(s, x, y); };
   ctx.lineWidth = 3;
@@ -1153,7 +1383,19 @@ function drawHUD() {
     ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText(PASSIVES[q.id].icon, x + 13, y);
     ctx.font = '900 9px sans-serif'; ctx.fillText(q.lv, x + 21, y + 10); ctx.font = '18px serif';
   });
+  if (G.world) drawMinimap();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  if (G.world) {
+    const o = worldObjective();
+    if (o && !onScreen(o)) {
+      const a = Math.atan2(o.y - p.y, o.x - p.x), R = Math.min(VW, VH) * 0.38, ax = VW / 2 + Math.cos(a) * R, ay = VH / 2 + Math.sin(a) * R;
+      ctx.save(); ctx.translate(ax, ay);
+      ctx.fillStyle = 'rgba(0,0,0,.5)'; circle(0, 0, 18); ctx.fill();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '18px serif'; ctx.fillText(o.icon, 0, 1);
+      ctx.rotate(a); ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(20, -8); ctx.lineTo(20, 8); ctx.fill();
+      ctx.restore();
+    }
+  }
   if (G.boss && !G.boss.dead) {
     const b = G.boss, w = Math.min(420, VW - 40), x = (VW - w) / 2, y = VH - 60 - SAFE_BOTTOM;
     ctx.fillStyle = 'rgba(0,0,0,.7)'; rr(x, y, w, 18, 9); ctx.fill();
@@ -1181,6 +1423,22 @@ function drawHUD() {
     ctx.globalAlpha = 1 - G.time / 6; ctx.textAlign = 'center'; ctx.font = '800 15px sans-serif'; ctx.fillStyle = '#fff';
     ctx.fillText('화면을 드래그하거나 WASD로 이동', VW / 2, VH - 90); ctx.globalAlpha = 1;
   }
+}
+function drawMinimap() {
+  const p = G.p, rows = secCell(S.world.cleared + 1).row + 1, cs = 22, mw = cs * WORLD_COLS, mh = cs * rows;
+  const x0 = VW - 12 - mw, y0 = 84;
+  ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(x0 - 4, y0 - 4, mw + 8, mh + 8, 8); ctx.fill();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '9px serif';
+  for (let row = 0; row < rows; row++) for (let col = 0; col < WORLD_COLS; col++) {
+    const s = secAt((col + 0.5) * SEC, (row + 0.5) * SEC), x = x0 + col * cs, y = y0 + row * cs;
+    ctx.fillStyle = accessible(s) ? secBiome(s).g1 : '#1f2030'; ctx.fillRect(x + 1, y + 1, cs - 2, cs - 2);
+    if (!accessible(s)) ctx.fillText('🔒', x + cs / 2, y + cs / 2);
+    else if (s < S.world.cleared) { ctx.fillStyle = '#4ade80'; ctx.fillText('✔', x + cs - 6, y + 6); }
+  }
+  const o = worldObjective();
+  if (o) { ctx.fillStyle = '#fde047'; circle(x0 + o.x / SEC * cs, y0 + o.y / SEC * cs, 2.5); ctx.fill(); }
+  ctx.fillStyle = '#fff'; circle(x0 + p.x / SEC * cs, y0 + p.y / SEC * cs, 3); ctx.fill();
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
 }
 let mainIconCache = null;
 function mainIconImg() {
@@ -1271,6 +1529,14 @@ function buildSummary() {
 function pauseGame() {
   if (!G || G.state !== 'play') return;
   G.state = 'modal'; joy.active = false;
+  if (G.world) {
+    const L = G.world.loot, b = showModal(`<h2>⏸ 일시정지</h2><div class="center">🗺️ ${secName(Math.max(0, secAt(G.p.x, G.p.y)))} · 💀${G.kills} · ⏱ ${fmtTime(G.time)}</div>${buildSummary()}
+      <div class="reward"><span>🪙 ${fmt(L.gold)}</span><span>💎 ${fmt(L.gems)}</span><span>🎒 ${L.items.length}</span></div>
+      <div class="row"><button class="btn gray" id="quit">🏕️ 마을로 귀환</button><button class="btn green" id="resume">계속하기</button></div>`);
+    b.querySelector('#resume').onclick = () => { closeModal(); G.state = 'play'; };
+    b.querySelector('#quit').onclick = () => { closeModal(); endWorld(); };
+    return;
+  }
   const box = showModal(`<h2>⏸ 일시정지</h2><div class="center">STAGE ${G.stage} · ${fmtTime(G.time)} · 💀${G.kills}</div>${buildSummary()}
     <div class="row"><button class="btn red" id="quit">포기하기</button><button class="btn green" id="resume">계속하기</button></div>`);
   box.querySelector('#resume').onclick = () => { closeModal(); G.state = 'play'; };
@@ -1289,12 +1555,12 @@ function playerDown() {
     for (const e of G.enemies) {
       if (e.dead) continue;
       const d = Math.hypot(e.x - p.x, e.y - p.y) || 1;
-      if (d < 350) { if (e.boss) { e.x = p.x + (e.x - p.x) / d * 350; e.y = p.y + (e.y - p.y) / d * 350; } else killEnemy(e); }
+      if (d < 350) { if (e.boss || e.home) { e.x = p.x + (e.x - p.x) / d * 350; e.y = p.y + (e.y - p.y) / d * 350; } else killEnemy(e); }
     }
     G.fx.push({ type: 'boom', x: p.x, y: p.y, r: 350, t: 0, life: 0.5 }, { type: 'flash', t: 0, life: 0.4 });
     G.state = 'play';
   };
-  box.querySelector('#giveup').onclick = () => { closeModal(); endRun(false); };
+  box.querySelector('#giveup').onclick = () => { closeModal(); G.world ? endWorld() : endRun(false); };
 }
 
 function endRun(win) {

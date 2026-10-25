@@ -82,12 +82,45 @@ function tryStart(stage) {
 // ============================================================
 //  BATTLE
 // ============================================================
+let battleMode = 'world', selSec = null;
+const modesHTML = () => `<div class="subtabs"><button data-m="world" class="${battleMode === 'world' ? 'on' : ''}">🗺️ 모험 (오픈월드)</button><button data-m="stage" class="${battleMode === 'stage' ? 'on' : ''}">⚔️ 스테이지</button></div>`;
+const wireModes = pg => pg.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { battleMode = b.dataset.m; renderLobby(); });
+const skillIcon = id => S.skills[id] && S.skills[id].evo ? WEAPONS[id].evoIcon : WEAPONS[id].icon;
+function pageWorld(pg) {
+  const m = metaStats(), cl = S.world.cleared;
+  if (selSec == null || selSec > cl) selSec = cl;
+  const rows = secCell(cl + 1).row + 1;
+  let cells = '';
+  for (let row = 0; row < rows; row++) for (let col = 0; col < WORLD_COLS; col++) {
+    const s = secAt((col + 0.5) * SEC, (row + 0.5) * SEC), b = secBiome(s), acc = s <= cl;
+    cells += `<button class="wcell ${acc ? '' : 'locked'} ${s === selSec ? 'sel' : ''}" data-s="${s}" style="--a:${b.g1};--b:${b.deco}" ${acc ? '' : 'disabled'}>
+      <span class="wn">${s + 1}</span><span class="we">${acc ? b.emoji : '🔒'}</span><span class="ws">${s < cl ? '✅' : acc ? `💀${bits3(S.world.fb[s] || 0)}/3` : ''}</span></button>`;
+  }
+  const s = selSec, cnt = bits3(S.world.fb[s] || 0);
+  const w = getItem(S.equip.weapon);
+  pg.innerHTML = `${modesHTML()}
+    <div class="power">⚔️ 전투력 <b>${fmt(m.power)}</b> <span class="clv">Lv.${S.clv}</span></div>
+    <div class="herobox"><canvas class="preview"></canvas>
+      <div class="heroline"><b style="color:${HRAR[HERO[S.hero].r].c}">${HERO[S.hero].name}</b> · ${w ? `<b style="color:${GRADES[w.g].c}">${itemName(w)}</b>` : '👊 맨주먹'}
+        <div class="skillrow">${S.skillSlots.map(id => `<span>${skillIcon(id)}</span>`).join('') || '<small>장착 스킬 없음</small>'}<button class="btn gray mini" id="toSkills">스킬 관리</button></div></div></div>
+    <h3>🗺️ 월드 맵 <small>정복 ${cl}지역 · 지역을 골라 출발</small></h3>
+    <div class="worldmap">${cells}</div>
+    <div class="secinfo"><b>${s + 1}. ${secName(s)}</b> ${s < cl ? '<span class="tag">정복</span>' : '<span class="tag up">진행 중</span>'}<br>
+      💀 필드 보스 <b>${cnt}/3</b> · 👑 대장: <b>${(s >= BOSSES.length ? '지옥의 ' : '') + BOSSES[s % BOSSES.length]}</b><br>
+      <small>필드 보스 3마리를 잡으면 대장 보스의 봉인이 풀리고, 대장을 잡으면 다음 지역이 열려요. 장비는 보스들이 떨어뜨려요.</small></div>
+    <button class="btn gold big" id="go">🗺️ 모험 떠나기 <small>(에너지 무료)</small></button>`;
+  wireModes(pg);
+  pg.querySelectorAll('.wcell').forEach(c => c.onclick = () => { selSec = +c.dataset.s; renderLobby(); });
+  pg.querySelector('#toSkills').onclick = () => { tab = 'grow'; growTab = 'skill'; renderLobby(); $('#page').scrollTop = 0; };
+  pg.querySelector('#go').onclick = () => startWorld(selSec);
+}
 function pageBattle(pg) {
+  if (battleMode === 'world') return pageWorld(pg);
   const maxSel = S.cleared + 1;
   selStage = clamp(selStage, 1, maxSel);
   const st = STAGES[(selStage - 1) % STAGES.length], m = metaStats(), lap = Math.floor((selStage - 1) / STAGES.length);
   const w = getItem(S.equip.weapon), W = w ? WT[w.wt] : FIST;
-  pg.innerHTML = `
+  pg.innerHTML = `${modesHTML()}
     <div class="power">⚔️ 전투력 <b>${fmt(m.power)}</b> <span class="clv">Lv.${S.clv}</span></div>
     <div class="herobox"><canvas class="preview"></canvas>
       <div class="heroline"><b style="color:${HRAR[HERO[S.hero].r].c}">${HERO[S.hero].name}</b> · ${w ? `<b style="color:${GRADES[w.g].c}">${itemName(w)}</b>` : '👊 맨주먹'}${S.pet ? ` · ${PET[S.pet].name}` : ''}<br><small>${W.desc}</small></div></div>
@@ -105,6 +138,7 @@ function pageBattle(pg) {
     <div class="tips">💡 레벨업 스킬을 <b>최대 레벨(${MAX_WLV})</b>까지 올리고 짝이 되는 보조 아이템이 있으면 <b>⚗️ 스킬 믹스</b>로 진화!
       <div class="mix">${Object.values(WEAPONS).map(x => `<div>${x.icon} + ${PASSIVES[x.pair].icon} = ${x.evoIcon}<b>${x.evo}</b></div>`).join('')}</div>
     </div>`;
+  wireModes(pg);
   pg.querySelector('#sPrev').onclick = () => { selStage--; renderLobby(); };
   pg.querySelector('#sNext').onclick = () => { selStage++; renderLobby(); };
   pg.querySelector('#startBtn').onclick = () => tryStart(selStage);
@@ -303,11 +337,36 @@ function petGacha(n) {
 //  GROWTH: stats / character / relics
 // ============================================================
 function pageGrow(pg) {
-  const tabs = `<div class="subtabs">${[['stats', '📈 스탯'], ['char', '🧍 캐릭터'], ['relic', '🏺 유물']].map(([id, n]) => `<button data-g="${id}" class="${growTab === id ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  const tabs = `<div class="subtabs">${[['stats', '📈 스탯'], ['skill', '⚡ 스킬'], ['char', '🧍 레벨'], ['relic', '🏺 유물']].map(([id, n]) => `<button data-g="${id}" class="${growTab === id ? 'on' : ''}">${n}</button>`).join('')}</div>`;
   pg.innerHTML = tabs + `<div class="power">⚔️ 전투력 <b>${fmt(metaStats().power)}</b></div><div id="growBody"></div>`;
   pg.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { growTab = b.dataset.g; renderLobby(); });
   const gb = pg.querySelector('#growBody');
-  ({ stats: growStats, char: growChar, relic: growRelic })[growTab](gb);
+  ({ stats: growStats, skill: growSkills, char: growChar, relic: growRelic })[growTab](gb);
+}
+function growSkills(el) {
+  const slots = S.skillSlots;
+  el.innerHTML = `<div class="tips">🗺️ <b>모험(오픈월드)</b>에서 쓰는 스킬이에요. 최대 ${MAX_SKILL_SLOTS}개 장착. Lv.${MAX_WLV}에서 <b>⚗️ 진화</b>할 수 있어요.<br><small>스테이지 모드는 기존처럼 레벨업 카드로 스킬을 얻어요.</small></div>
+    <div class="slotsbar">${Array.from({ length: MAX_SKILL_SLOTS }, (_, i) => `<div class="sslot">${slots[i] ? skillIcon(slots[i]) : '＋'}</div>`).join('')}</div>` +
+    Object.entries(WEAPONS).map(([id, d]) => {
+      const st = S.skills[id], eq = slots.includes(id);
+      let btns;
+      if (!st) btns = `<button class="btn" data-unlock="${id}">해금 💎${fmt(SKILL_UNLOCK)}</button>`;
+      else if (!st.evo && st.lv < MAX_WLV) btns = `<button class="btn gold" data-up="${id}">Lv↑ 🪙${fmt(skillLvCost(st.lv))}</button>`;
+      else if (!st.evo) btns = `<button class="btn purple" data-evo="${id}">⚗️ 진화 💎${fmt(SKILL_EVO_COST)}</button>`;
+      else btns = '<button class="btn gray" disabled>MAX</button>';
+      if (st) btns += `<button class="btn ${eq ? 'gray' : 'green'}" data-eq="${id}">${eq ? '해제' : '장착'}</button>`;
+      return `<div class="tal"><div class="ti">${st ? skillIcon(id) : '🔒'}</div><div class="tn"><b>${st && st.evo ? d.evo : d.name} <small>${st ? (st.evo ? '진화 완료' : `Lv.${st.lv}/${MAX_WLV}`) : '미해금'}</small></b><span>${st && st.evo ? d.evoInfo : d.info}</span></div><div class="tb">${btns}</div></div>`;
+    }).join('');
+  el.querySelectorAll('[data-unlock]').forEach(b => b.onclick = () => { if (!spend('gems', SKILL_UNLOCK)) return; S.skills[b.dataset.unlock] = { lv: 1, evo: false }; save(); toast(`⚡ ${WEAPONS[b.dataset.unlock].name} 해금!`); renderLobby(); });
+  el.querySelectorAll('[data-up]').forEach(b => b.onclick = () => { const st = S.skills[b.dataset.up]; if (!spend('gold', skillLvCost(st.lv))) return; st.lv++; save(); renderLobby(); });
+  el.querySelectorAll('[data-evo]').forEach(b => b.onclick = () => { const id = b.dataset.evo; if (!spend('gems', SKILL_EVO_COST)) return; S.skills[id].evo = true; save(); toast(`⚗️ ${WEAPONS[id].evo} 진화 완료!`); renderLobby(); });
+  el.querySelectorAll('[data-eq]').forEach(b => b.onclick = () => {
+    const id = b.dataset.eq, i = slots.indexOf(id);
+    if (i >= 0) slots.splice(i, 1);
+    else if (slots.length >= MAX_SKILL_SLOTS) { toast(`스킬은 최대 ${MAX_SKILL_SLOTS}개까지 장착할 수 있어요`); return; }
+    else slots.push(id);
+    save(); renderLobby();
+  });
 }
 function growStats(el) {
   const fmtS = (d, lv) => d.pct ? `+${+(lv * d.per * 100).toFixed(1)}%` : `+${+(lv * d.per).toFixed(1)}${d.suf || ''}`;

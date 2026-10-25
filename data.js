@@ -185,3 +185,35 @@ const relicCost = lv => Math.floor(300 * Math.pow(lv, 1.5));
 
 // ---------- character level ----------
 const cexpNeed = lv => Math.floor(100 * Math.pow(lv, 1.35));
+
+// ---------- open world ----------
+// Sections are square regions laid out in a snake path, 4 per row:
+//  0 1 2 3
+//  7 6 5 4
+//  8 9 ...
+// Killing a section's leader boss opens the next section.
+const SEC = 1800, WORLD_COLS = 4;
+const secCell = i => { const row = Math.floor(i / WORLD_COLS), k = i % WORLD_COLS; return { col: row % 2 ? WORLD_COLS - 1 - k : k, row }; };
+const secCenter = i => { const c = secCell(i); return { x: (c.col + 0.5) * SEC, y: (c.row + 0.5) * SEC }; };
+function secAt(x, y) {
+  const col = Math.floor(x / SEC), row = Math.floor(y / SEC);
+  if (col < 0 || col >= WORLD_COLS || row < 0) return -1;
+  return row * WORLD_COLS + (row % 2 ? WORLD_COLS - 1 - col : col);
+}
+const secBiome = i => STAGES[i % STAGES.length];
+const secName = i => (i >= STAGES.length ? `지옥${Math.floor(i / STAGES.length)} ` : '') + secBiome(i).name;
+const FB_NAMES = ['수호자', '파수꾼', '사냥꾼'];
+const FB_RESPAWN = 90, LEADER_RESPAWN = 180;
+const bits3 = n => (n & 1) + ((n >> 1) & 1) + ((n >> 2) & 1);
+function fbSpots(i) {
+  const c = secCenter(i), r0 = ((i * 2654435761) % 1000) / 1000 * Math.PI * 2;
+  return [0, 1, 2].map(k => ({ x: c.x + Math.cos(r0 + k * Math.PI * 2 / 3) * 580, y: c.y + Math.sin(r0 + k * Math.PI * 2 / 3) * 580 }));
+}
+function lairSpot(i) {
+  const c = secCenter(i), r0 = ((i * 2654435761) % 1000) / 1000 * Math.PI * 2 + Math.PI / 3;
+  return { x: c.x + Math.cos(r0) * 400, y: c.y + Math.sin(r0) * 400 };
+}
+
+// ---------- permanent skills (used in open world instead of level-up cards) ----------
+const SKILL_UNLOCK = 500, SKILL_EVO_COST = 3000, MAX_SKILL_SLOTS = 3;
+const skillLvCost = lv => Math.floor(1500 * lv * lv);
