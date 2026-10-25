@@ -208,17 +208,17 @@ function shopSummon(el) {
   const row = (icon, name, desc, kind, costs, rates) => `<div class="sitem wide sum"><div class="sumtop"><div class="si">${icon}</div><div class="info"><div class="sn">${name}</div><div class="sd">${desc}</div></div></div>
     <div class="sbtns">${[0, 1, 10, 30].map(n => `<button class="btn ${n === 0 ? 'green' : n === 30 ? 'purple' : ''}" data-sum="${kind}" data-n="${n}">${n === 0 ? '무료' : n + '회'}<br><small>${n === 0 ? '광고 X' : '💎' + fmt(costs[n])}</small></button>`).join('')}</div>
     <div class="rates">${rates}</div></div>`;
-  const gsum = GACHA_W.reduce((a, b) => a + b, 0);
+  const rates = (names, w) => names.map((r, i) => `<span style="color:${r.c}">${r.n} ${pctOf(w, i)}%</span>`).join(' ');
   el.innerHTML = `<h3>📦 소환 & 뽑기</h3><div class="sgrid">
-    ${row('📦', '장비 상자', '10회 이상 B등급 1개 확정', 'equip', PULL_COST, GRADES.slice(0, 8).map((g, i) => `<span style="color:${g.c}">${g.n} ${+(GACHA_W[i] / gsum * 100).toFixed(2)}%</span>`).join(' '))}
-    <div class="sitem wide sum lucky"><div class="sumtop"><div class="si">🍀</div><div class="info"><div class="sn">확률 UP 행운 상자 <span class="badge">SSS 확정</span></div><div class="sd">높은 등급 확률 대폭 증가 · 10회 시 SSS 1개 확정</div></div></div>
+    ${row('📦', '장비 상자', '10회 이상 C등급 1개 확정 · 에픽·전설은 합성으로만', 'equip', PULL_COST, rates(GRADES.slice(0, 8), GACHA_W))}
+    <div class="sitem wide sum lucky"><div class="sumtop"><div class="si">🍀</div><div class="info"><div class="sn">확률 UP 행운 상자 <span class="badge">A 이상 확정</span></div><div class="sd">B 이상 확률 3배 이상 · 10회 시 A등급 이상 1개 확정</div></div></div>
       <div class="sbtns"><button class="btn purple" id="lucky">10회<br><small>💎5,000</small></button></div></div>
-    ${row('🦸', '영웅 소환', '중복 시 조각 → 승급 재료', 'hero', PULL_COST, HRAR.map((r, i) => `<span style="color:${r.c}">${r.n} ${HERO_GACHA_W[i]}%</span>`).join(' '))}
-    ${row('🥚', '펫 알', '중복 시 조각 → 승급 재료', 'pet', PET_COST, PRAR.map((r, i) => `<span style="color:${r.c}">${r.n} ${PET_GACHA_W[i]}%</span>`).join(' '))}
-    ${row('🏺', '유물 상자', '중복 시 유물 레벨 +1', 'relic', RELIC_COST, PRAR.map((r, i) => `<span style="color:${r.c}">${r.n} ${RELIC_W[i]}%</span>`).join(' '))}
+    ${row('🦸', '영웅 소환', '중복 시 조각 → 승급 재료', 'hero', PULL_COST, rates(HRAR, HERO_GACHA_W))}
+    ${row('🥚', '펫 알', '중복 시 조각 → 승급 재료', 'pet', PET_COST, rates(PRAR, PET_GACHA_W))}
+    ${row('🏺', '유물 상자', '중복 시 유물 레벨 +1', 'relic', RELIC_COST, rates(PRAR, RELIC_W))}
   </div>`;
   el.querySelectorAll('[data-sum]').forEach(b => b.onclick = () => ({ equip: gacha, hero: heroGacha, pet: petGacha, relic: relicGacha })[b.dataset.sum](+b.dataset.n));
-  el.querySelector('#lucky').onclick = () => gacha(10, { cost: 5000, luck: 25, min: 7 });
+  el.querySelector('#lucky').onclick = () => gacha(10, { cost: 5000, luck: 15, min: 4 });
 }
 function pageShop(pg) {
   pg.innerHTML = `<div class="shoptabs">${SHOP_TABS.map(([id, n]) => `<button data-st="${id}" class="${shopTab === id ? 'on' : ''}">${n}</button>`).join('')}</div><div id="shopBody"></div>
@@ -249,7 +249,7 @@ function gacha(n, opt = {}) {
   if (!spend('gems', opt.cost != null ? opt.cost : PULL_COST[n])) return;
   const got = [];
   for (let i = 0; i < Math.max(1, n); i++) got.push(newItem(rollGrade(opt.luck || 0)));
-  const min = opt.min != null ? opt.min : 3;
+  const min = opt.min != null ? opt.min : 2;
   if (n >= 10 && !got.some(i => i.g >= min)) got[got.length - 1].g = min;
   save(); refreshTop();
   const best = Math.max(...got.map(i => i.g));

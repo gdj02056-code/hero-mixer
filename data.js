@@ -46,7 +46,9 @@ const MAX_GRADE = GRADES.length - 1;
 // image file suffix per grade: assets/weapons/sword_EPIC.png
 ['F', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'EPIC', 'LEGEND'].forEach((code, i) => { GRADES[i].code = code; });
 // 에픽·전설은 뽑기로 안 나옴 → 합성으로만 획득
-const GACHA_W = [420, 300, 160, 75, 32, 10, 2.5, 0.5, 0, 0];
+// gacha weights are in units of 0.01% (each list sums to 10000)
+const GACHA_W = [5200, 3000, 1200, 450, 120, 25, 4, 1, 0, 0];
+const pctOf = (w, i) => +(w[i] / w.reduce((a, b) => a + b, 0) * 100).toFixed(2);
 
 // ---------- weapon types: the equipped weapon is your main attack ----------
 const WT = {
@@ -125,7 +127,7 @@ const HRAR = [
   { n: 'SSR', c: '#fbbf24' },
   { n: 'UR', c: '#f43f5e' },
 ];
-const HERO_GACHA_W = [60, 28, 10, 2];
+const HERO_GACHA_W = [7500, 2200, 299, 1];
 const HEROES = [
   { id: 'knight', name: '견습 기사', r: 0, wt: 'sword', look: { hair: '#f59e0b', body: '#2563eb', cape: '#dc2626', skin: '#fde4c8' }, bonus: { hpPct: 0.05, def: 5 } },
   { id: 'archer', name: '숲의 궁수', r: 0, wt: 'bow', look: { hair: '#65a30d', body: '#166534', cape: '#a16207', skin: '#fde4c8', hood: '#15803d' }, bonus: { aspd: 0.1 } },
@@ -182,7 +184,7 @@ const PRAR = [
   { n: '영웅', c: '#a78bfa', m: 2.2 },
   { n: '전설', c: '#fbbf24', m: 3.2 },
 ];
-const PET_GACHA_W = [55, 30, 12, 3];
+const PET_GACHA_W = [7000, 2500, 499, 1];
 // base = body drawing, kind = how it fights, c = colors
 const PETS = [
   { id: 'slime', name: '말랑 슬라임', r: 0, base: 'slime', kind: 'goo', c: ['#4ade80', '#bbf7d0'], desc: '끈적한 점액탄으로 적을 느리게' },
@@ -230,7 +232,7 @@ const RELICS = [
   { id: 'heart', name: '불사조의 심장', icon: '❤️‍🔥', key: 'regen', per: 0.3, r: 3 },
   { id: 'crown', name: '왕의 왕관', icon: '👑', key: 'atkPct', per: 0.05, r: 3 },
 ];
-const RELIC_W = [60, 28, 10, 2];
+const RELIC_W = [7000, 2500, 499, 1];
 const RELIC_MAX = 50;
 const relicCost = lv => Math.floor(300 * Math.pow(lv, 1.5));
 

@@ -275,7 +275,7 @@ function pageHero(pg) {
     <div class="hgrid">${HEROES.filter(x => heroFilter === 'all' || x.r === heroFilter).map(x => heroTile(x.id, `${S.heroes[x.id] ? `<span class="lv">Lv${S.heroes[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.hero === x.id ? '<span class="eq">사용</span>' : ''}`)).join('')}</div>
     <h3>✨ 영웅 소환</h3>
     <div class="row"><button class="btn green" data-hs="0">무료 1회</button><button class="btn" data-hs="1">1회 💎300</button><button class="btn purple" data-hs="10">10회 💎2,700</button></div>
-    <div class="gradebar">${HRAR.map((r, i) => `<span style="color:${r.c}">${r.n} ${HERO_GACHA_W[i]}%</span>`).join(' · ')}</div>`;
+    <div class="gradebar">${HRAR.map((r, i) => `<span style="color:${r.c}">${r.n} ${pctOf(HERO_GACHA_W, i)}%</span>`).join(' · ')}</div>`;
   pg.querySelectorAll('.htile').forEach(t => t.classList.toggle('locked', !S.heroes[t.dataset.hero]));
   pg.querySelectorAll('.htile').forEach(t => t.onclick = () => { viewHero = t.dataset.hero; renderLobby(); });
   pg.querySelectorAll('[data-hs]').forEach(b => b.onclick = () => heroGacha(+b.dataset.hs));
