@@ -204,7 +204,7 @@ function startRun(stage, world = false) {
     state: 'play', stage, time: 0, kills: 0, gold: 0, p,
     enemies: [], proj: [], ebul: [], gems: [], items: [], fx: [], texts: [], later: [],
     spawnT: 0, eliteNext: 60, waves: [45, 105, 150], bossSpawned: false, boss: null, nextEid: 1,
-    pendingLv: 0, shake: 0, banner: null, winT: -1, revives: 0,
+    pendingLv: 0, shake: 0, banner: null, winT: -1, revives: 0, hazards: [],
     pet: S.pet && S.pets[S.pet] ? { id: S.pet, x: -30, y: -20, t: 0, cd: 1, healT: 5, mode: 'follow', face: 1, dmg: petDmg(m, S.pet) } : null,
   };
   pStat();
@@ -309,7 +309,7 @@ function fieldBossDown(e) {
 function leaderDown(e) {
   const s = e.leader;
   G.world.leader[s] = { e: null, at: G.time + LEADER_RESPAWN };
-  G.boss = null;
+  G.boss = null; G.hazards = [];
   worldLoot(300 * (s + 1), 100 + s * 30, [rollGrade(s + 3), rollGrade(s + 3), rollGrade(s + 3)]);
   addShake(14);
   for (const o of G.enemies) if (!o.dead && !o.home && Math.hypot(o.x - e.x, o.y - e.y) < 600) { o.dead = true; dropGem(o.x, o.y, o.xp); }
@@ -472,7 +472,7 @@ function updateSpawner(dt) {
     addShake(10);
   }
 }
-function shootAt(e, a, spd, dmg) { G.ebul.push({ x: e.x, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, r: 7, dmg, life: 5 }); }
+function shootAt(e, a, spd, dmg, extra) { G.ebul.push(Object.assign({ x: e.x, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, r: 7, dmg, life: 5 }, extra)); }
 function updateEnemies(dt) {
   const p = G.p;
   buildGrid();
@@ -483,19 +483,7 @@ function updateEnemies(dt) {
     let spd = e.spd * (e.slowUntil > G.time ? 0.5 : 1), dir = 1;
     if (e.stunUntil > G.time && !e.boss) spd = 0;
     if (e.boss) {
-      e.phaseT -= dt;
-      if (e.dashT > 0) { e.dashT -= dt; e.x += e.dvx * dt; e.y += e.dvy * dt; spd = 0; }
-      else if (e.windT > 0) {
-        e.windT -= dt; spd = 0;
-        if (e.windT <= 0) { e.dashT = 0.55; const a = Math.atan2(dy, dx); e.dvx = Math.cos(a) * 560; e.dvy = Math.sin(a) * 560; }
-      }
-      if (e.phaseT <= 0 && e.dashT <= 0 && e.windT <= 0) {
-        e.pat++;
-        if (e.pat % 3 === 0) e.windT = 0.8;
-        else if (e.pat % 3 === 1) { e.castT = 0.45; const n = 14 + Math.min(10, e.lvl); const off = Math.random(); for (let i = 0; i < n; i++) shootAt(e, (i + off) / n * TAU, 190, e.dmg * 0.6); }
-        else { e.castT = 0.45; for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; spawnEnemy('bat', e.x + Math.cos(a) * 80, e.y + Math.sin(a) * 80); } const a = Math.atan2(dy, dx); for (let i = -2; i <= 2; i++) shootAt(e, a + i * 0.18, 260, e.dmg * 0.6); }
-        e.phaseT = 2.4;
-      }
+      spd = bossUpdate(e, dt, dx, dy, spd);
     } else if (e.ranged) {
       if (d < 200) dir = -0.6; else if (d < 320) dir = 0;
       e.shootT -= dt;
@@ -534,7 +522,7 @@ function updateEnemies(dt) {
         if (pos) { e.x = pos[0]; e.y = pos[1]; } else e.dead = true;
       }
     }
-    if (d < e.r + p.r - 3) hurtPlayer(e.dmg);
+    if (d < e.r + p.r - 3 && !e.airborne) hurtPlayer(e.dmg);
   }
 }
 function hitEnemy(e, dmg, kx = 0, ky = 0) {
@@ -554,7 +542,7 @@ function killEnemy(e) {
   if (e.leader !== undefined) { leaderDown(e); return; }
   if (e.fb) { fieldBossDown(e); return; }
   if (e.boss) {
-    G.boss = null; G.winT = 2;
+    G.boss = null; G.winT = 2; G.hazards = [];
     for (let i = 0; i < 25; i++) G.items.push({ type: 'gold', x: e.x + rand(-90, 90), y: e.y + rand(-90, 90), v: 10 * G.stage });
     showBanner('🏆 보스 처치!', '#fde047'); addShake(14);
     for (const o of G.enemies) if (!o.dead) { o.dead = true; dropGem(o.x, o.y, o.xp); }
@@ -596,7 +584,8 @@ function updatePlayer(dt) {
     if (jl > 6) { mx = jx / jl; my = jy / jl; mag = clamp(jl / 45, 0, 1); }
   }
   if (mag > 0) {
-    let nx = p.x + mx * p.spd * mag * dt, ny = p.y + my * p.spd * mag * dt;
+    const slow = p.slowUntil > G.time ? 0.55 : 1;
+    let nx = p.x + mx * p.spd * slow * mag * dt, ny = p.y + my * p.spd * slow * mag * dt;
     if (G.world) { if (!accessible(secAt(nx, p.y))) nx = p.x; if (!accessible(secAt(nx, ny))) ny = p.y; }
     p.x = nx; p.y = ny; p.fx = mx; p.fy = my; p.walk += dt * 12 * mag;
     if (p.anim <= 0) { p.aim = Math.atan2(my, mx); if (Math.abs(mx) > 0.2) p.face = Math.sign(mx); }
@@ -985,6 +974,7 @@ function updateProj(dt) {
 function updateEbul(dt) {
   const p = G.p;
   for (const b of G.ebul) {
+    if (b.home) steer(b, p, b.home, dt); // homing orbs turn toward the player
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
     if ((b.x - p.x) ** 2 + (b.y - p.y) ** 2 < (b.r + p.r - 4) ** 2) { hurtPlayer(b.dmg); b.life = 0; }
   }
@@ -1048,6 +1038,7 @@ function update(dt) {
   updatePet(dt);
   updateProj(dt);
   updateEbul(dt);
+  updateHazards(dt);
   updatePickups(dt);
   updateFx(dt);
   G.enemies = G.enemies.filter(e => !e.dead);
@@ -1098,6 +1089,7 @@ function render() {
     if (locked) { ctx.fillStyle = 'rgba(5,6,13,.72)'; ctx.fillRect(i * T, j * T, T, T); }
   }
   if (G.world) drawWorldFeatures(hw, hh);
+  drawHazards();
 
   // aura skill
   for (const w of p.weapons) if (w.id === 'aura') {
@@ -1167,8 +1159,8 @@ function render() {
   drawProjectiles();
   // enemy bullets
   for (const b of G.ebul) {
-    ctx.fillStyle = 'rgba(239,68,68,.35)'; circle(b.x, b.y, b.r + 4); ctx.fill();
-    ctx.fillStyle = '#fca5a5'; circle(b.x, b.y, b.r); ctx.fill();
+    ctx.globalAlpha = 0.4; ctx.fillStyle = b.color || '#ef4444'; circle(b.x, b.y, b.r + 4); ctx.fill();
+    ctx.globalAlpha = 1; ctx.fillStyle = b.color ? '#fff' : '#fca5a5'; circle(b.x, b.y, b.r * (b.color ? 0.55 : 1)); ctx.fill();
   }
   drawFx();
   // damage numbers
@@ -1409,6 +1401,7 @@ function enemyPose(e) {
   const P = { dx: 0, dy: 0, rot: 0, sx: 1, sy: 1, glow: 0, glowColor: '' };
   if (e.hitT > 0) { const k = e.hitT / 0.12; P.sx += 0.14 * k; P.sy -= 0.12 * k; }
   if (e.boss) {
+    if (e.jumpH) { P.dy -= e.jumpH; P.sy += 0.1; }
     if (e.windT > 0) { const k = Math.min(1, (0.8 - e.windT) / 0.5); P.sy -= 0.16 * k; P.sx += 0.12 * k; P.rot = -0.08 * k; P.glow = k; P.glowColor = 'rgba(239,68,68,A)'; }
     else if (e.dashT > 0) { P.sx += 0.18; P.sy -= 0.1; P.rot = 0.15; }
     if (e.castT > 0) { const k = Math.sin(e.castT / 0.45 * Math.PI); P.sx += 0.1 * k; P.sy += 0.1 * k; P.dy -= 6 * k; P.glow = Math.max(P.glow, k); P.glowColor = P.glowColor || 'rgba(192,132,252,A)'; }
@@ -1450,6 +1443,7 @@ function drawEnemy(e) {
   // attack pose: step toward the player, hop, lean and squash around the feet
   const pd = Math.hypot(p.x - e.x, p.y - e.y) || 1, ux = (p.x - e.x) / pd, uy = (p.y - e.y) / pd, P = enemyPose(e);
   ctx.save();
+  if (e.fadeT > 0) ctx.globalAlpha = e.fadeT / 0.5; // shadow strike: fade out before reappearing
   ctx.translate(P.dx * ux, P.dx * uy * 0.6 + P.dy);
   ctx.translate(e.x, e.y + r * 0.85); ctx.rotate(P.rot * (ux >= 0 ? 1 : -1)); ctx.scale(P.sx, P.sy); ctx.translate(-e.x, -(e.y + r * 0.85));
   if (P.glow) {
@@ -1500,6 +1494,12 @@ function drawEnemy(e) {
     ctx.lineTo(e.x + r * 0.6, y - r * 0.75); ctx.fill();
   }
   ctx.restore();
+  if (e.skillLabel) {
+    const ly = e.y - r * 2.2 - (e.jumpH || 0);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '900 16px sans-serif';
+    ctx.globalAlpha = Math.min(1, e.skillLabel.t * 3); ctx.lineWidth = 4; ctx.strokeStyle = '#000';
+    ctx.strokeText('⚠️ ' + e.skillLabel.txt, e.x, ly); ctx.fillStyle = '#fca5a5'; ctx.fillText('⚠️ ' + e.skillLabel.txt, e.x, ly); ctx.globalAlpha = 1;
+  }
   if (e.elite && e.hp < e.maxHp) {
     ctx.fillStyle = '#000'; ctx.fillRect(e.x - r, y + r + 6, r * 2, 5);
     ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x - r, y + r + 6, r * 2 * e.hp / e.maxHp, 5);
@@ -1720,7 +1720,7 @@ function playerDown() {
     <div class="row"><button class="btn gray" id="giveup">포기</button><button class="btn gold" id="rev">💖 무료 부활</button></div>`);
   box.querySelector('#rev').onclick = () => {
     closeModal(); G.revives++;
-    const p = G.p; p.hp = p.maxHp; p.inv = 2.5; G.ebul = [];
+    const p = G.p; p.hp = p.maxHp; p.inv = 2.5; G.ebul = []; G.hazards = [];
     for (const e of G.enemies) {
       if (e.dead) continue;
       const d = Math.hypot(e.x - p.x, e.y - p.y) || 1;

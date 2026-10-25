@@ -1,6 +1,6 @@
 // Offline cache: serve from cache instantly, refresh it in the background so the next launch gets updates.
-const CACHE = 'heromixer-v5';
-const FILES = ['./', 'index.html', 'style.css', 'imglist.js', 'data.js', 'art.js', 'game.js', 'shop.js', 'ui.js', 'manifest.webmanifest',
+const CACHE = 'heromixer-v6';
+const FILES = ['./', 'index.html', 'style.css', 'imglist.js', 'data.js', 'art.js', 'game.js', 'boss.js', 'shop.js', 'ui.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-192.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
