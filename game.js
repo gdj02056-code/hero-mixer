@@ -130,6 +130,8 @@ function metaStats() {
     m.atk += (hs.lv - 1) * 2; m.hp += (hs.lv - 1) * 12;
   }
   for (const r of RELICS) m[r.key] += (S.relics[r.id] || 0) * r.per;
+  const vip = vipLevel(S.spent);
+  m.goldGain += vip * 0.05 + (S.goldBoost ? 1 : 0); m.exp += vip * 0.03;
   m.spd = Math.min(m.spd, 1.2); m.crit = Math.min(m.crit, 1);
   m.atkTotal = m.atk * (1 + m.atkPct);
   m.hpTotal = m.hp * (1 + m.hpPct);
@@ -563,7 +565,7 @@ function hurtPlayer(dmg) {
   if (p.inv > 0 || G.state !== 'play') return;
   dmg *= (1 - p.dr);
   p.hp -= dmg; p.inv = 0.5; addShake(5);
-  if (navigator.vibrate) navigator.vibrate(25);
+  if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate(25);
   G.texts.push({ x: p.x, y: p.y - 24, txt: '-' + Math.round(dmg), color: '#f87171', big: true, t: 0 });
   if (p.hp <= 0) { p.hp = 0; playerDown(); }
 }
@@ -781,6 +783,7 @@ function petShot(q, style, a, dmg, extra) {
 function updatePet(dt) {
   const q = G.pet, p = G.p;
   if (!q) return;
+  const P = PET[q.id], melee = P.kind === 'scratch' || P.kind === 'coin';
   q.t += dt; q.cd -= dt;
   const ox = q.x;
   if (q.mode === 'dive') {
@@ -793,26 +796,74 @@ function updatePet(dt) {
     }
   } else {
     let tx = p.x - p.face * 34, ty = p.y - 18, k = 4;
-    if (q.id === 'cat') { const e = nearestEnemy(p.x, p.y, 170); if (e) { tx = e.x - Math.sign(e.x - p.x) * 14; ty = e.y; k = 7; } }
+    if (melee) { const e = nearestEnemy(p.x, p.y, 170); if (e) { tx = e.x - Math.sign(e.x - p.x) * 14; ty = e.y; k = 7; } }
     q.x += (tx - q.x) * Math.min(1, dt * k); q.y += (ty - q.y) * Math.min(1, dt * k);
     if (q.mode === 'back' && Math.hypot(tx - q.x, ty - q.y) < 30) q.mode = 'follow';
   }
   if (Math.abs(q.x - ox) > 0.3) q.face = q.x > ox ? 1 : -1;
-  if (q.id === 'fairy') {
+  if (P.kind === 'heal' || P.kind === 'phoenix') {
     q.healT -= dt;
-    if (q.healT <= 0) { q.healT = 5; p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.06); G.texts.push({ x: p.x, y: p.y - 34, txt: '+HP', color: '#4ade80', big: true, t: 0 }); G.fx.push({ type: 'heal', x: p.x, y: p.y, t: 0, life: 0.6 }); }
+    if (q.healT <= 0) {
+      q.healT = P.kind === 'heal' ? 5 : 6;
+      p.hp = Math.min(p.maxHp, p.hp + p.maxHp * (P.kind === 'heal' ? 0.06 : 0.05));
+      G.texts.push({ x: p.x, y: p.y - 34, txt: '+HP', color: '#4ade80', big: true, t: 0 }); G.fx.push({ type: 'heal', x: p.x, y: p.y, t: 0, life: 0.6 });
+    }
+  }
+  if (P.kind === 'coin' || P.crown) {
+    q.coinT = (q.coinT == null ? 4 : q.coinT) - dt;
+    if (q.coinT <= 0) { q.coinT = 4; G.items.push({ type: 'gold', x: q.x, y: q.y, v: 3 + (G.world ? Math.max(0, secAt(p.x, p.y)) : G.stage) * 2 }); }
   }
   if (q.cd > 0 || q.mode !== 'follow') return;
-  const e = nearestEnemy(q.x, q.y, q.id === 'cat' ? 40 : 420);
+  const e = nearestEnemy(q.x, q.y, melee ? 40 : 420);
   if (!e) { q.cd = 0.15; return; }
-  const a = Math.atan2(e.y - q.y, e.x - q.x);
-  switch (q.id) {
-    case 'slime': petShot(q, 'goo', a, q.dmg, { slow: true }); q.cd = 1.1; break;
-    case 'cat': hitEnemy(e, q.dmg); G.fx.push({ type: 'slash', x: q.x, y: q.y, a, r: 30, arc: 1.6, color: '#fdba74', t: 0, life: 0.18 }); q.cd = 0.45; break;
-    case 'fairy': petShot(q, 'spark', a, q.dmg, { home: true, life: 2 }); q.cd = 1.3; break;
+  const a = Math.atan2(e.y - q.y, e.x - q.x), big = 1 + P.r * 0.15;
+  const fireball = (dmg, boom, spd = 380) => G.proj.push({ k: 'fireball', x: q.x, y: q.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, r: 6 + boom / 10, dmg, boom, life: 1.4, hit: new Set() });
+  switch (P.kind) {
+    case 'goo': petShot(q, 'goo', a, q.dmg * (P.crown ? 1.6 : 1), { slow: true, r: P.crown ? 10 : 6 }); q.cd = 1.1; break;
+    case 'scratch': case 'coin':
+      hitEnemy(e, q.dmg * big);
+      if (q.id === 'wolf') e.slowUntil = G.time + 1;
+      G.fx.push({ type: 'slash', x: q.x, y: q.y, a, r: 30, arc: 1.6, color: P.c[0], t: 0, life: 0.18 });
+      q.cd = 0.45; break;
+    case 'heal': petShot(q, 'spark', a, q.dmg, { home: true, life: 2 }); q.cd = 1.3; break;
     case 'ghost': petShot(q, 'ghost', a, q.dmg * 1.2, { pierce: 6, life: 1.6 }); q.cd = 1.3; break;
-    case 'eagle': q.mode = 'dive'; q.tgt = e; q.cd = 2.2; break;
-    case 'dragon': G.proj.push({ k: 'fireball', x: q.x, y: q.y, vx: Math.cos(a) * 380, vy: Math.sin(a) * 380, r: 8, dmg: q.dmg * 1.6, boom: 55, life: 1.4, hit: new Set() }); q.cd = 1.4; break;
+    case 'dive': q.mode = 'dive'; q.tgt = e; q.cd = 2.2; break;
+    case 'fire': fireball(q.dmg * 1.6 * big, P.r ? 55 : 38); q.cd = 1.4; break;
+    case 'phoenix': fireball(q.dmg * 2, 72, 420); q.cd = 1.2; break;
+    case 'frost':
+      for (const o of P.base === 'dragon' ? [-0.25, 0, 0.25] : [0]) petShot(q, 'frost', a + o, q.dmg * 1.1 * big, { slow: true, pierce: P.base === 'dragon' ? 3 : 1 });
+      q.cd = 1.2; break;
+    case 'spore': petShot(q, 'spore', a, q.dmg * 1.25, { pierce: 2 }); q.cd = 1.0; break;
+    case 'sting': petShot(q, 'sting', a, q.dmg * 0.5, { vx: Math.cos(a) * 650, vy: Math.sin(a) * 650 }); q.cd = 0.4; break;
+    case 'quake': {
+      const R = 110 * big;
+      forNear(p.x, p.y, R, o => { const d = Math.hypot(o.x - p.x, o.y - p.y) || 1; hitEnemy(o, q.dmg * 1.5 * big, (o.x - p.x) / d * 260, (o.y - p.y) / d * 260); o.stunUntil = G.time + 0.6; });
+      G.fx.push({ type: 'shock', x: p.x, y: p.y, r: R, color: P.c[1], seed: Math.random() * 100, t: 0, life: 0.45 });
+      q.cd = 2.6; break;
+    }
+    case 'zap': {
+      let from = e;
+      const hit = new Set();
+      for (let i = 0; i < (P.base === 'jelly' ? 3 : 1); i++) {
+        if (i === 0) G.fx.push({ type: 'bolt', x: from.x, y: from.y, t: 0, life: 0.25, seed: Math.random() * 1000, size: 40 });
+        hit.add(from.id); forNear(from.x, from.y, 40, o => hitEnemy(o, q.dmg * 1.4 * big));
+        const n = nearestEnemy(from.x, from.y, 200, hit);
+        if (!n) break;
+        G.fx.push({ type: 'chain', x: from.x, y: from.y, x2: n.x, y2: n.y, t: 0, life: 0.2 });
+        from = n;
+      }
+      q.cd = 1.5; break;
+    }
+    case 'laser':
+      lineHit(q.x, q.y, a, 320, 10, q.dmg * 1.3);
+      G.fx.push({ type: 'beam', x: q.x, y: q.y, x2: q.x + Math.cos(a) * 320, y2: q.y + Math.sin(a) * 320, color: P.c[1], t: 0, life: 0.25 });
+      q.cd = 1.3; break;
+    case 'starfall': {
+      const vis = G.enemies.filter(o => !o.dead && onScreen(o)), tgt = vis.length ? pick(vis) : e, tx = tgt.x, ty = tgt.y;
+      G.fx.push({ type: 'starfall', x: tx, y: ty, t: 0, life: 0.35 });
+      G.later.push({ t: 0.35, fn: () => explode(tx, ty, 65, q.dmg * 2.2) });
+      q.cd = 1.3; break;
+    }
   }
 }
 
@@ -1214,6 +1265,9 @@ function drawProjectiles() {
       case 'pshot':
         if (b.style === 'goo') { ctx.fillStyle = '#4ade80'; circle(0, 0, b.r); ctx.fill(); ctx.fillStyle = '#bbf7d0'; circle(-2, -2, 2); ctx.fill(); }
         else if (b.style === 'ghost') { ctx.rotate(ang); ctx.globalAlpha = 0.85; ctx.fillStyle = '#e2e8f0'; ctx.beginPath(); ctx.ellipse(0, 0, 10, 6, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#111'; circle(4, -1.5, 1.3); ctx.fill(); circle(4, 2, 1.3); ctx.fill(); }
+        else if (b.style === 'frost') { ctx.rotate(ang); ctx.shadowColor = '#67e8f9'; ctx.shadowBlur = 10; poly(ctx, [10, 0, 0, -4, -8, 0, 0, 4]); paint(ctx, '#cffafe', '#0891b2', 1); }
+        else if (b.style === 'spore') { ctx.globalAlpha = 0.85; ctx.fillStyle = '#a855f7'; circle(0, 0, b.r); ctx.fill(); ctx.fillStyle = '#e9d5ff'; circle(-2, -2, 1.6); ctx.fill(); circle(2, 1, 1.2); ctx.fill(); }
+        else if (b.style === 'sting') { ctx.rotate(ang); line(ctx, [-6, 0, 6, 0], '#1f2937', 2); poly(ctx, [9, 0, 5, -2, 5, 2]); paint(ctx, '#facc15', null); }
         else { ctx.rotate(b.spin); ctx.shadowColor = '#f472b6'; ctx.shadowBlur = 10; star(ctx, 0, 0, 7, 3); paint(ctx, '#fbcfe8', null); }
         break;
       case 'boomer':
@@ -1273,6 +1327,18 @@ function drawFx() {
         break;
       }
       case 'muzzle': ctx.globalAlpha = 1 - k; ctx.fillStyle = '#fef08a'; star(ctx, f.x, f.y, 12, 4, 6); ctx.fill(); break;
+      case 'beam':
+        ctx.globalAlpha = 1 - k; ctx.lineCap = 'round'; ctx.shadowColor = f.color; ctx.shadowBlur = 14;
+        line(ctx, [f.x, f.y, f.x2, f.y2], f.color, 8 * (1 - k) + 2); line(ctx, [f.x, f.y, f.x2, f.y2], '#fff', 2);
+        ctx.shadowBlur = 0;
+        break;
+      case 'starfall': {
+        const sy = f.y - 320 * (1 - k);
+        ctx.globalAlpha = 0.5; line(ctx, [f.x + 60 * (1 - k) + 30, sy - 60, f.x + 60 * (1 - k), sy], '#fef9c3', 4);
+        ctx.globalAlpha = 1; ctx.shadowColor = '#fde047'; ctx.shadowBlur = 16;
+        star(ctx, f.x + 60 * (1 - k), sy, 12, 5); paint(ctx, '#fde047', OUT, 1.2); ctx.shadowBlur = 0;
+        break;
+      }
       case 'heal': ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3; circle(f.x, f.y, 20 + k * 25); ctx.stroke(); break;
       case 'bolt': {
         ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#fef9c3'; ctx.lineWidth = 4; ctx.shadowColor = '#facc15'; ctx.shadowBlur = 16;

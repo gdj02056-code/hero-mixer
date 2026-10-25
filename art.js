@@ -214,16 +214,22 @@ function drawHero(c, x, y, o, t) {
   rect(c, -11, 7, 22, 3); paint(c, 'rgba(0,0,0,.3)', null);
   // head
   if (L.hood) { circ(c, 0, -10, 14); paint(c, L.hood, OUT, 1.2); }
+  if (L.elf) { poly(c, [-9, -11, -19, -16, -10, -5]); paint(c, L.skin, OUT, 1); poly(c, [9, -11, 19, -16, 10, -5]); paint(c, L.skin, OUT, 1); }
   circ(c, 0, -9, 11); paint(c, L.skin, OUT, 1.2);
   if (!L.bald && !L.hood && !L.helmet) { c.beginPath(); c.arc(0, -11, 11.6, Math.PI, TAU); c.closePath(); paint(c, L.hair, null); rect(c, -11.6, -12, 6, 7); paint(c, L.hair, null); rect(c, 5.6, -12, 6, 7); paint(c, L.hair, null); }
   if (L.helmet) { c.beginPath(); c.arc(0, -10, 12.5, Math.PI * 1.02, TAU * 0.99); c.closePath(); paint(c, L.helmet, OUT, 1.2); rect(c, -12, -11, 24, 3); paint(c, 'rgba(0,0,0,.25)', null); }
   if (L.horns) { poly(c, [-8, -17, -15, -27, -4, -20]); paint(c, '#fef3c7', OUT, 1); poly(c, [8, -17, 15, -27, 4, -20]); paint(c, '#fef3c7', OUT, 1); }
+  if (L.cat) { poly(c, [-10, -14, -9, -25, -2, -18]); paint(c, L.hair, OUT, 1); poly(c, [10, -14, 9, -25, 2, -18]); paint(c, L.hair, OUT, 1); poly(c, [-8, -16, -8, -22, -4, -18]); paint(c, '#fda4af', null); poly(c, [8, -16, 8, -22, 4, -18]); paint(c, '#fda4af', null); }
+  if (L.band) { rect(c, -11.5, -15, 23, 3.5); paint(c, L.band, null); poly(c, [-face * 11, -14, -face * 18, -11, -face * 16, -16]); paint(c, L.band, null); }
   if (L.mask) { rect(c, -10, -6, 20, 6); paint(c, L.hair === '#111827' ? '#1e293b' : '#111827', null); }
   // eyes
   const ex = face * 3;
   circ(c, -4 + ex, -9, 1.9); paint(c, '#111', null); circ(c, 4 + ex, -9, 1.9); paint(c, '#111', null);
+  if (L.beard) { c.beginPath(); c.arc(face * 1, -5, 8, 0.15, Math.PI - 0.15); c.closePath(); paint(c, L.hair, OUT, 1); }
+  if (L.crown) { poly(c, [-8, -18, -8, -26, -4, -21, 0, -28, 4, -21, 8, -26, 8, -18]); paint(c, '#fbbf24', OUT, 1); circ(c, 0, -21, 1.5); paint(c, '#ef4444', null); }
+  if (L.halo) { c.beginPath(); c.ellipse(0, -29, 9, 3, 0, 0, TAU); c.strokeStyle = '#fde047'; c.lineWidth = 2.5; c.shadowColor = '#fde047'; c.shadowBlur = 8; c.stroke(); c.shadowBlur = 0; }
   if (L.hat === 'wizard') { poly(c, [-14, -15, 14, -15, face * 4, -40]); paint(c, L.hatColor, OUT, 1.2); rect(c, -12, -17, 24, 3); paint(c, '#fbbf24', null); }
-  if (L.hat === 'cowboy') { c.beginPath(); c.ellipse(0, -17, 17, 4, 0, 0, TAU); paint(c, '#78350f', OUT, 1.2); rect(c, -8, -27, 16, 10); paint(c, '#78350f', OUT, 1.2); rect(c, -8, -20, 16, 2.5); paint(c, '#f59e0b', null); }
+  if (L.hat === 'cowboy') { c.beginPath(); c.ellipse(0, -17, 17, 4, 0, 0, TAU); paint(c, L.hatColor || '#78350f', OUT, 1.2); rect(c, -8, -27, 16, 10); paint(c, L.hatColor || '#78350f', OUT, 1.2); rect(c, -8, -20, 16, 2.5); paint(c, '#f59e0b', null); }
   if (!behind) drawHeld(c, o, t);
   c.restore();
 }
@@ -231,37 +237,51 @@ const heroLookOpts = (h, g = 3) => ({ look: h.look, wt: h.wt, grade: g, aim: 0.5
 const heroIcon = id => iconURL(`h:${id}`, 160, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(2.6, 2.6); drawHero(c, 0, 0, heroLookOpts(HERO[id]), 0); });
 
 // ---------- pets ----------
+// four-legged critters share one body: cat, dog, fox, wolf, bunny
+function critter(c, t, fur, acc, o) {
+  if (o.tail === 'fluffy') { c.beginPath(); c.ellipse(-12, 1, 9, 4.5, -0.6 + Math.sin(t * 5) * 0.2, 0, TAU); paint(c, fur, OUT, 1); circ(c, -18, -3, 3); paint(c, acc, null); }
+  else if (o.tail === 'thin') { c.beginPath(); c.moveTo(-6, 6); c.quadraticCurveTo(-17, Math.sin(t * 5) * 2, -13, -9); c.strokeStyle = fur; c.lineWidth = 3; c.lineCap = 'round'; c.stroke(); }
+  circ(c, 0, 5, 7); paint(c, fur, OUT, 1.2);
+  if (o.ears === 'point') { poly(c, [-7, -7, -5, -16, 0, -9]); paint(c, fur, OUT, 1); poly(c, [7, -7, 5, -16, 0, -9]); paint(c, fur, OUT, 1); }
+  if (o.ears === 'long') for (const s of [-1, 1]) { c.beginPath(); c.ellipse(s * 3.5, -16, 2.8, 8, s * 0.15, 0, TAU); paint(c, fur, OUT, 1); c.beginPath(); c.ellipse(s * 3.5, -16, 1.2, 6, s * 0.15, 0, TAU); paint(c, acc, null); }
+  circ(c, 0, -4, 8); paint(c, fur, OUT, 1.2);
+  if (o.ears === 'floppy') for (const s of [-1, 1]) { c.beginPath(); c.ellipse(s * 8, -3, 3, 6, s * 0.3, 0, TAU); paint(c, o.earColor || '#78350f', OUT, 1); }
+  if (o.muzzle) { c.beginPath(); c.ellipse(4, -1, 4, 3, 0, 0, TAU); paint(c, acc, null); circ(c, 7.5, -2, 1.3); paint(c, '#111', null); }
+  if (o.fierce) { line(c, [-3, -8, 0, -6.5], '#111', 1.2); line(c, [6, -8, 3, -6.5], '#111', 1.2); }
+  circ(c, -1, -5, 1.6); paint(c, '#111', null); circ(c, 4, -5, 1.6); paint(c, '#111', null);
+  if (o.helmet) { rect(c, -6, -13, 12, 3); paint(c, o.helmet, null); }
+  if (o.whiskers) { line(c, [6, -2, 11, -3], '#fff', 0.8); line(c, [6, -1, 11, 1], '#fff', 0.8); }
+  if (o.collar) { rect(c, -5, 1.5, 10, 2.5); paint(c, '#dc2626', null); circ(c, 0, 5, 1.8); paint(c, '#facc15', null); }
+}
 function drawPet(c, id, x, y, t, face = 1) {
+  const P = PET[id], [c1, c2, c3] = P.c;
   c.save(); c.translate(x, y); c.scale(face, 1);
   c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(0, 11, 9, 3, 0, 0, TAU); c.fill();
-  const bob = Math.sin(t * 6) * 2;
-  switch (id) {
+  const bob = Math.sin(t * 6) * 2, flap = Math.sin(t * 14);
+  const eyes = (x1, x2, yy, r = 1.6) => { circ(c, x1, yy, r); paint(c, '#111', null); circ(c, x2, yy, r); paint(c, '#111', null); };
+  switch (P.base) {
     case 'slime': {
       const sq = 1 + Math.sin(t * 8) * 0.08;
-      c.beginPath(); c.ellipse(0, 3, 10 * sq, 8 / sq, 0, 0, TAU); paint(c, '#4ade80', OUT, 1.2);
-      circ(c, -4, 0, 2.4); paint(c, '#fff', null); circ(c, -4, -2, 1.2); paint(c, '#bbf7d0', null);
-      circ(c, 2, 2, 1.6); paint(c, '#111', null); circ(c, 6, 2, 1.6); paint(c, '#111', null);
+      c.beginPath(); c.ellipse(0, 3, 10 * sq, 8 / sq, 0, 0, TAU); paint(c, c1, OUT, 1.2);
+      circ(c, -4, 0, 2.4); paint(c, c2, null);
+      eyes(2, 6, 2);
+      if (P.kind === 'fire') { c.beginPath(); c.moveTo(-4, -3); c.quadraticCurveTo(0, -15 + Math.sin(t * 12) * 2, 4, -3); paint(c, '#fde047', null); }
+      if (P.crown) { poly(c, [-6, -4, -6, -12, -3, -7, 0, -13, 3, -7, 6, -12, 6, -4]); paint(c, '#fbbf24', OUT, 1); }
       break;
     }
-    case 'cat': {
-      c.translate(0, bob * 0.5);
-      c.beginPath(); c.moveTo(-8, 6); c.quadraticCurveTo(-18, 0, -14, -10); c.strokeStyle = '#ea580c'; c.lineWidth = 3; c.stroke();
-      circ(c, 0, 4, 7); paint(c, '#fb923c', OUT, 1.2);
-      poly(c, [-7, -7, -5, -16, 0, -9]); paint(c, '#fb923c', OUT, 1); poly(c, [7, -7, 5, -16, 0, -9]); paint(c, '#fb923c', OUT, 1);
-      circ(c, 0, -4, 8); paint(c, '#fb923c', OUT, 1.2);
-      circ(c, -1, -5, 1.6); paint(c, '#111', null); circ(c, 4, -5, 1.6); paint(c, '#111', null);
-      line(c, [6, -2, 11, -3], '#fff', 0.8); line(c, [6, -1, 11, 1], '#fff', 0.8);
-      rect(c, -6, -13, 12, 3); paint(c, '#94a3b8', null);
-      break;
-    }
+    case 'cat': c.translate(0, bob * 0.5); critter(c, t, c1, c1, { ears: 'point', tail: 'thin', helmet: c2, whiskers: true }); break;
+    case 'dog': c.translate(0, bob * 0.5); critter(c, t, c1, c2, { ears: 'floppy', tail: 'thin', muzzle: true, collar: true, earColor: '#92400e' }); break;
+    case 'fox': c.translate(0, bob * 0.5); critter(c, t, c1, c2, { ears: 'point', tail: 'fluffy', muzzle: true }); break;
+    case 'wolf': c.translate(0, bob * 0.5); critter(c, t, c1, c2, { ears: 'point', tail: 'fluffy', muzzle: true, fierce: true }); break;
+    case 'bunny': c.translate(0, -Math.abs(Math.sin(t * 7)) * 4); critter(c, t, c1, c2, { ears: 'long' }); circ(c, -7, 7, 2.5); paint(c, '#fff', OUT, 0.8); break;
     case 'fairy': {
       c.translate(0, bob - 6);
       const g = c.createRadialGradient(0, 0, 1, 0, 0, 16); g.addColorStop(0, 'rgba(251,207,232,.8)'); g.addColorStop(1, 'rgba(251,207,232,0)');
       c.fillStyle = g; circ(c, 0, 0, 16); c.fill();
       const fl = Math.abs(Math.sin(t * 18));
-      c.globalAlpha = 0.7; c.beginPath(); c.ellipse(-7, -3, 7, 3 + fl * 3, -0.5, 0, TAU); paint(c, '#bae6fd', null);
-      c.beginPath(); c.ellipse(7, -3, 7, 3 + fl * 3, 0.5, 0, TAU); paint(c, '#bae6fd', null); c.globalAlpha = 1;
-      circ(c, 0, 2, 4.5); paint(c, '#f9a8d4', OUT, 1);
+      c.globalAlpha = 0.7; c.beginPath(); c.ellipse(-7, -3, 7, 3 + fl * 3, -0.5, 0, TAU); paint(c, c2, null);
+      c.beginPath(); c.ellipse(7, -3, 7, 3 + fl * 3, 0.5, 0, TAU); paint(c, c2, null); c.globalAlpha = 1;
+      circ(c, 0, 2, 4.5); paint(c, c1, OUT, 1);
       circ(c, 0, -5, 4); paint(c, '#fde4c8', OUT, 1);
       circ(c, 1.5, -5, 0.9); paint(c, '#111', null);
       break;
@@ -270,34 +290,143 @@ function drawPet(c, id, x, y, t, face = 1) {
       c.translate(0, bob - 4); c.globalAlpha = 0.9;
       c.beginPath(); c.arc(0, -2, 9, Math.PI, TAU); c.lineTo(9, 8);
       for (let i = 0; i < 4; i++) { const xx = 9 - (i + 1) * 4.5; c.quadraticCurveTo(xx + 2.25, 4 + Math.sin(t * 8 + i) * 2, xx, 8); }
-      c.closePath(); paint(c, '#f1f5f9', OUT, 1.2);
+      c.closePath(); paint(c, c1, OUT, 1.2);
       c.beginPath(); c.ellipse(-1, -2, 1.6, 2.6, 0, 0, TAU); paint(c, '#111', null); c.beginPath(); c.ellipse(4, -2, 1.6, 2.6, 0, 0, TAU); paint(c, '#111', null);
       break;
     }
     case 'eagle': {
       c.translate(0, bob - 6);
-      const fl = Math.sin(t * 14) * 7;
+      const fl = flap * 7;
       poly(c, [-3, 0, -18, -4 + fl, -12, 4]); paint(c, '#78350f', OUT, 1); poly(c, [3, 0, 18, -4 + fl, 12, 4]); paint(c, '#78350f', OUT, 1);
-      c.beginPath(); c.ellipse(0, 2, 6, 8, 0, 0, TAU); paint(c, '#92400e', OUT, 1.2);
-      circ(c, 0, -7, 5); paint(c, '#f8fafc', OUT, 1);
+      c.beginPath(); c.ellipse(0, 2, 6, 8, 0, 0, TAU); paint(c, c1, OUT, 1.2);
+      circ(c, 0, -7, 5); paint(c, c2, OUT, 1);
       poly(c, [4, -8, 9, -6, 4, -5]); paint(c, '#facc15', OUT, 0.8);
       circ(c, 2, -8, 1); paint(c, '#111', null);
       break;
     }
+    case 'owl': {
+      c.translate(0, bob - 4);
+      poly(c, [-6, 0, -13, 2 + flap * 3, -7, 7]); paint(c, c1, OUT, 1); poly(c, [6, 0, 13, 2 + flap * 3, 7, 7]); paint(c, c1, OUT, 1);
+      c.beginPath(); c.ellipse(0, 1, 8, 9, 0, 0, TAU); paint(c, c1, OUT, 1.2);
+      c.beginPath(); c.ellipse(0, 4, 5, 5, 0, 0, TAU); paint(c, '#fef3c7', null);
+      poly(c, [-7, -6, -6, -12, -3, -7]); paint(c, c1, OUT, 1); poly(c, [7, -6, 6, -12, 3, -7]); paint(c, c1, OUT, 1);
+      for (const s of [-1, 1]) { circ(c, s * 3.3, -3, 3.2); paint(c, '#fff', OUT, 0.8); circ(c, s * 3.3 + 0.6, -3, 1.8); paint(c, c2, null); circ(c, s * 3.3 + 0.6, -3, 0.9); paint(c, '#111', null); }
+      poly(c, [0, -1, 1.5, 1.5, -1.5, 1.5]); paint(c, '#f59e0b', null);
+      break;
+    }
+    case 'phoenix': {
+      c.translate(0, bob - 6);
+      c.shadowColor = '#f97316'; c.shadowBlur = 12;
+      for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(-4, 4); c.quadraticCurveTo(-14 - i * 3, 8 + i * 3 + Math.sin(t * 9 + i) * 2, -20 - i * 2, 4 + i * 4); c.strokeStyle = i % 2 ? c2 : c1; c.lineWidth = 3; c.lineCap = 'round'; c.stroke(); }
+      poly(c, [-2, -1, -16, -10 + flap * 7, -10, 4]); paint(c, c2, OUT, 1); poly(c, [2, -1, 16, -10 + flap * 7, 10, 4]); paint(c, c2, OUT, 1);
+      c.beginPath(); c.ellipse(0, 2, 6, 7, 0, 0, TAU); paint(c, c1, OUT, 1.2);
+      circ(c, 3, -6, 4.5); paint(c, c1, OUT, 1);
+      poly(c, [1, -10, 0, -16, 4, -11]); paint(c, c2, null);
+      poly(c, [7, -7, 11, -5, 7, -4]); paint(c, '#facc15', OUT, 0.8);
+      circ(c, 4.5, -7, 1); paint(c, '#111', null);
+      c.shadowBlur = 0;
+      break;
+    }
     case 'dragon': {
       c.translate(0, bob - 4);
-      const fl = Math.sin(t * 10) * 5;
-      poly(c, [-2, -2, -16, -12 + fl, -12, 2]); paint(c, '#7c3aed', OUT, 1);
-      c.beginPath(); c.moveTo(-6, 6); c.quadraticCurveTo(-16, 10, -18, 2); c.strokeStyle = '#dc2626'; c.lineWidth = 3; c.stroke();
-      circ(c, -1, 3, 8); paint(c, '#dc2626', OUT, 1.2);
-      c.beginPath(); c.ellipse(1, 5, 4, 5, 0, 0, TAU); paint(c, '#fde68a', null);
-      circ(c, 6, -5, 6.5); paint(c, '#dc2626', OUT, 1.2);
+      const fl = flap * 5;
+      poly(c, [-2, -2, -16, -12 + fl, -12, 2]); paint(c, c2, OUT, 1);
+      c.beginPath(); c.moveTo(-6, 6); c.quadraticCurveTo(-16, 10, -18, 2); c.strokeStyle = c1; c.lineWidth = 3; c.stroke();
+      circ(c, -1, 3, 8); paint(c, c1, OUT, 1.2);
+      c.beginPath(); c.ellipse(1, 5, 4, 5, 0, 0, TAU); paint(c, c3, null);
+      circ(c, 6, -5, 6.5); paint(c, c1, OUT, 1.2);
       poly(c, [3, -10, 1, -17, 6, -11]); paint(c, '#fef3c7', OUT, 0.8); poly(c, [7, -11, 8, -18, 10, -10]); paint(c, '#fef3c7', OUT, 0.8);
       circ(c, 8, -6, 1.4); paint(c, '#111', null);
-      poly(c, [2, -2, 16, -12 + fl, 12, 2]); paint(c, '#8b5cf6', OUT, 1);
+      poly(c, [2, -2, 16, -12 + fl, 12, 2]); paint(c, c2, OUT, 1);
+      break;
+    }
+    case 'penguin': {
+      c.translate(0, Math.abs(Math.sin(t * 6)) * -1.5);
+      const w = Math.sin(t * 8) * 0.4;
+      c.save(); c.translate(-7, 2); c.rotate(0.4 + w); c.beginPath(); c.ellipse(0, 3, 2.5, 6, 0, 0, TAU); paint(c, c1, OUT, 1); c.restore();
+      c.save(); c.translate(7, 2); c.rotate(-0.4 - w); c.beginPath(); c.ellipse(0, 3, 2.5, 6, 0, 0, TAU); paint(c, c1, OUT, 1); c.restore();
+      c.beginPath(); c.ellipse(0, 1, 8, 10, 0, 0, TAU); paint(c, c1, OUT, 1.2);
+      c.beginPath(); c.ellipse(1, 3, 5.5, 7, 0, 0, TAU); paint(c, c2, null);
+      eyes(0, 5, -4, 1.4);
+      poly(c, [2, -2, 8, -1, 2, 1]); paint(c, '#f97316', OUT, 0.8);
+      c.beginPath(); c.ellipse(-3, 11, 3, 1.5, 0, 0, TAU); paint(c, '#f97316', null); c.beginPath(); c.ellipse(3, 11, 3, 1.5, 0, 0, TAU); paint(c, '#f97316', null);
+      break;
+    }
+    case 'mushroom': {
+      c.translate(0, bob * 0.5);
+      rect(c, -5, -2, 10, 12); paint(c, c2, OUT, 1.2);
+      eyes(-1.5, 2.5, 3, 1.3);
+      c.beginPath(); c.arc(0, -2, 11, Math.PI, TAU); c.closePath(); paint(c, c1, OUT, 1.2);
+      for (const [dx, dy, r] of [[-5, -6, 2.2], [2, -9, 2.6], [6, -4, 1.8]]) { circ(c, dx, dy, r); paint(c, '#fff', null); }
+      break;
+    }
+    case 'bee': {
+      c.translate(0, bob - 6);
+      c.globalAlpha = 0.6;
+      c.beginPath(); c.ellipse(-2, -8, 4, 6 + flap * 2, -0.4, 0, TAU); paint(c, '#e0f2fe', null);
+      c.beginPath(); c.ellipse(3, -8, 4, 6 + flap * 2, 0.4, 0, TAU); paint(c, '#e0f2fe', null);
+      c.globalAlpha = 1;
+      c.beginPath(); c.ellipse(0, 0, 9, 7, 0, 0, TAU); paint(c, c1, OUT, 1.2);
+      for (const sx of [-3, 2]) { rect(c, sx, -6.5, 2.6, 13); paint(c, c2, null); }
+      poly(c, [-9, 0, -14, 0, -9, 2]); paint(c, c2, null);
+      circ(c, 6, -1, 1.4); paint(c, '#111', null);
+      line(c, [5, -6, 8, -11], '#111', 1);
+      break;
+    }
+    case 'turtle': {
+      c.translate(0, Math.abs(Math.sin(t * 4)) * -1);
+      for (const [dx, dy] of [[-6, 7], [5, 7]]) { circ(c, dx, dy, 2.8); paint(c, c2, OUT, 1); }
+      circ(c, 11, 0, 4.5); paint(c, c2, OUT, 1.2);
+      circ(c, 12.5, -1, 1.1); paint(c, '#111', null);
+      c.beginPath(); c.arc(0, 4, 11, Math.PI, TAU); c.closePath(); paint(c, c1, OUT, 1.2);
+      c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = 1.2;
+      poly(c, [-4, -3, 4, -3, 6, 2, -6, 2]); c.stroke();
+      line(c, [-4, -3, -7, -5], 'rgba(0,0,0,.3)', 1.2); line(c, [4, -3, 7, -5], 'rgba(0,0,0,.3)', 1.2);
+      break;
+    }
+    case 'robot': {
+      c.translate(0, bob - 6);
+      c.globalAlpha = 0.6 + Math.random() * 0.3; poly(c, [-3, 10, 3, 10, 0, 16]); paint(c, '#38bdf8', null); c.globalAlpha = 1;
+      rect(c, -7, 2, 14, 8); paint(c, '#64748b', OUT, 1.2);
+      rect(c, -9, -10, 18, 13); paint(c, c1, OUT, 1.2);
+      rect(c, -6, -7, 13, 5); paint(c, '#0f172a', null);
+      circ(c, 3, -4.5, 1.8); c.fillStyle = c2; c.shadowColor = c2; c.shadowBlur = 8; c.fill(); c.shadowBlur = 0;
+      line(c, [0, -10, 0, -15], '#475569', 1.5);
+      circ(c, 0, -16, 2); paint(c, Math.sin(t * 6) > 0 ? c2 : '#fca5a5', null);
+      break;
+    }
+    case 'jelly': {
+      c.translate(0, bob * 1.5 - 6);
+      for (let i = 0; i < 4; i++) { const xx = -6 + i * 4; c.beginPath(); c.moveTo(xx, 2); c.quadraticCurveTo(xx + Math.sin(t * 6 + i) * 3, 9, xx, 15); c.strokeStyle = c2; c.lineWidth = 1.6; c.stroke(); }
+      c.shadowColor = c1; c.shadowBlur = 12; c.globalAlpha = 0.85;
+      c.beginPath(); c.arc(0, 3, 10, Math.PI, TAU); c.closePath(); paint(c, c1, OUT, 1);
+      c.globalAlpha = 1; c.shadowBlur = 0;
+      circ(c, -4, -3, 2); paint(c, c2, null);
+      eyes(0, 4, 0, 1.3);
+      break;
+    }
+    case 'golem': {
+      c.translate(0, Math.abs(Math.sin(t * 5)) * -1.5);
+      rect(c, -8, 8, 5, 4); paint(c, c1, OUT, 1); rect(c, 3, 8, 5, 4); paint(c, c1, OUT, 1);
+      rect(c, -14, -2, 5, 9); paint(c, c1, OUT, 1); rect(c, 9, -2, 5, 9); paint(c, c1, OUT, 1);
+      rect(c, -9, -4, 18, 13); paint(c, c1, OUT, 1.2);
+      rect(c, -6, -12, 12, 9); paint(c, '#a8a29e', OUT, 1.2);
+      circ(c, -2, -8, 1.6); c.fillStyle = c2; c.shadowColor = c2; c.shadowBlur = 8; c.fill(); circ(c, 3, -8, 1.6); c.fill(); c.shadowBlur = 0;
+      line(c, [-4, 0, 0, 4, -2, 7], 'rgba(0,0,0,.35)', 1);
+      break;
+    }
+    case 'star': {
+      c.translate(0, bob * 1.5 - 8);
+      c.save(); c.rotate(Math.sin(t * 2) * 0.2);
+      c.shadowColor = c1; c.shadowBlur = 16;
+      star(c, 0, 0, 12, 5.5); paint(c, c1, OUT, 1.2);
+      c.shadowBlur = 0; c.restore();
+      eyes(-2.5, 2.5, -1, 1.3);
+      c.beginPath(); c.arc(0, 1.5, 2, 0.2, Math.PI - 0.2); c.strokeStyle = '#111'; c.lineWidth = 1; c.stroke();
+      for (let i = 0; i < 3; i++) { const a = t * 2 + i * TAU / 3; star(c, Math.cos(a) * 15, Math.sin(a) * 15, 2.5, 1, 4); paint(c, c2, null); }
       break;
     }
   }
   c.restore();
 }
-const petIcon = id => iconURL(`p:${id}`, 128, (c, s) => { c.translate(s / 2, s / 2 + 6); c.scale(3.6, 3.6); drawPet(c, id, 0, 0, 0.3, 1); });
+const petIcon = id => iconURL(`p:${id}`, 128, (c, s) => { c.translate(s / 2, s / 2 + 8); c.scale(3.1, 3.1); drawPet(c, id, 0, 0, 0.3, 1); });

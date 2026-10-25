@@ -42,7 +42,7 @@ function drawPreviews(t) {
 }
 
 // ---------- lobby shell ----------
-let tab = 'battle', selStage = 1, equipFilter = 'all', viewHero = null, viewPet = null, growTab = 'stats';
+let tab = 'battle', selStage = 1, equipFilter = 'all', viewHero = null, viewPet = null, growTab = 'stats', heroFilter = 'all', petFilter = 'all';
 function refreshTop() {
   tickEnergy();
   const f = (v, s) => (v >= 100 ? Math.floor(v) : v.toFixed(1)) + s;
@@ -63,10 +63,17 @@ document.querySelectorAll('nav.bottom button').forEach(b => b.onclick = () => { 
 document.querySelectorAll('.res button').forEach(b => b.onclick = () => { tab = 'shop'; renderLobby(); $('#page').scrollTop = 0; });
 $('#btnSettings').onclick = openSettings;
 setInterval(() => { if (!G) refreshTop(); }, 5000);
-const spend = (cur, n) => { if (S[cur] < n) { toast(cur === 'gems' ? '💎 보석 부족! 상점에서 ₩0에 충전하세요' : '🪙 골드 부족! 상점에서 ₩0에 충전하세요'); return false; } S[cur] -= n; return true; };
+// true if `n` of a currency can be paid; tops the balance up when the shop's infinite mode is on
+function afford(cur, n) {
+  if (S[cur] >= n) return true;
+  if ((cur === 'gold' && S.infGold) || (cur === 'gems' && S.infGems)) { S[cur] = n; return true; }
+  return false;
+}
+const spend = (cur, n) => { if (!afford(cur, n)) { toast(cur === 'gems' ? '💎 보석 부족! 상점에서 ₩0에 충전하세요' : '🪙 골드 부족! 상점에서 ₩0에 충전하세요'); return false; } S[cur] -= n; return true; };
 
 function tryStart(stage) {
   tickEnergy();
+  if (S.infEnergy) { startRun(stage); return; }
   if (S.energy < EN_COST) {
     const box = showModal(`<div class="bigicon">⚡</div><h2>에너지 부족!</h2><div class="center">원래라면 기다리거나 결제해야 하지만…</div>
       <div class="row"><button class="btn gray" id="no">닫기</button><button class="btn gold" id="fill">⚡ 무료 충전 <small>₩0</small></button></div>`);
@@ -200,7 +207,7 @@ function itemDetail(it) {
     <div class="row"><button class="btn red" id="sell" ${eq ? 'disabled' : ''}>분해 🪙+${fmt(itemSell(it))}</button><button class="btn gray" id="close">닫기</button></div>`);
   const upN = n => {
     let done = 0;
-    while (done < n && it.lv < itemMaxLv(it) && S.gold >= itemUpCost(it)) { S.gold -= itemUpCost(it); it.lv++; done++; }
+    while (done < n && it.lv < itemMaxLv(it) && afford('gold', itemUpCost(it))) { S.gold -= itemUpCost(it); it.lv++; done++; }
     if (!done) { toast('🪙 골드 부족! 상점에서 ₩0에 충전하세요'); return; }
     save(); refreshTop(); itemDetail(it); renderLobby();
   };
@@ -260,22 +267,24 @@ function pageHero(pg) {
     <div class="center sub">기본 무기 성향: ${WT[h.wt].name}</div>
     ${body}
     <h3>🦸 영웅 목록 (${Object.keys(S.heroes).length}/${HEROES.length})</h3>
-    <div class="hgrid">${HEROES.map(x => heroTile(x.id, `${S.heroes[x.id] ? `<span class="lv">Lv${S.heroes[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.hero === x.id ? '<span class="eq">사용</span>' : ''}`)).join('')}</div>
+    <div class="chips">${['all', 0, 1, 2, 3].map(r => `<button data-hf="${r}" class="${heroFilter === r ? 'on' : ''}">${r === 'all' ? '전체' : HRAR[r].n}</button>`).join('')}</div>
+    <div class="hgrid">${HEROES.filter(x => heroFilter === 'all' || x.r === heroFilter).map(x => heroTile(x.id, `${S.heroes[x.id] ? `<span class="lv">Lv${S.heroes[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.hero === x.id ? '<span class="eq">사용</span>' : ''}`)).join('')}</div>
     <h3>✨ 영웅 소환</h3>
     <div class="row"><button class="btn green" data-hs="0">무료 1회</button><button class="btn" data-hs="1">1회 💎300</button><button class="btn purple" data-hs="10">10회 💎2,700</button></div>
     <div class="gradebar">${HRAR.map((r, i) => `<span style="color:${r.c}">${r.n} ${HERO_GACHA_W[i]}%</span>`).join(' · ')}</div>`;
   pg.querySelectorAll('.htile').forEach(t => t.classList.toggle('locked', !S.heroes[t.dataset.hero]));
   pg.querySelectorAll('.htile').forEach(t => t.onclick = () => { viewHero = t.dataset.hero; renderLobby(); });
   pg.querySelectorAll('[data-hs]').forEach(b => b.onclick = () => heroGacha(+b.dataset.hs));
+  pg.querySelectorAll('[data-hf]').forEach(b => b.onclick = () => { heroFilter = b.dataset.hf === 'all' ? 'all' : +b.dataset.hf; renderLobby(); });
   if (!st) return;
-  const lvTo = n => { let d = 0; while (d < n && st.lv < heroMaxLv(st) && S.gold >= heroLvCost(st.lv)) { S.gold -= heroLvCost(st.lv); st.lv++; d++; } if (!d) toast('🪙 골드 부족!'); save(); renderLobby(); };
+  const lvTo = n => { let d = 0; while (d < n && st.lv < heroMaxLv(st) && afford('gold', heroLvCost(st.lv))) { S.gold -= heroLvCost(st.lv); st.lv++; d++; } if (!d) toast('🪙 골드 부족!'); save(); renderLobby(); };
   pg.querySelector('#use').onclick = () => { S.hero = viewHero; save(); toast(`${h.name} 출전!`); renderLobby(); };
   pg.querySelector('#lvup').onclick = () => lvTo(1);
   pg.querySelector('#lvmax').onclick = () => lvTo(999);
   pg.querySelector('#star').onclick = () => { st.shards -= HERO_STAR_SHARDS[st.stars]; st.stars++; save(); toast(`★ ${h.name} ${st.stars}성 승급!`); renderLobby(); };
 }
 function heroGacha(n) {
-  if (!spend('gems', n === 0 ? 0 : n === 1 ? 300 : 2700)) return;
+  if (!spend('gems', PULL_COST[n])) return;
   const got = [];
   for (let i = 0; i < Math.max(1, n); i++) { const h = rollFrom(HEROES, HERO_GACHA_W); got.push({ id: h.id, isNew: addHero(h.id) }); }
   save(); refreshTop();
@@ -309,20 +318,22 @@ function pagePet(pg) {
     <div class="center sub">${P.desc}</div>
     ${body}
     <h3>🐾 펫 목록 (${owned.length}/${PETS.length})</h3>
-    <div class="hgrid">${PETS.map(x => petTile(x.id, `${S.pets[x.id] ? `<span class="lv">Lv${S.pets[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.pet === x.id ? '<span class="eq">동행</span>' : ''}`)).join('')}</div>
+    <div class="chips">${['all', 0, 1, 2, 3].map(r => `<button data-pf="${r}" class="${petFilter === r ? 'on' : ''}">${r === 'all' ? '전체' : PRAR[r].n}</button>`).join('')}</div>
+    <div class="hgrid">${PETS.filter(x => petFilter === 'all' || x.r === petFilter).map(x => petTile(x.id, `${S.pets[x.id] ? `<span class="lv">Lv${S.pets[x.id].lv}</span>` : '<span class="lock">🔒</span>'}${S.pet === x.id ? '<span class="eq">동행</span>' : ''}`)).join('')}</div>
     <h3>🥚 펫 알 부화</h3>
     <div class="row"><button class="btn green" data-ps="0">무료 1회</button><button class="btn" data-ps="1">1회 💎250</button><button class="btn purple" data-ps="10">10회 💎2,250</button></div>`;
   pg.querySelectorAll('.htile').forEach(t => { t.classList.toggle('locked', !S.pets[t.dataset.pet]); t.onclick = () => { viewPet = t.dataset.pet; renderLobby(); }; });
   pg.querySelectorAll('[data-ps]').forEach(b => b.onclick = () => petGacha(+b.dataset.ps));
+  pg.querySelectorAll('[data-pf]').forEach(b => b.onclick = () => { petFilter = b.dataset.pf === 'all' ? 'all' : +b.dataset.pf; renderLobby(); });
   if (!st) return;
-  const lvTo = n => { let d = 0; while (d < n && st.lv < petMaxLv(st) && S.gold >= petLvCost(st.lv)) { S.gold -= petLvCost(st.lv); st.lv++; d++; } if (!d) toast('🪙 골드 부족!'); save(); renderLobby(); };
+  const lvTo = n => { let d = 0; while (d < n && st.lv < petMaxLv(st) && afford('gold', petLvCost(st.lv))) { S.gold -= petLvCost(st.lv); st.lv++; d++; } if (!d) toast('🪙 골드 부족!'); save(); renderLobby(); };
   pg.querySelector('#use').onclick = () => { S.pet = S.pet === viewPet ? null : viewPet; save(); renderLobby(); };
   pg.querySelector('#lvup').onclick = () => lvTo(1);
   pg.querySelector('#lvmax').onclick = () => lvTo(999);
   pg.querySelector('#star').onclick = () => { st.shards -= HERO_STAR_SHARDS[st.stars]; st.stars++; save(); toast(`★ ${P.name} ${st.stars}성 승급!`); renderLobby(); };
 }
 function petGacha(n) {
-  if (!spend('gems', n === 0 ? 0 : n === 1 ? 250 : 2250)) return;
+  if (!spend('gems', PET_COST[n])) return;
   const got = [];
   for (let i = 0; i < Math.max(1, n); i++) { const p = rollFrom(PETS, PET_GACHA_W); got.push({ id: p.id, isNew: addPet(p.id) }); }
   save(); refreshTop();
@@ -378,7 +389,7 @@ function growStats(el) {
   }).join('') + `<div class="row"><button class="btn purple" id="allUp">⚡ 골드로 전부 강화</button></div>`;
   const up = (id, n) => {
     const d = STATS.find(x => x.id === id); let done = 0;
-    while (done < n && (S.stats[id] || 0) < d.max && S.gold >= statCost(S.stats[id] || 0)) { S.gold -= statCost(S.stats[id] || 0); S.stats[id] = (S.stats[id] || 0) + 1; done++; }
+    while (done < n && (S.stats[id] || 0) < d.max && afford('gold', statCost(S.stats[id] || 0))) { S.gold -= statCost(S.stats[id] || 0); S.stats[id] = (S.stats[id] || 0) + 1; done++; }
     return done;
   };
   el.querySelectorAll('[data-s]').forEach(b => b.onclick = () => { if (!up(b.dataset.s, +b.dataset.n)) toast('🪙 골드 부족! 상점에서 ₩0에 충전하세요'); save(); renderLobby(); });
@@ -424,7 +435,7 @@ function relicDetail(r) {
   box.querySelector('#close').onclick = closeModal;
 }
 function relicGacha(n) {
-  if (!spend('gems', n === 0 ? 0 : n === 1 ? 200 : 1800)) return;
+  if (!spend('gems', RELIC_COST[n])) return;
   const got = [];
   for (let i = 0; i < Math.max(1, n); i++) { const r = rollFrom(RELICS, RELIC_W); const isNew = !S.relics[r.id]; addRelic(r.id); got.push({ r, isNew }); }
   save(); refreshTop();
@@ -433,71 +444,6 @@ function relicGacha(n) {
     <div class="row"><button class="btn gray" id="ok">확인</button><button class="btn purple" id="again">한 번 더</button></div>`);
   box.querySelector('#ok').onclick = () => { closeModal(); renderLobby(); };
   box.querySelector('#again').onclick = () => { closeModal(); relicGacha(n); };
-}
-
-// ============================================================
-//  SHOP
-// ============================================================
-const SHOP = [
-  { sec: '🎁 특별 패키지' },
-  { id: 'starter', wide: true, icon: '🎁', name: '스타터 팩', desc: '💎5,000 + 🪙100,000 + SSS급 무기', price: '₩5,900', once: 'starter', give: () => { S.gems += 5000; S.gold += 100000; const it = newItem(7, 'weapon'); return `💎5,000, 🪙100,000, ${itemName(it)} 획득!`; } },
-  { id: 'pass', wide: true, icon: '👑', name: '프리미엄 패스', desc: '전투 보상 2배 + 레벨업 선택지 4개', price: '₩14,900', once: 'pass', give: () => '👑 프리미엄 패스 활성화!' },
-  { id: 'noads', wide: true, icon: '🚫', name: '광고 제거', desc: '모든 광고 제거 (사실 원래 없음)', price: '₩9,900', once: 'noAds', give: () => '🚫 광고 제거 완료! (원래 없었지만)' },
-  { id: 'legend', wide: true, icon: '🌟', name: '전설 무기 상자', desc: '전설 등급 무기 1개 확정!', price: '₩99,000', give: () => { const it = newItem(9, 'weapon'); return `🌟 ${itemName(it)} 획득!!`; } },
-  { id: 'urhero', wide: true, icon: '🦸', name: 'UR 영웅 선택권', desc: 'UR 영웅 1명 랜덤 획득', price: '₩49,000', give: () => { const h = pick(HEROES.filter(x => x.r === 3)); const n = addHero(h.id); return `🦸 ${h.name} ${n ? '획득!' : '조각 +1'}`; } },
-  { id: 'dragonpet', wide: true, icon: '🐉', name: '아기 용 알', desc: '전설 펫 아기 용 확정', price: '₩29,000', give: () => { const n = addPet('dragon'); return `🐉 아기 용 ${n ? '획득!' : '조각 +1'}`; } },
-  { sec: '💎 보석' },
-  { id: 'gem1', icon: '💎', name: '보석 한 줌', desc: '💎 300', price: '₩1,200', give: () => { S.gems += 300; return '💎 +300'; } },
-  { id: 'gem2', icon: '💰', name: '보석 주머니', desc: '💎 3,000', price: '₩5,900', give: () => { S.gems += 3000; return '💎 +3,000'; } },
-  { id: 'gem3', icon: '🧳', name: '보석 상자', desc: '💎 30,000', price: '₩12,000', give: () => { S.gems += 30000; return '💎 +30,000'; } },
-  { id: 'gem4', icon: '🏦', name: '보석 금고', desc: '💎 300,000', price: '₩59,000', give: () => { S.gems += 300000; return '💎 +300,000'; } },
-  { sec: '🪙 골드' },
-  { id: 'gold1', icon: '🪙', name: '골드 더미', desc: '🪙 50,000', price: '₩2,500', give: () => { S.gold += 50000; return '🪙 +50,000'; } },
-  { id: 'gold2', icon: '💰', name: '골드 자루', desc: '🪙 1,000,000', price: '₩11,000', give: () => { S.gold += 1e6; return '🪙 +1,000,000'; } },
-  { id: 'gold3', icon: '🏛️', name: '골드 창고', desc: '🪙 100,000,000', price: '₩99,000', give: () => { S.gold += 1e8; return '🪙 +100,000,000'; } },
-  { id: 'energy', icon: '⚡', name: '에너지 충전', desc: `⚡ ${MAX_EN} 가득`, price: '₩1,100', give: () => { S.energy = Math.max(S.energy, MAX_EN); return '⚡ 에너지 충전 완료!'; } },
-];
-function pageShop(pg) {
-  let html = `<h3>📦 소환 & 뽑기</h3><div class="sgrid">
-    <div class="sitem"><div class="si">📦</div><div class="sn">장비 상자</div><div class="sd">F ~ SSS 등급</div><div class="sbtns"><button class="btn green" data-gacha="0">무료</button><button class="btn" data-gacha="1">💎300</button></div><button class="btn purple" data-gacha="10">10회 💎2,700 <small>B+ 확정</small></button></div>
-    <div class="sitem"><div class="si">🦸</div><div class="sn">영웅 소환</div><div class="sd">R ~ UR 영웅</div><div class="sbtns"><button class="btn green" data-hs="0">무료</button><button class="btn" data-hs="1">💎300</button></div><button class="btn purple" data-hs="10">10회 💎2,700</button></div>
-    <div class="sitem"><div class="si">🥚</div><div class="sn">펫 알</div><div class="sd">귀여운 전투 펫</div><div class="sbtns"><button class="btn green" data-ps="0">무료</button><button class="btn" data-ps="1">💎250</button></div><button class="btn purple" data-ps="10">10회 💎2,250</button></div>
-    <div class="sitem"><div class="si">🏺</div><div class="sn">유물 상자</div><div class="sd">영구 스탯 보너스</div><div class="sbtns"><button class="btn green" data-rs="0">무료</button><button class="btn" data-rs="1">💎200</button></div><button class="btn purple" data-rs="10">10회 💎1,800</button></div>
-  </div>`;
-  let open = false;
-  for (const it of SHOP) {
-    if (it.sec) { if (open) html += '</div>'; html += `<h3>${it.sec}</h3><div class="sgrid">`; open = true; continue; }
-    const owned = it.once && S[it.once];
-    const btn = `<button class="btn gold price" data-buy="${it.id}" ${owned ? 'disabled' : ''}>${owned ? '보유중' : `<s>${it.price}</s>₩0`}</button>`;
-    html += it.wide
-      ? `<div class="sitem wide"><div class="si">${it.icon}</div><div class="info"><div class="sn">${it.name}</div><div class="sd">${it.desc}</div></div>${btn}</div>`
-      : `<div class="sitem"><div class="si">${it.icon}</div><div class="sn">${it.name}</div><div class="sd">${it.desc}</div>${btn}</div>`;
-  }
-  html += `</div><div class="tips">💸 지금까지 아낀 돈: <b>₩${S.spent.toLocaleString()}</b></div>`;
-  pg.innerHTML = html;
-  pg.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
-    const it = SHOP.find(x => x.id === b.dataset.buy);
-    if (it.once) S[it.once] = true;
-    S.spent += parseInt(it.price.replace(/[^\d]/g, ''), 10);
-    const msg = it.give(); save(); toast('✅ 결제 완료 (₩0)<br>' + msg); renderLobby();
-  });
-  pg.querySelectorAll('[data-gacha]').forEach(b => b.onclick = () => gacha(+b.dataset.gacha));
-  pg.querySelectorAll('[data-hs]').forEach(b => b.onclick = () => heroGacha(+b.dataset.hs));
-  pg.querySelectorAll('[data-ps]').forEach(b => b.onclick = () => petGacha(+b.dataset.ps));
-  pg.querySelectorAll('[data-rs]').forEach(b => b.onclick = () => relicGacha(+b.dataset.rs));
-}
-function gacha(n) {
-  if (!spend('gems', n === 0 ? 0 : n === 1 ? 300 : 2700)) return;
-  const got = [];
-  for (let i = 0; i < Math.max(1, n); i++) got.push(newItem(rollGrade()));
-  if (n === 10 && !got.some(i => i.g >= 3)) got[9].g = 3;
-  save(); refreshTop();
-  const best = Math.max(...got.map(i => i.g));
-  const box = showModal(`<h2 style="color:${GRADES[best].c}">${best >= 7 ? '🌈 SSS 등급!!' : best >= 5 ? '✨ S 등급 이상!' : '📦 장비 획득'}</h2>
-    <div class="ggrid">${got.map((it, i) => itemTile(it, 'pop', `animation-delay:${i * 0.07}s`)).join('')}</div>
-    <div class="row"><button class="btn gray" id="ok">확인</button><button class="btn purple" id="again">한 번 더</button></div>`);
-  box.querySelector('#ok').onclick = () => { closeModal(); renderLobby(); };
-  box.querySelector('#again').onclick = () => { closeModal(); gacha(n); };
 }
 
 // ============================================================

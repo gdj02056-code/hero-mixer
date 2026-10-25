@@ -214,6 +214,31 @@ small{opacity:.8}
 /* shop */
 .sbtns{display:flex;gap:4px}
 .sbtns .btn{flex:1}
+.shoptabs{position:sticky;top:-12px;z-index:3;display:flex;gap:5px;overflow-x:auto;margin:-12px -14px 4px;padding:10px 14px 8px;background:linear-gradient(#1c2045 85%,transparent)}
+.shoptabs button{flex:none;border:1px solid #3d4385;background:#1d2147;color:#c7cbef;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:800}
+.shoptabs button.on{background:#facc15;color:#3b1d00;border-color:#facc15}
+.sitem{position:relative}
+.sitem .corner{position:absolute;top:-6px;right:-4px}
+.sitem .badge{white-space:nowrap}
+.vip{display:flex;gap:12px;align-items:center;background:linear-gradient(120deg,#6d28d9,#b45309);border-radius:16px;padding:12px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.vip .vlv{width:64px;height:64px;flex:none;border-radius:50%;background:radial-gradient(#fde68a,#f59e0b);color:#3b1d00;display:grid;place-items:center;font-size:11px;font-weight:900;line-height:1;text-align:center}
+.vip .vlv b{display:block;font-size:26px}
+.vip .vinfo{flex:1;font-size:13px}
+.vip .expbar{margin:6px 0}
+.vip small{opacity:.9}
+.deals .sitem{background:linear-gradient(#5b1f1f,#2a1d47);border-color:#ef4444}
+.sitem.sum{flex-direction:column;align-items:stretch;background:linear-gradient(120deg,#1f3b6b,#2a2f62)}
+.sitem.sum.lucky{background:linear-gradient(120deg,#14532d,#2a2f62)}
+.sumtop{display:flex;align-items:center;gap:10px;text-align:left}
+.sitem.sum .btn{padding:6px 4px;font-size:13px;line-height:1.2}
+.rates{font-size:10px;font-weight:800;display:flex;flex-wrap:wrap;gap:2px 8px;justify-content:center;opacity:.9}
+.sitem.custom{background:linear-gradient(120deg,#78350f,#2a2f62)}
+.camt{display:flex;align-items:center;gap:6px;margin:6px 0}
+.camt input{flex:1;min-width:0;font-size:16px;font-weight:800;padding:7px 10px;border-radius:10px;border:2px solid #facc15;background:#0e0f1f;color:#fff}
+input{user-select:text;-webkit-user-select:text}
+.qbtns{display:flex;flex-wrap:wrap;gap:4px}
+.qbtns button{border:1px solid #a16207;background:rgba(0,0,0,.35);color:#fde68a;border-radius:8px;padding:4px 7px;font-size:12px;font-weight:800}
+h3 .btn.mini{vertical-align:middle}
 
 /* misc images inside cards / summaries */
 .card .ic img{width:44px;height:44px}

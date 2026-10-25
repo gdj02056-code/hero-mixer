@@ -137,6 +137,34 @@ const HEROES = [
   { id: 'reaper', name: '사신', r: 3, wt: 'scythe', look: { hair: '#e5e7eb', body: '#111827', cape: '#4c1d95', skin: '#d1d5db', hood: '#1f2937' }, bonus: { atkPct: 0.25, critDmg: 0.5 } },
   { id: 'dragoon', name: '용기사', r: 3, wt: 'spear', look: { hair: '#fbbf24', body: '#991b1b', cape: '#f59e0b', skin: '#fde4c8', helmet: '#b91c1c', horns: true }, bonus: { atkPct: 0.3, hpPct: 0.2 } },
   { id: 'archmage', name: '대마법사', r: 3, wt: 'spellbook', look: { hair: '#e0e7ff', body: '#3730a3', cape: '#818cf8', skin: '#fde4c8', hat: 'wizard', hatColor: '#312e81' }, bonus: { skillDmg: 0.35, exp: 0.25, aspd: 0.1 } },
+  // R
+  { id: 'squire', name: '방패병', r: 0, wt: 'sword', look: { hair: '#92400e', body: '#475569', cape: '#0369a1', skin: '#fde4c8', helmet: '#94a3b8' }, bonus: { def: 10, hpPct: 0.06 } },
+  { id: 'hunter', name: '사냥꾼', r: 0, wt: 'crossbow', look: { hair: '#57534e', body: '#4d7c0f', cape: '#78350f', skin: '#f5d0b0', band: '#b91c1c' }, bonus: { crit: 0.06, magnet: 0.1 } },
+  { id: 'farmer', name: '용감한 농부', r: 0, wt: 'axe', look: { hair: '#a16207', body: '#0284c7', cape: '#65a30d', skin: '#f5d0b0', hat: 'cowboy', hatColor: '#ca8a04' }, bonus: { goldGain: 0.15, hpPct: 0.05 } },
+  { id: 'apprentice', name: '견습 마법사', r: 0, wt: 'wand', look: { hair: '#7c3aed', body: '#6d28d9', cape: '#c4b5fd', skin: '#fde4c8', hat: 'wizard', hatColor: '#4c1d95' }, bonus: { skillDmg: 0.08, exp: 0.05 } },
+  { id: 'sailor', name: '해적 선원', r: 0, wt: 'gun', look: { hair: '#111827', body: '#f1f5f9', cape: '#1e3a8a', skin: '#e7b98f', band: '#dc2626' }, bonus: { aspd: 0.06, goldGain: 0.08 } },
+  { id: 'scout', name: '숲 정찰병', r: 0, wt: 'spear', look: { hair: '#facc15', body: '#15803d', cape: '#166534', skin: '#fde4c8', elf: true }, bonus: { spd: 0.08, magnet: 0.1 } },
+  // SR
+  { id: 'priest', name: '사제', r: 1, wt: 'staff', look: { hair: '#fde68a', body: '#f8fafc', cape: '#60a5fa', skin: '#fde4c8', halo: true }, bonus: { regen: 2, hpPct: 0.1 } },
+  { id: 'samurai', name: '사무라이', r: 1, wt: 'sword', look: { hair: '#111827', body: '#991b1b', cape: '#1f2937', skin: '#fde4c8', band: '#f8fafc' }, bonus: { crit: 0.1, critDmg: 0.25 } },
+  { id: 'catgirl', name: '고양이 검사', r: 1, wt: 'dagger', look: { hair: '#fb923c', body: '#fef3c7', cape: '#f97316', skin: '#fde4c8', cat: true }, bonus: { aspd: 0.12, spd: 0.06 } },
+  { id: 'viking', name: '바이킹', r: 1, wt: 'axe', look: { hair: '#f59e0b', body: '#78716c', cape: '#1e40af', skin: '#f5d0b0', horns: true, beard: true }, bonus: { atkPct: 0.12, hpPct: 0.1 } },
+  { id: 'elfarcher', name: '엘프 궁수', r: 1, wt: 'bow', look: { hair: '#fef9c3', body: '#4ade80', cape: '#14532d', skin: '#fde4c8', elf: true }, bonus: { crit: 0.08, aspd: 0.08 } },
+  { id: 'alchemist', name: '연금술사', r: 1, wt: 'spellbook', look: { hair: '#0f766e', body: '#115e59', cape: '#5eead4', skin: '#fde4c8', hood: '#134e4a' }, bonus: { skillDmg: 0.12, goldGain: 0.1 } },
+  // SSR
+  { id: 'stormmage', name: '폭풍 마법사', r: 2, wt: 'wand', look: { hair: '#38bdf8', body: '#1e3a8a', cape: '#60a5fa', skin: '#fde4c8', hat: 'wizard', hatColor: '#1e40af' }, bonus: { skillDmg: 0.25, aspd: 0.1 } },
+  { id: 'commander', name: '기사단장', r: 2, wt: 'sword', look: { hair: '#d1d5db', body: '#1f2937', cape: '#dc2626', skin: '#f5d0b0', helmet: '#475569', beard: true }, bonus: { atkPct: 0.15, def: 30 } },
+  { id: 'shadowqueen', name: '그림자 여왕', r: 2, wt: 'scythe', look: { hair: '#581c87', body: '#18181b', cape: '#7e22ce', skin: '#e9d5ff', crown: true }, bonus: { critDmg: 0.4, crit: 0.08 } },
+  { id: 'sniper', name: '저격수', r: 2, wt: 'crossbow', look: { hair: '#4b5563', body: '#3f6212', cape: '#365314', skin: '#f5d0b0', hood: '#4d7c0f' }, bonus: { crit: 0.15, critDmg: 0.3 } },
+  { id: 'saint', name: '성녀', r: 2, wt: 'staff', look: { hair: '#fef3c7', body: '#fefce8', cape: '#fbbf24', skin: '#fde4c8', halo: true, crown: true }, bonus: { hpPct: 0.3, regen: 3 } },
+  { id: 'tiger', name: '호랑이 전사', r: 2, wt: 'hammer', look: { hair: '#f97316', body: '#78350f', cape: '#ea580c', skin: '#f5d0b0', cat: true, band: '#111827' }, bonus: { atkPct: 0.2, spd: 0.06 } },
+  // UR
+  { id: 'sunking', name: '태양왕', r: 3, wt: 'sword', look: { hair: '#fbbf24', body: '#facc15', cape: '#dc2626', skin: '#fde4c8', crown: true }, bonus: { atkPct: 0.35, goldGain: 0.3 } },
+  { id: 'lich', name: '리치 군주', r: 3, wt: 'spellbook', look: { hair: '#a5f3fc', body: '#1e1b4b', cape: '#0e7490', skin: '#c7d2fe', crown: true }, bonus: { skillDmg: 0.4, exp: 0.2, regen: 2 } },
+  { id: 'archangel', name: '대천사', r: 3, wt: 'spear', look: { hair: '#fef9c3', body: '#f8fafc', cape: '#fde047', skin: '#fde4c8', halo: true, helmet: '#fde68a' }, bonus: { hpPct: 0.35, atkPct: 0.2, def: 30 } },
+  { id: 'demonlord', name: '마왕', r: 3, wt: 'scythe', look: { hair: '#111827', body: '#450a0a', cape: '#991b1b', skin: '#fca5a5', horns: true, crown: true }, bonus: { atkPct: 0.4, critDmg: 0.4 } },
+  { id: 'gunqueen', name: '총의 여제', r: 3, wt: 'gun', look: { hair: '#e11d48', body: '#1f2937', cape: '#be123c', skin: '#fde4c8', hat: 'cowboy', hatColor: '#111827' }, bonus: { aspd: 0.25, crit: 0.15 } },
+  { id: 'titan', name: '거신', r: 3, wt: 'hammer', look: { hair: '#78716c', body: '#57534e', cape: '#a16207', skin: '#e7b98f', helmet: '#a8a29e', beard: true }, bonus: { hpPct: 0.5, def: 50, atkPct: 0.15 } },
 ];
 const HERO = Object.fromEntries(HEROES.map(h => [h.id, h]));
 const HERO_STAR_SHARDS = [1, 2, 3, 5, 8];
@@ -152,13 +180,32 @@ const PRAR = [
   { n: '전설', c: '#fbbf24', m: 3.2 },
 ];
 const PET_GACHA_W = [55, 30, 12, 3];
+// base = body drawing, kind = how it fights, c = colors
 const PETS = [
-  { id: 'slime', name: '말랑 슬라임', r: 0, desc: '끈적한 점액탄을 뱉습니다' },
-  { id: 'cat', name: '고양이 기사', r: 0, desc: '근처 적을 할퀴며 싸웁니다' },
-  { id: 'fairy', name: '치유 요정', r: 1, desc: '주기적으로 체력을 회복시켜 줍니다' },
-  { id: 'ghost', name: '꼬마 유령', r: 1, desc: '관통하는 유령탄을 쏩니다' },
-  { id: 'eagle', name: '폭풍 독수리', r: 2, desc: '적에게 급강하해 큰 피해' },
-  { id: 'dragon', name: '아기 용', r: 3, desc: '폭발하는 화염구를 뿜습니다' },
+  { id: 'slime', name: '말랑 슬라임', r: 0, base: 'slime', kind: 'goo', c: ['#4ade80', '#bbf7d0'], desc: '끈적한 점액탄으로 적을 느리게' },
+  { id: 'cat', name: '고양이 기사', r: 0, base: 'cat', kind: 'scratch', c: ['#fb923c', '#94a3b8'], desc: '근처 적을 할퀴며 싸워요' },
+  { id: 'bunny', name: '깡총 토끼', r: 0, base: 'bunny', kind: 'scratch', c: ['#f8fafc', '#f9a8d4'], desc: '뛰어다니며 적을 걷어차요' },
+  { id: 'penguin', name: '꼬마 펭귄', r: 0, base: 'penguin', kind: 'frost', c: ['#1f2937', '#f8fafc'], desc: '얼음탄으로 적을 얼려요' },
+  { id: 'shroom', name: '독버섯', r: 0, base: 'mushroom', kind: 'spore', c: ['#dc2626', '#fef3c7'], desc: '독 포자를 날려요' },
+  { id: 'bee', name: '꿀벌', r: 0, base: 'bee', kind: 'sting', c: ['#facc15', '#1f2937'], desc: '빠르게 독침을 연사해요' },
+  { id: 'fireslime', name: '불꽃 슬라임', r: 0, base: 'slime', kind: 'fire', c: ['#f97316', '#fde68a'], desc: '작은 불덩이를 뱉어요' },
+  { id: 'puppy', name: '황금 강아지', r: 0, base: 'dog', kind: 'coin', c: ['#d97706', '#fde68a'], desc: '골드를 물어 와요 + 깨물기' },
+  { id: 'fairy', name: '치유 요정', r: 1, base: 'fairy', kind: 'heal', c: ['#f9a8d4', '#bae6fd'], desc: '주기적으로 체력을 회복시켜 줘요' },
+  { id: 'ghost', name: '꼬마 유령', r: 1, base: 'ghost', kind: 'ghost', c: ['#f1f5f9'], desc: '관통하는 유령탄을 쏴요' },
+  { id: 'turtle', name: '바위 거북', r: 1, base: 'turtle', kind: 'quake', c: ['#65a30d', '#a3e635'], desc: '주변에 충격파를 일으켜요' },
+  { id: 'iceslime', name: '얼음 슬라임', r: 1, base: 'slime', kind: 'frost', c: ['#67e8f9', '#ecfeff'], desc: '적을 꽁꽁 얼려요' },
+  { id: 'owl', name: '지혜의 부엉이', r: 1, base: 'owl', kind: 'zap', c: ['#92400e', '#fde68a'], desc: '번개를 떨어뜨려요' },
+  { id: 'fox', name: '불여우', r: 1, base: 'fox', kind: 'fire', c: ['#ea580c', '#fff7ed'], desc: '여우불을 날려요' },
+  { id: 'robot', name: '미니 로봇', r: 1, base: 'robot', kind: 'laser', c: ['#94a3b8', '#ef4444'], desc: '레이저 빔을 발사해요' },
+  { id: 'eagle', name: '폭풍 독수리', r: 2, base: 'eagle', kind: 'dive', c: ['#92400e', '#f8fafc'], desc: '적에게 급강하해 큰 피해' },
+  { id: 'wolf', name: '서리 늑대', r: 2, base: 'wolf', kind: 'scratch', c: ['#93c5fd', '#e0f2fe'], desc: '강하게 물어뜯어요' },
+  { id: 'jelly', name: '전기 해파리', r: 2, base: 'jelly', kind: 'zap', c: ['#c084fc', '#f5d0fe'], desc: '연쇄 번개를 일으켜요' },
+  { id: 'golem', name: '미니 골렘', r: 2, base: 'golem', kind: 'quake', c: ['#78716c', '#facc15'], desc: '땅을 내려쳐 기절시켜요' },
+  { id: 'kingslime', name: '킹 슬라임', r: 2, base: 'slime', kind: 'goo', c: ['#facc15', '#fef9c3'], crown: true, desc: '거대한 점액탄 + 골드 보너스' },
+  { id: 'dragon', name: '아기 용', r: 3, base: 'dragon', kind: 'fire', c: ['#dc2626', '#8b5cf6', '#fde68a'], desc: '폭발하는 화염구를 뿜어요' },
+  { id: 'phoenix', name: '불사조', r: 3, base: 'phoenix', kind: 'phoenix', c: ['#f97316', '#fde047'], desc: '화염구 + 체력 회복' },
+  { id: 'icedragon', name: '얼음 용', r: 3, base: 'dragon', kind: 'frost', c: ['#38bdf8', '#e0f2fe', '#f0f9ff'], desc: '거대한 얼음 숨결' },
+  { id: 'starspirit', name: '별의 정령', r: 3, base: 'star', kind: 'starfall', c: ['#fde047', '#fef9c3'], desc: '하늘에서 별을 떨어뜨려요' },
 ];
 const PET = Object.fromEntries(PETS.map(p => [p.id, p]));
 const petMaxLv = st => 20 + st.stars * 10;
@@ -182,6 +229,10 @@ const RELICS = [
 const RELIC_W = [60, 28, 10, 2];
 const RELIC_MAX = 50;
 const relicCost = lv => Math.floor(300 * Math.pow(lv, 1.5));
+
+// ---------- VIP (grows with the money "saved" in the ₩0 shop) ----------
+const VIP_TIERS = [0, 10000, 50000, 150000, 300000, 600000, 1000000, 2000000, 5000000, 10000000, 30000000];
+function vipLevel(spent) { let v = 0; while (v + 1 < VIP_TIERS.length && spent >= VIP_TIERS[v + 1]) v++; return v; }
 
 // ---------- character level ----------
 const cexpNeed = lv => Math.floor(100 * Math.pow(lv, 1.35));
