@@ -193,9 +193,10 @@ const weaponKey = (wt, g) => gradedKey('weapons', wt, g);
 const equipKey = (slot, g) => gradedKey('equip', slot, g);
 // How the hand holds each weapon picture: grip = point in the picture (fractions), dir = the angle the
 // weapon points in the picture. Most weapons lie diagonally pointing up-right (-45°); the bow's stave is
-// that diagonal, so it points along its arrow (down-right, +45°) and is held at the middle of the stave.
+// that diagonal, so it points along its arrow (down-right, +45°) and is held where the arrow crosses the
+// stave (the handle), measured on the bow pictures.
 const WEAPON_HOLD = {
-  bow: { grip: [0.35, 0.37], dir: Math.PI / 4 },
+  bow: { grip: [0.425, 0.425], dir: Math.PI / 4 },
   crossbow: { grip: [0.3, 0.72] }, gun: { grip: [0.32, 0.7] }, hammer: { grip: [0.22, 0.78] }, axe: { grip: [0.22, 0.78] },
   spear: { grip: [0.3, 0.7] }, scythe: { grip: [0.26, 0.74] }, staff: { grip: [0.28, 0.72] },
 };
