@@ -505,7 +505,7 @@ function preloadBattleArt() {
   for (const k of ['gold', 'chest', 'meat', 'magnet_item', 'bomb']) keys.push('items/' + k);
   for (const id in WEAPONS) keys.push(skillImgKey(id, false), skillImgKey(id, true));
   for (const id in PASSIVES) keys.push(skillImgKey(id, false));
-  keys.push('heroes/' + S.hero);
+  keys.push('heroes/' + S.hero, 'heroes/' + S.hero + '_attack');
   if (S.pet) keys.push('pets/' + S.pet);
   const w = getItem(S.equip.weapon);
   if (w) keys.push(weaponKey(w.wt, w.g));

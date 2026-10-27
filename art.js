@@ -191,8 +191,14 @@ function gradedKey(dir, id, g) {
 }
 const weaponKey = (wt, g) => gradedKey('weapons', wt, g);
 const equipKey = (slot, g) => gradedKey('equip', slot, g);
-// where the hand holds each weapon image (fraction of the image; images are drawn diagonally, grip bottom-left)
-const WEAPON_GRIP = { bow: [0.38, 0.55], crossbow: [0.3, 0.72], gun: [0.32, 0.7], hammer: [0.22, 0.78], axe: [0.22, 0.78], spear: [0.3, 0.7], scythe: [0.26, 0.74], staff: [0.28, 0.72] };
+// How the hand holds each weapon picture: grip = point in the picture (fractions), dir = the angle the
+// weapon points in the picture. Most weapons lie diagonally pointing up-right (-45°); the bow's stave is
+// that diagonal, so it points along its arrow (down-right, +45°) and is held at the middle of the stave.
+const WEAPON_HOLD = {
+  bow: { grip: [0.35, 0.37], dir: Math.PI / 4 },
+  crossbow: { grip: [0.3, 0.72] }, gun: { grip: [0.32, 0.7] }, hammer: { grip: [0.22, 0.78] }, axe: { grip: [0.22, 0.78] },
+  spear: { grip: [0.3, 0.7] }, scythe: { grip: [0.26, 0.74] }, staff: { grip: [0.28, 0.72] },
+};
 const WEAPON_IMG_SIZE = 44;
 // white silhouette of an image, for the hit flash
 const WHITE = new Map();
@@ -223,6 +229,7 @@ function drawHeld(c, o, t) {
   const wt = o.wt, aim = o.aim || 0, sw = o.swing == null ? -1 : o.swing;
   // hero pictures hold the weapon at the hand on the facing side; drawn heroes orbit it around the body
   let hx = o.img ? (o.face || 1) * 8 + Math.cos(aim) * 6 : Math.cos(aim) * 12, hy = o.img ? 4 + Math.sin(aim) * 4 : 5 + Math.sin(aim) * 7;
+  if (o.fist) { hx = o.fist.x; hy = o.fist.y; } // attack pose: the outstretched fist
   if (!wt) {
     const ext = sw >= 0 ? Math.sin(sw * Math.PI) * 12 : 0;
     circ(c, hx + Math.cos(aim) * ext, hy + Math.sin(aim) * ext, 4.5); paint(c, o.look.skin);
@@ -251,8 +258,8 @@ function drawHeld(c, o, t) {
   if ((o.grade || 0) >= 5) { c.shadowColor = col; c.shadowBlur = 12; }
   const wk = weaponKey(wt, o.grade || 0), wim = imgReady(wk);
   if (wim) {
-    const [gx, gy] = WEAPON_GRIP[wt] || [0.2, 0.8], S = WEAPON_IMG_SIZE;
-    c.rotate(-Math.PI / 4); // image points up-right; turn it to point along the aim
+    const hold = WEAPON_HOLD[wt] || {}, [gx, gy] = hold.grip || [0.2, 0.8], S = WEAPON_IMG_SIZE;
+    c.rotate(-Math.PI / 2 - (hold.dir == null ? -Math.PI / 4 : hold.dir)); // turn the picture's pointing direction onto the aim
     c.drawImage(wim, -gx * S, -gy * S, S, S);
   } else if (!imgPending(wk)) { const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k); A.draw(c, col); }
   c.restore();
@@ -289,6 +296,8 @@ function heroPose(kind, sw, t) {
   }
   return p;
 }
+// where the attack-pose pictures put the fist (asked for in image_jobs/08_hero_attack.txt)
+const ATTACK_FIST = [0.72, 0.55];
 function drawHeroImg(c, x, y, o, t, im) {
   const face = o.face || 1, H = 50, walk = o.walk || 0, aim = o.aim || 0, sw = o.swing == null ? -1 : o.swing;
   const kind = o.wt ? WT[o.wt].kind : 'slash';
@@ -307,9 +316,14 @@ function drawHeroImg(c, x, y, o, t, im) {
     c.fillStyle = g; circ(c, face * 9, 2, 22); c.fill();
   }
   const behind = Math.sin(aim) < -0.35;
+  const atkReady = sw >= 0 && imgReady('heroes/' + o.id + '_attack');
+  if (atkReady) o.fist = { x: face * (ATTACK_FIST[0] - 0.5) * H, y: 17 - H * imgBottom('heroes/' + o.id + '_attack') + ATTACK_FIST[1] * H };
   if (behind) drawHeld(c, o, t);
   c.save(); c.scale(face, 1);
-  c.drawImage(im, -H / 2, 17 - H * imgBottom('heroes/' + o.id), H, H);
+  // while attacking, swap to the attack-pose picture (if it has downloaded) and put the weapon in its fist
+  const atkKey = 'heroes/' + o.id + '_attack', atk = sw >= 0 && imgReady(atkKey);
+  const pic = atk || im, picKey = atk ? atkKey : 'heroes/' + o.id, top = 17 - H * imgBottom(picKey);
+  c.drawImage(pic, -H / 2, top, H, H);
   c.restore();
   if (!behind) drawHeld(c, o, t);
   c.restore();
