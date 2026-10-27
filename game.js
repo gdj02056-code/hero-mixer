@@ -1440,11 +1440,22 @@ function enemyPose(e) {
 }
 const FLYING_MONSTERS = new Set(['monsters/bat', 'bosses/boss9']);
 const enemyImgKey = e => e.boss ? `bosses/boss${(e.lvl - 1) % BOSSES.length + 1}` : `monsters/${e.elite ? 'elite' : e.type}`;
+// attack-pose picture for this moment, or null: bosses show `_charge` while winding up, dashing or leaping
+// and `_cast` while casting; the archer shows `_attack` while drawing and loosing, the rest while attacking
+function enemyAtkKey(e, base) {
+  if (e.boss) return e.windT > 0 || e.dashT > 0 || e.leap ? base + '_charge' : e.castT > 0 || e.fadeT > 0 ? base + '_cast' : null;
+  if (e.ranged) return e.recoilT > 0 || (e.shootT < 0.45 && e.pd < 480) ? base + '_attack' : null;
+  return e.atkT > 0 ? base + '_attack' : null;
+}
 function drawEnemy(e) {
   const p = G.p, bob = Math.sin(G.time * 8 + e.wob) * 1.5, y = e.y + bob, r = e.r;
   ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(e.x, e.y + r * 0.85, r * 0.9, r * 0.3, 0, 0, TAU); ctx.fill();
   // attack pose: step toward the player, hop, lean and squash around the feet
   const pd = Math.hypot(p.x - e.x, p.y - e.y) || 1, ux = (p.x - e.x) / pd, uy = (p.y - e.y) / pd, P = enemyPose(e);
+  const imKey = enemyImgKey(e), im = imgReady(imKey), noArt = im || imgPending(imKey);
+  // swap to the attack-pose picture once it has downloaded; it does most of the acting, so squash and lean less
+  const atkKey = im && enemyAtkKey(e, imKey), atk = imgReady(atkKey);
+  if (atk) { P.sx = 1 + (P.sx - 1) * 0.4; P.sy = 1 + (P.sy - 1) * 0.4; P.rot *= 0.4; }
   ctx.save();
   if (e.fadeT > 0) ctx.globalAlpha = e.fadeT / 0.5; // shadow strike: fade out before reappearing
   ctx.translate(P.dx * ux, P.dx * uy * 0.6 + P.dy);
@@ -1455,7 +1466,6 @@ function drawEnemy(e) {
     ctx.fillStyle = g; circle(e.x, y, r * 1.8); ctx.fill();
   }
   const col = e.flash > 0 ? '#ffffff' : e.color;
-  const imKey = enemyImgKey(e), im = imgReady(imKey), noArt = im || imgPending(imKey);
   if (e.type === 'bat' && !noArt) {
     const flap = Math.sin(G.time * 20 + e.wob) * 6;
     ctx.fillStyle = e.flash > 0 ? '#fff' : '#6b21a8';
@@ -1467,11 +1477,11 @@ function drawEnemy(e) {
     ctx.strokeStyle = 'rgba(239,68,68,.5)'; ctx.lineWidth = r * 1.4; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(e.x + Math.cos(a) * 330, e.y + Math.sin(a) * 330); ctx.stroke();
   }
   if (im) {
-    const S = r * 2.8;
+    const S = r * 2.8, pic = atk || im;
     const lift = FLYING_MONSTERS.has(imKey) ? r * 0.5 + Math.sin(G.time * 5 + e.wob) * 3 : 0;
-    const ix = e.x - S / 2, iy = y + r * 0.95 - S * imgBottom(imKey) - lift;
-    ctx.drawImage(im, ix, iy, S, S);
-    if (e.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(whiteOf(im), ix, iy, S, S); ctx.globalAlpha = 1; } // hit flash over the picture
+    const ix = e.x - S / 2, iy = y + r * 0.95 - S * imgBottom(atk ? atkKey : imKey) - lift;
+    ctx.drawImage(pic, ix, iy, S, S);
+    if (e.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(whiteOf(pic), ix, iy, S, S); ctx.globalAlpha = 1; } // hit flash over the picture
   } else if (!noArt) {
   ctx.fillStyle = col;
   if (e.type === 'golem') { rr(e.x - r, y - r, r * 2, r * 2, r * 0.4); ctx.fill(); }

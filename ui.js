@@ -499,8 +499,9 @@ function applyLobbyArt() {
   });
 }
 function preloadBattleArt() {
-  const keys = ['monsters/slime', 'monsters/bat', 'monsters/archer', 'monsters/golem', 'monsters/elite'];
-  for (let i = 1; i <= BOSSES.length; i++) keys.push('bosses/boss' + i);
+  const keys = [];
+  for (const m of ['slime', 'bat', 'archer', 'golem', 'elite']) keys.push('monsters/' + m, 'monsters/' + m + '_attack');
+  for (let i = 1; i <= BOSSES.length; i++) keys.push('bosses/boss' + i, 'bosses/boss' + i + '_charge', 'bosses/boss' + i + '_cast');
   for (let i = 1; i <= STAGES.length; i++) keys.push('stages/stage' + i);
   for (const k of ['gold', 'chest', 'meat', 'magnet_item', 'bomb']) keys.push('items/' + k);
   for (const id in WEAPONS) keys.push(skillImgKey(id, false), skillImgKey(id, true));
