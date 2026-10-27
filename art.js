@@ -192,11 +192,12 @@ function gradedKey(dir, id, g) {
 const weaponKey = (wt, g) => gradedKey('weapons', wt, g);
 const equipKey = (slot, g) => gradedKey('equip', slot, g);
 // How the hand holds each weapon picture: grip = point in the picture (fractions), dir = the angle the
-// weapon points in the picture. Most weapons lie diagonally pointing up-right (-45°); the bow's stave is
-// that diagonal, so it points along its arrow (down-right, +45°) and is held where the arrow crosses the
-// stave (the handle), measured on the bow pictures.
+// weapon points in the picture. Most weapons lie diagonally pointing up-right (-45°). The bow's stave is
+// that diagonal and it is held where the arrow crosses the stave (the handle), measured on the bow
+// pictures. The arrowhead is drawn at the upper-left (-135°) on F–C but at the lower-right on the other
+// grades, so `flip` turns those pictures around (by picture, since a missing grade borrows a lower one).
 const WEAPON_HOLD = {
-  bow: { grip: [0.425, 0.425], dir: Math.PI / 4 },
+  bow: { grip: [0.425, 0.425], dir: -Math.PI * 3 / 4, flip: new Set(['bow_B', 'bow_A', 'bow_S', 'bow_SS', 'bow_SSS', 'bow_EPIC', 'bow_LEGEND']) },
   crossbow: { grip: [0.3, 0.72] }, gun: { grip: [0.32, 0.7] }, hammer: { grip: [0.22, 0.78] }, axe: { grip: [0.22, 0.78] },
   spear: { grip: [0.3, 0.7] }, scythe: { grip: [0.26, 0.74] }, staff: { grip: [0.28, 0.72] },
 };
@@ -260,7 +261,8 @@ function drawHeld(c, o, t) {
   const wk = weaponKey(wt, o.grade || 0), wim = imgReady(wk);
   if (wim) {
     const hold = WEAPON_HOLD[wt] || {}, [gx, gy] = hold.grip || [0.2, 0.8], S = WEAPON_IMG_SIZE;
-    c.rotate(-Math.PI / 2 - (hold.dir == null ? -Math.PI / 4 : hold.dir)); // turn the picture's pointing direction onto the aim
+    const dir = (hold.dir == null ? -Math.PI / 4 : hold.dir) + (hold.flip && hold.flip.has(wk.slice(wk.indexOf('/') + 1)) ? Math.PI : 0);
+    c.rotate(-Math.PI / 2 - dir); // turn the picture's pointing direction onto the aim
     c.drawImage(wim, -gx * S, -gy * S, S, S);
   } else if (!imgPending(wk)) { const k = A.span > 68 ? 0.62 : 0.72; c.scale(k, k); A.draw(c, col); }
   c.restore();
