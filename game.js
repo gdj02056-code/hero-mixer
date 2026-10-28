@@ -488,7 +488,10 @@ function updateEnemies(dt) {
     } else if (e.ranged) {
       if (d < 200) dir = -0.6; else if (d < 320) dir = 0;
       e.shootT -= dt;
-      if (e.shootT <= 0 && d < 480 && spd > 0) { e.shootT = 2.6; e.recoilT = 0.2; shootAt(e, Math.atan2(dy, dx), 210, e.dmg); }
+      if (e.shootT <= 0 && d < 480 && spd > 0) {
+        e.shootT = 2.6; e.recoilT = 0.2; shootAt(e, Math.atan2(dy, dx), 210, e.dmg);
+        if (onScreen(e)) G.fx.push({ type: 'muzzle', x: e.x + dx / d * e.r, y: e.y + dy / d * e.r, t: 0, life: 0.12 }); // bowstring flash
+      }
     }
     let mx = dx / d * dir, my = dy / d * dir;
     // field/leader bosses don't chase you out of their territory; they walk home and heal
@@ -506,11 +509,11 @@ function updateEnemies(dt) {
     for (const k of ['atkT', 'atkCd', 'hitT', 'recoilT', 'castT']) if (e[k] > 0) e[k] -= dt;
     if (!e.ranged && !e.boss && !(e.atkCd > 0) && d < e.r + p.r + 30) {
       e.atkDur = e.atkT = e.elite ? 0.6 : e.type === 'golem' ? 0.55 : 0.4;
-      e.atkCd = e.atkDur + 0.45; e.slammed = false;
+      e.atkCd = e.atkDur + 0.45; e.struck = false;
     }
-    if (e.type === 'golem' && e.atkT > 0 && !e.slammed && 1 - e.atkT / e.atkDur > 0.55) {
-      e.slammed = true;
-      G.fx.push({ type: 'pop', x: e.x + (dx / d) * e.r, y: e.y + e.r * 0.6, r: e.r * 0.7, t: 0, life: 0.3, color: '#d6d3d1' });
+    if (e.atkT > 0 && !e.struck && 1 - e.atkT / e.atkDur > STRIKE_AT[e.elite ? 'elite' : e.type]) {
+      e.struck = true;
+      if (onScreen(e)) strikeFx(e, dx / d, dy / d);
     }
     if (!e.boss) {
       forNear(e.x, e.y, e.r, o => {
@@ -525,6 +528,18 @@ function updateEnemies(dt) {
     }
     if (d < e.r + p.r - 3 && !e.airborne) hurtPlayer(e.dmg);
   }
+}
+// When each monster's attack lands (fraction of the attack, matching enemyPose) and the mark it leaves there.
+// Visual only: damage still comes from touching the player.
+const STRIKE_AT = { slime: 0.85, bat: 0.6, golem: 0.55, elite: 0.7 };
+function strikeFx(e, ux, uy) {
+  const x = e.x + ux * (e.r + 6), y = e.y + uy * (e.r + 6), a = Math.atan2(uy, ux), seed = Math.random() * 100;
+  if (e.elite) G.fx.push({ type: 'claw', x, y, a, r: e.r * 1.6, color: '#ef4444', t: 0, life: 0.3 });
+  else if (e.type === 'slime') G.fx.push({ type: 'drops', x, y, r: e.r * 1.3, color: '#84cc16', seed, t: 0, life: 0.4 });
+  else if (e.type === 'bat') G.fx.push({ type: 'bite', x, y, r: e.r, t: 0, life: 0.25 });
+  else if (e.type === 'golem') G.fx.push(
+    { type: 'shock', x: e.x + ux * e.r, y: e.y + e.r * 0.6, r: e.r * 1.4, color: '#a8a29e', seed, t: 0, life: 0.4 },
+    { type: 'pop', x: e.x + ux * e.r, y: e.y + e.r * 0.6, r: e.r * 0.7, t: 0, life: 0.3, color: '#d6d3d1' });
 }
 function hitEnemy(e, dmg, kx = 0, ky = 0) {
   if (e.dead) return;
@@ -1365,6 +1380,33 @@ function drawFx() {
         break;
       }
       case 'muzzle': ctx.globalAlpha = 1 - k; ctx.fillStyle = '#fef08a'; star(ctx, f.x, f.y, 12, 4, 6); ctx.fill(); break;
+      case 'claw': { // three claw marks raked across the attack line
+        ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.a + Math.PI / 2 + 0.5);
+        ctx.globalAlpha = 1 - k * k;
+        const L = f.r * Math.min(1, k * 5);
+        for (let i = -1; i <= 1; i++) {
+          line(ctx, [-f.r / 2, i * 8, -f.r / 2 + L, i * 8 + 4], f.color, 6 * (1 - k) + 2);
+          line(ctx, [-f.r / 2, i * 8, -f.r / 2 + L, i * 8 + 4], '#fff', 2);
+        }
+        ctx.restore();
+        break;
+      }
+      case 'drops': // slime splash: droplets flung out from the landing spot
+        ctx.globalAlpha = 1 - k; ctx.fillStyle = f.color;
+        for (let i = 0; i < 8; i++) {
+          const a = hash2(i, f.seed | 0) * TAU, l = f.r * (0.3 + k) * (0.6 + hash2(f.seed | 0, i) * 0.6);
+          circle(f.x + Math.cos(a) * l, f.y + Math.sin(a) * l * 0.6 - Math.sin(k * Math.PI) * 8, 3.5 * (1 - k) + 1.2); ctx.fill();
+        }
+        break;
+      case 'bite': { // upper and lower fangs snapping shut
+        const gap = f.r * 0.6 * Math.max(0, 1 - k * 3);
+        ctx.globalAlpha = 1 - k * k; ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6b21a8'; ctx.lineWidth = 1.5;
+        for (const s of [-1, 1]) for (let i = -1; i <= 1; i++) {
+          const x = f.x + i * 7, y = f.y + s * (gap + 8);
+          ctx.beginPath(); ctx.moveTo(x - 3.5, y); ctx.lineTo(x + 3.5, y); ctx.lineTo(x, y - s * 9); ctx.closePath(); ctx.fill(); ctx.stroke();
+        }
+        break;
+      }
       case 'beam':
         ctx.globalAlpha = 1 - k; ctx.lineCap = 'round'; ctx.shadowColor = f.color; ctx.shadowBlur = 14;
         line(ctx, [f.x, f.y, f.x2, f.y2], f.color, 8 * (1 - k) + 2); line(ctx, [f.x, f.y, f.x2, f.y2], '#fff', 2);
@@ -1455,7 +1497,12 @@ function drawEnemy(e) {
   const imKey = enemyImgKey(e), im = imgReady(imKey), noArt = im || imgPending(imKey);
   // swap to the attack-pose picture once it has downloaded; it does most of the acting, so squash and lean less
   const atkKey = im && enemyAtkKey(e, imKey), atk = imgReady(atkKey);
-  if (atk) { P.sx = 1 + (P.sx - 1) * 0.4; P.sy = 1 + (P.sy - 1) * 0.4; P.rot *= 0.4; }
+  // the moment a pose picture appears it pops bigger and settles, so the swap reads as a sudden move
+  if ((atk ? atkKey : null) !== e.atkShown) { e.atkShown = atk ? atkKey : null; e.popAt = G.time; }
+  if (atk) {
+    const pop = 1 + 0.22 * Math.max(0, 1 - (G.time - e.popAt) / 0.18);
+    P.sx = (1 + (P.sx - 1) * 0.4) * pop; P.sy = (1 + (P.sy - 1) * 0.4) * pop; P.rot *= 0.4;
+  }
   ctx.save();
   if (e.fadeT > 0) ctx.globalAlpha = e.fadeT / 0.5; // shadow strike: fade out before reappearing
   ctx.translate(P.dx * ux, P.dx * uy * 0.6 + P.dy);
@@ -1480,6 +1527,11 @@ function drawEnemy(e) {
     const S = r * 2.8, pic = atk || im;
     const lift = FLYING_MONSTERS.has(imKey) ? r * 0.5 + Math.sin(G.time * 5 + e.wob) * 3 : 0;
     const ix = e.x - S / 2, iy = y + r * 0.95 - S * imgBottom(atk ? atkKey : imKey) - lift;
+    if (e.boss && e.dashT > 0) { // dash afterimages trailing behind
+      const a0 = ctx.globalAlpha;
+      for (let i = 3; i >= 1; i--) { ctx.globalAlpha = a0 * (0.45 - i * 0.12); ctx.drawImage(pic, ix - e.dvx * 0.04 * i, iy - e.dvy * 0.04 * i, S, S); }
+      ctx.globalAlpha = a0;
+    }
     ctx.drawImage(pic, ix, iy, S, S);
     if (e.flash > 0) { ctx.globalAlpha = 0.6; ctx.drawImage(whiteOf(pic), ix, iy, S, S); ctx.globalAlpha = 1; } // hit flash over the picture
   } else if (!noArt) {

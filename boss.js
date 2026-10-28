@@ -78,7 +78,10 @@ function bossUpdate(e, dt, dx, dy, spd) {
     return 0;
   }
   if (e.windT > 0) {
-    if ((e.windT -= dt) <= 0) { e.dashT = 0.55; const a = Math.atan2(dy, dx); e.dvx = Math.cos(a) * 560; e.dvy = Math.sin(a) * 560; }
+    if ((e.windT -= dt) <= 0) {
+      e.dashT = 0.55; const a = Math.atan2(dy, dx); e.dvx = Math.cos(a) * 560; e.dvy = Math.sin(a) * 560;
+      G.fx.push({ type: 'pop', x: e.x, y: e.y + e.r * 0.6, r: e.r, t: 0, life: 0.35, color: '#fca5a5' }); // kick-off dust
+    }
     return 0;
   }
   if (e.spiralT > 0) {
@@ -173,6 +176,10 @@ function castBossSkill(e, skill, a) {
       for (let i = 0; i < 3; i++) addHazard({ x: e.x + rand(-60, 60), y: e.y + rand(-60, 60), r: 38, warn: 0.6, life: 5, once: false, dmg: dmg * 0.5, color: '#e2e8f0', follow: 70 + i * 15, tornado: true });
       break;
     case 'spiral': e.spiralT = 2.2; e.spiralA = Math.random() * TAU; e.phaseT = 3.2; break;
+  }
+  if (e.castT >= 0.45) { // spell burst: a ring and sparks around the boss
+    G.fx.push({ type: 'pop', x: e.x, y: e.y, r: e.r * 1.2, t: 0, life: 0.4, color: '#c084fc' });
+    for (let i = 0; i < 6; i++) G.fx.push({ type: 'sparkle', x: e.x + rand(-1, 1) * e.r, y: e.y - rand(0, 1.3) * e.r, color: '#e9d5ff', t: 0, life: 0.5 });
   }
 }
 
