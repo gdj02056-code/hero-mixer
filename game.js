@@ -502,6 +502,7 @@ function updateEnemies(dt) {
     }
     e.x += (mx * spd + e.kx) * dt;
     e.y += (my * spd + e.ky) * dt;
+    if (!e.boss && e.type !== 'bat') pushOutOfProps(e, e.r * 0.7); // bats fly over, bosses smash through
     const decay = Math.max(0, 1 - dt * 9); e.kx *= decay; e.ky *= decay;
     if (e.flash > 0) e.flash -= dt;
     // attack animation timers — visual only, damage still comes from touching / shooting as before
@@ -604,6 +605,7 @@ function updatePlayer(dt) {
     let nx = p.x + mx * p.spd * slow * mag * dt, ny = p.y + my * p.spd * slow * mag * dt;
     if (G.world) { if (!accessible(secAt(nx, p.y))) nx = p.x; if (!accessible(secAt(nx, ny))) ny = p.y; }
     p.x = nx; p.y = ny; p.fx = mx; p.fy = my; p.walk += dt * 12 * mag;
+    pushOutOfProps(p, p.r * 0.6);
     if (p.anim <= 0) { p.aim = Math.atan2(my, mx); if (Math.abs(mx) > 0.2) p.face = Math.sign(mx); }
   }
   if (p.inv > 0) p.inv -= dt;
@@ -1077,35 +1079,9 @@ function render() {
   ctx.lineJoin = 'round';
   const hw = VW / 2 / ZOOM, hh = VH / 2 / ZOOM;
 
-  // ground
-  const T = 90, i0 = Math.floor((p.x - hw) / T), i1 = Math.floor((p.x + hw) / T), j0 = Math.floor((p.y - hh) / T), j1 = Math.floor((p.y + hh) / T);
-  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
-    let b = st, locked = false, bi = G.stage - 1;
-    if (G.world) {
-      const s = secAt(i * T + T / 2, j * T + T / 2);
-      if (s < 0) continue;
-      b = secBiome(s); locked = !accessible(s); bi = s;
-      ctx.fillStyle = b.g1; ctx.fillRect(i * T, j * T, T, T);
-    }
-    const pat = groundPattern(bi);
-    if (pat) {
-      ctx.fillStyle = pat; ctx.fillRect(i * T, j * T, T, T);
-      // calm the texture with the biome color so monsters and bullets stay readable
-      ctx.globalAlpha = 0.4; ctx.fillStyle = b.g1; ctx.fillRect(i * T, j * T, T, T); ctx.globalAlpha = 1;
-      if (locked) { ctx.fillStyle = 'rgba(5,6,13,.72)'; ctx.fillRect(i * T, j * T, T, T); }
-      continue;
-    }
-    if ((i + j) & 1) { ctx.fillStyle = b.g2; ctx.fillRect(i * T, j * T, T, T); }
-    const h = hash2(i, j);
-    if (h < 0.3) {
-      ctx.fillStyle = b.deco; ctx.globalAlpha = 0.55;
-      const dx = i * T + hash2(j, i) * T, dy = j * T + h * 3 * T;
-      if (h < 0.15) { circle(dx, dy, 3 + h * 20); ctx.fill(); }
-      else { ctx.fillRect(dx, dy, 3, 9); ctx.fillRect(dx + 5, dy + 2, 3, 7); ctx.fillRect(dx - 5, dy + 3, 3, 6); }
-      ctx.globalAlpha = 1;
-    }
-    if (locked) { ctx.fillStyle = 'rgba(5,6,13,.72)'; ctx.fillRect(i * T, j * T, T, T); }
-  }
+  // ground, then what lies flat on it (pools, cracks, flowers)
+  drawGround(hw, hh);
+  for (const q of visibleProps(hw, hh, true)) drawProp(q);
   if (G.world) drawWorldFeatures(hw, hh);
   drawHazards();
 
@@ -1148,15 +1124,24 @@ function render() {
     ctx.fillText({ meat: '🍖', magnet: '🧲', bomb: '💣', chest: '🎁' }[it.type], it.x, it.y + bob);
   }
 
-  for (const e of G.enemies) drawEnemy(e);
-  const petFront = G.pet && G.pet.y > p.y;
-  if (G.pet && !petFront) drawPet(ctx, G.pet.id, G.pet.x, G.pet.y, G.pet.t, G.pet.face);
-  drawHero(ctx, p.x, p.y, {
-    id: S.hero, look: p.look, wt: p.wt, grade: p.grade, aim: p.aim, face: p.face, walk: p.walk,
-    swing: p.anim > 0 ? 1 - p.anim / p.animMax : -1, alpha: p.inv > 0 && Math.floor(p.inv * 20) % 2 ? 0.45 : 1,
-  }, G.time);
-  ctx.globalAlpha = 1;
-  if (petFront) drawPet(ctx, G.pet.id, G.pet.x, G.pet.y, G.pet.t, G.pet.face);
+  // standing props, monsters, the pet and the hero, back to front by where their feet are
+  const layer = visibleProps(hw, hh, false).map(q => ({ y: q.y, q }));
+  for (const e of G.enemies) layer.push({ y: e.y + e.r * 0.85, e });
+  if (G.pet) layer.push({ y: G.pet.y + 10, pet: true });
+  layer.push({ y: p.y + 16, hero: true });
+  layer.sort((a, b) => a.y - b.y);
+  for (const d of layer) {
+    if (d.e) drawEnemy(d.e);
+    else if (d.q) drawProp(d.q);
+    else if (d.pet) drawPet(ctx, G.pet.id, G.pet.x, G.pet.y, G.pet.t, G.pet.face);
+    else {
+      drawHero(ctx, p.x, p.y, {
+        id: S.hero, look: p.look, wt: p.wt, grade: p.grade, aim: p.aim, face: p.face, walk: p.walk,
+        swing: p.anim > 0 ? 1 - p.anim / p.animMax : -1, alpha: p.inv > 0 && Math.floor(p.inv * 20) % 2 ? 0.45 : 1,
+      }, G.time);
+      ctx.globalAlpha = 1;
+    }
+  }
   ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(p.x - 21, p.y + 24, 42, 6, 3); ctx.fill();
   ctx.fillStyle = p.hp / p.maxHp > 0.3 ? '#22c55e' : '#ef4444'; rr(p.x - 20, p.y + 25, 40 * clamp(p.hp / p.maxHp, 0, 1), 4, 2); ctx.fill();
 
@@ -1201,12 +1186,16 @@ function groundPattern(i) {
   const im = imgReady(`stages/stage${i % STAGES.length + 1}`);
   if (!im) return null;
   let pat = GROUND.get(im);
-  if (!pat) { pat = ctx.createPattern(im, 'repeat'); GROUND.set(im, pat); }
+  if (!pat) {
+    pat = ctx.createPattern(im, 'repeat'); GROUND.set(im, pat);
+    if (pat.setTransform) pat.setTransform(new DOMMatrix().scale(320 / im.naturalWidth)); // one tile = 320 world units
+  }
   return pat;
 }
 function drawWorldFeatures(hw, hh) {
   const p = G.p, W = G.world, pulse = 0.6 + Math.sin(G.time * 4) * 0.3;
-  const c0 = Math.floor((p.x - hw) / SEC), c1 = Math.floor((p.x + hw) / SEC), r0 = Math.floor((p.y - hh) / SEC), r1 = Math.floor((p.y + hh) / SEC);
+  const m = SEC_WAVE; // a border can wander into view from a section just off screen
+  const c0 = Math.floor((p.x - hw - m) / SEC), c1 = Math.floor((p.x + hw + m) / SEC), r0 = Math.floor((p.y - hh - m) / SEC), r1 = Math.floor((p.y + hh + m) / SEC);
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   const label = (t, x, y, size, color) => { ctx.font = `900 ${size}px sans-serif`; ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.strokeText(t, x, y); ctx.fillStyle = color; ctx.fillText(t, x, y); };
   for (let col = c0; col <= c1; col++) for (let row = r0; row <= r1; row++) {
@@ -1221,18 +1210,17 @@ function drawWorldFeatures(hw, hh) {
       continue;
     }
     // walls to the void, glowing barriers to locked sections
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const n = secAt((col + dx + 0.5) * SEC, (row + dy + 0.5) * SEC);
+    for (const [dx, dy, side] of [[1, 0, 1], [-1, 0, 3], [0, 1, 2], [0, -1, 0]]) {
+      const n = secIdx(col + dx, row + dy);
       if (accessible(n)) continue;
-      const ex = dx === 1 ? x0 + SEC : x0, ey = dy === 1 ? y0 + SEC : y0;
-      ctx.beginPath();
-      if (dy) { ctx.moveTo(x0, ey); ctx.lineTo(x0 + SEC, ey); } else { ctx.moveTo(ex, y0); ctx.lineTo(ex, y0 + SEC); }
+      const pts = secBorder(col, row, side);
+      ctx.beginPath(); for (let i = 0; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]);
       if (n < 0) { ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 28; ctx.stroke(); ctx.strokeStyle = '#374151'; ctx.lineWidth = 8; ctx.stroke(); }
       else {
         ctx.globalAlpha = pulse; ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 16; ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 24; ctx.stroke();
         ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-        const mx = dy ? x0 + SEC / 2 : ex, my = dy ? ey : y0 + SEC / 2;
-        label('🔒 대장 보스를 잡으면 열려요', mx - dx * 40, my - dy * 40, 22, '#e9d5ff');
+        const mid = pts.length / 2 & ~1; // middle point of the border
+        label('🔒 대장 보스를 잡으면 열려요', pts[mid] - dx * 60, pts[mid + 1] - dy * 60, 22, '#e9d5ff');
       }
     }
     // field boss spots

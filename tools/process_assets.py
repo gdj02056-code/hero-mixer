@@ -17,6 +17,7 @@ from PIL import Image, ImageChops, ImageDraw
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 SRC, OUT = os.path.join(ROOT, 'assets'), os.path.join(ROOT, 'img')
 SIZES = {'ui/lobby_bg': (540, 960), 'ui/logo': (512, 256)}
+SIZES.update({f'stages/stage{i}': (512, 512) for i in range(1, 11)})  # ground tiles stay sharp when drawn large
 DEFAULT = (256, 256)
 KEYS = [(0, 255, 0), (255, 0, 255)]
 
@@ -112,7 +113,7 @@ def main():
     # so the game can stand it on the ground however it was framed
     bottoms = {}
     for rel in keys:
-        if rel.split('/')[0] in ('heroes', 'pets', 'monsters', 'bosses'):
+        if rel.split('/')[0] in ('heroes', 'pets', 'monsters', 'bosses', 'props'):
             im = Image.open(os.path.join(OUT, rel + '.webp'))
             box = im.getchannel('A').point(lambda v: 255 if v > 200 else 0).getbbox()  # solid pixels only, not glow
             if box:

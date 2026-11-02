@@ -258,10 +258,22 @@ const cexpNeed = lv => Math.floor(100 * Math.pow(lv, 1.35));
 const SEC = 1800, WORLD_COLS = 4;
 const secCell = i => { const row = Math.floor(i / WORLD_COLS), k = i % WORLD_COLS; return { col: row % 2 ? WORLD_COLS - 1 - k : k, row }; };
 const secCenter = i => { const c = secCell(i); return { x: (c.col + 0.5) * SEC, y: (c.row + 0.5) * SEC }; };
+const secIdx = (col, row) => col < 0 || col >= WORLD_COLS || row < 0 ? -1 : row * WORLD_COLS + (row % 2 ? WORLD_COLS - 1 - col : col);
+// The borders between sections wander instead of running straight. Border line k (axis 0 = vertical
+// x = k*SEC, axis 1 = horizontal y = k*SEC) is pushed sideways at position t along it by a smooth wave
+// that is zero at every corner, so the four sections around a corner still meet there.
+const SEC_WAVE = 150;
+function secEdgeOff(k, t, axis) {
+  const u = t / SEC, n = Math.floor(u), f = u - n;
+  const h = v => { const s = Math.sin(v) * 43758.5453; return s - Math.floor(s); };
+  const a = h(k * 127.1 + n * 311.7 + axis * 74.7) * 6.283, b = h(k * 269.5 + n * 183.3 + axis * 246.1) * 6.283;
+  return SEC_WAVE * Math.sin(f * Math.PI) * (0.65 * Math.sin(f * 6.283 + a) + 0.35 * Math.sin(f * 12.566 + b));
+}
 function secAt(x, y) {
-  const col = Math.floor(x / SEC), row = Math.floor(y / SEC);
-  if (col < 0 || col >= WORLD_COLS || row < 0) return -1;
-  return row * WORLD_COLS + (row % 2 ? WORLD_COLS - 1 - col : col);
+  const kx = Math.round(x / SEC), ky = Math.round(y / SEC);
+  const col = x < kx * SEC + secEdgeOff(kx, y, 0) ? kx - 1 : kx;
+  const row = y < ky * SEC + secEdgeOff(ky, x, 1) ? ky - 1 : ky;
+  return secIdx(col, row);
 }
 const secBiome = i => STAGES[i % STAGES.length];
 const secName = i => (i >= STAGES.length ? `지옥${Math.floor(i / STAGES.length)} ` : '') + secBiome(i).name;
