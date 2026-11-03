@@ -219,6 +219,46 @@ ITEMS = [
     ('magnet_item', 'big red horseshoe magnet'), ('bomb', 'round black bomb with a lit fuse'),
 ]
 
+# map props (terrain.js PROP_KINDS): (kind, layout, description), most visible first.
+# layout: tall / wide stand on the ground, decal lies flat on it (seen from above)
+PROPS = [
+    ('tree', 'tall', 'round leafy oak tree with a short brown trunk and a fluffy rounded green canopy'),
+    ('rock', 'wide', 'rounded grey boulder with a lighter top and a few small cracks'),
+    ('pond', 'decal', 'small oval pond of clear blue water with a muddy brown bank rim and one lily pad, about twice as wide as tall'),
+    ('bush', 'wide', 'round leafy green bush'),
+    ('cactus', 'tall', 'green saguaro cactus with two arms, small spines and a tiny pink flower on top'),
+    ('sandrock', 'wide', 'tan sandstone desert boulder with horizontal layers'),
+    ('drybush', 'wide', 'dry yellow-brown desert shrub, round and scraggly like a tumbleweed'),
+    ('pillar', 'tall', 'ancient weathered grey stone pillar, broken at the top, small moss patches'),
+    ('pine', 'tall', 'pine tree with dark green layered branches covered in white snow'),
+    ('icecrystal', 'tall', 'cluster of three light blue ice crystals growing from the ground, the middle one the tallest'),
+    ('snowrock', 'wide', 'blue-grey boulder with a thick cap of white snow on top'),
+    ('snowbush', 'wide', 'round bush covered in white snow'),
+    ('lavarock', 'wide', 'dark volcanic boulder with glowing orange lava cracks'),
+    ('lava', 'decal', 'small oval pool of bright molten orange lava with a dark rock rim, about twice as wide as tall'),
+    ('deadtree', 'tall', 'bare dead tree with a twisted dark brown trunk and a few crooked leafless branches'),
+    ('darkpillar', 'tall', 'dark purple-grey dungeon stone pillar made of cracked bricks, broken at the top'),
+    ('barrel', 'tall', 'wooden barrel with dark iron bands, standing upright'),
+    ('crate', 'wide', 'wooden supply crate with cross planks'),
+    ('torch', 'tall', 'standing iron torch on a thin wooden pole with a burning orange flame on top'),
+    ('swords', 'tall', 'two old rusty swords stuck in the ground, leaning a little apart'),
+    ('swamp', 'decal', 'small oval pool of murky dark green swamp water with a muddy rim and a few bubbles, about twice as wide as tall'),
+    ('reeds', 'tall', 'clump of tall green swamp reeds and brown cattails'),
+    ('mushroom', 'wide', 'cluster of three cute spotted mushrooms with red and purple caps'),
+    ('blossom', 'tall', 'cherry blossom tree with a short brown trunk and a fluffy round canopy of pink blossoms'),
+    ('marble', 'tall', 'white marble column with a carved capital and thin gold trim, elegant'),
+    ('chaoscrystal', 'tall', 'cluster of three dark magenta crystals growing from the ground, the middle one the tallest'),
+    ('voidrock', 'wide', 'dark purple boulder with glowing pink cracks, otherworldly'),
+    ('flowers', 'decal', 'small patch of tiny pink and yellow flowers with a few green leaves'),
+    ('tuft', 'decal', 'small tuft of green grass blades'),
+    ('drytuft', 'decal', 'small tuft of dry yellow-brown grass blades'),
+    ('bones', 'decal', 'a small old skull and two scattered bones'),
+    ('pebbles', 'decal', 'four small grey pebbles'),
+    ('cloud', 'decal', 'small soft white cloud puff, low and flat'),
+    ('vent', 'decal', 'long thin jagged crack with dark rock edges and bright glowing orange lava inside, about five times as wide as tall'),
+    ('rift', 'decal', 'long thin jagged crack with dark edges and glowing magenta energy inside, about five times as wide as tall'),
+]
+
 GREENISH = ('green', 'teal', 'mint', 'olive', 'lime', 'emerald', 'cyan')
 
 
@@ -309,6 +349,35 @@ Each job is an ATTACK POSE of a monster or boss that already exists as an idle p
 """
 
 
+PROP_STYLE = ('2D mobile game environment prop, hand painted, soft cel shading, clean dark outline, '
+              'bright colors, lighting from top-left, slightly top-down three-quarter view, single object, plain background, no text')
+DECAL_STYLE = ('2D mobile game ground decal, hand painted, soft cel shading, thin dark outline, '
+               'seen from above at a slight angle, lying flat on the ground, single object, plain background, no text')
+PROP_RULES = f"""
+=== MAP PROP RULES (very important) ===
+These are terrain objects placed around the battle map: trees, rocks, pillars, pools, small ground details.
+- Every job here has "style": "prop" or "style": "decal". Use the matching style below instead of STYLE
+  (rule 1 talks about "ground"/"scene"; in this file it is "prop"/"decal").
+- They must sit naturally on the hand-painted ground textures (assets/stages/stage1..10.png): match that soft painted look,
+  but keep a clean outline so they read clearly next to the chibi characters.
+- NO shadow under the object, NO ground or grass around it, NO glow halo or light rays outside the object.
+  The game draws the shadow and the glow itself. Everything outside the object must be background.
+- One object per picture. Do not add extra trees, rocks, characters or scenery.
+- Follow the job's "pose" note (see PROP POSE NOTES).
+
+=== STYLE for "style": "prop" ===
+{PROP_STYLE}
+
+=== STYLE for "style": "decal" ===
+{DECAL_STYLE}
+
+=== PROP POSE NOTES ===
+prop_tall : upright object standing on the ground, centered, its base near the bottom of the image (about 8% margin), filling about 85% of the image height
+prop_wide : low wide object standing on the ground, centered, its base in the lower part of the image, filling about 80% of the image width
+decal     : flat object lying on the ground, seen from above at a slight angle, centered, filling about 85% of the image width
+"""
+
+
 def write(name, title, jobs, extra=''):
     os.makedirs(OUT, exist_ok=True)
     lines = ',\n'.join('  ' + json.dumps(j, ensure_ascii=False) for j in jobs)
@@ -368,6 +437,10 @@ def main():
         j['reference'] = f'assets/{ref}.png'
         jobs.append(j)
     total += write('09_monster_attack.txt', 'EXTRA - attack poses: 10 bosses x 2 (charge, cast), elite, 4 normal monsters', jobs, MONSTER_ATTACK_RULES)
+
+    jobs = [job(f'assets/props/{kind}.png', desc, 'decal' if lay == 'decal' else 'prop_' + lay,
+                style='decal' if lay == 'decal' else 'prop') for kind, lay, desc in PROPS]
+    total += write('10_props.txt', f'EXTRA - {len(PROPS)} map props (trees, rocks, pillars, pools and small ground details for the 10 regions)', jobs, PROP_RULES)
     print('total', total)
 
 

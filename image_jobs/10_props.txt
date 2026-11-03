@@ -1,0 +1,100 @@
+You are generating game art for a 2D mobile survival action RPG called "Hero Mixer".
+This file: EXTRA - 35 map props (trees, rocks, pillars, pools and small ground details for the 10 regions).
+Generate EVERY image in the JOB LIST below, one by one, and save each one to the exact file path given.
+
+=== RULES ===
+1. Final prompt for each image = STYLE + ", " + job "prompt". Jobs with "style": "ground" or "scene" use that style instead of STYLE.
+2. Use NEGATIVE as the negative prompt for every image.
+3. Background:
+   - If you can output a transparent PNG, use a transparent background for every job with "bg": "green" or "bg": "magenta".
+   - If you cannot, fill the background with a flat solid color: "green" = pure #00FF00, "magenta" = pure #FF00FF. No gradient, no shadow, no scenery.
+   - "bg": "full" means a normal full picture (no transparency needed).
+4. Size: use the "size" field (width x height). Save as PNG.
+5. Composition: exactly ONE subject, centered, fully inside the frame with a small margin. Never crop the subject.
+6. Keep the same art style, outline thickness and lighting across ALL images so they look like one game.
+7. Follow each job's "pose" note exactly (see POSE NOTES).
+8. If an image comes out wrong (text, extra objects, cropped, wrong pose), regenerate it.
+9. When finished, print a list of saved files and any jobs that failed.
+
+=== MAP PROP RULES (very important) ===
+These are terrain objects placed around the battle map: trees, rocks, pillars, pools, small ground details.
+- Every job here has "style": "prop" or "style": "decal". Use the matching style below instead of STYLE
+  (rule 1 talks about "ground"/"scene"; in this file it is "prop"/"decal").
+- They must sit naturally on the hand-painted ground textures (assets/stages/stage1..10.png): match that soft painted look,
+  but keep a clean outline so they read clearly next to the chibi characters.
+- NO shadow under the object, NO ground or grass around it, NO glow halo or light rays outside the object.
+  The game draws the shadow and the glow itself. Everything outside the object must be background.
+- One object per picture. Do not add extra trees, rocks, characters or scenery.
+- Follow the job's "pose" note (see PROP POSE NOTES).
+
+=== STYLE for "style": "prop" ===
+2D mobile game environment prop, hand painted, soft cel shading, clean dark outline, bright colors, lighting from top-left, slightly top-down three-quarter view, single object, plain background, no text
+
+=== STYLE for "style": "decal" ===
+2D mobile game ground decal, hand painted, soft cel shading, thin dark outline, seen from above at a slight angle, lying flat on the ground, single object, plain background, no text
+
+=== PROP POSE NOTES ===
+prop_tall : upright object standing on the ground, centered, its base near the bottom of the image (about 8% margin), filling about 85% of the image height
+prop_wide : low wide object standing on the ground, centered, its base in the lower part of the image, filling about 80% of the image width
+decal     : flat object lying on the ground, seen from above at a slight angle, centered, filling about 85% of the image width
+
+=== STYLE ===
+cute chibi 2D mobile game art, sticker-like game asset, clean thick dark outline, flat cel shading with soft highlights, bright saturated colors, lighting from top-left, slightly top-down three-quarter view, centered single subject, plain background, no text
+
+=== STYLE for "style": "ground" ===
+seamless tileable top-down ground texture for a 2D game, hand painted, soft low contrast, evenly lit, no objects, no characters, no perspective
+
+=== STYLE for "style": "scene" ===
+2D mobile game illustration, hand painted, soft lighting, vibrant but not too busy
+
+=== NEGATIVE ===
+text, letters, watermark, signature, logo, multiple subjects, duplicate, cropped, cut off, blurry, noisy, realistic, photo, 3d render, ground shadow, background scenery, frame, border, ugly, deformed
+
+=== POSE NOTES ===
+weapon  : the weapon lies DIAGONALLY at 45 degrees, handle/grip at the BOTTOM-LEFT, tip/head at the TOP-RIGHT, filling about 85% of the image
+book    : the book is shown from the front, slightly tilted, filling about 75% of the image
+hero    : 2-heads-tall chibi, full body standing, side three-quarter view FACING RIGHT, BOTH HANDS EMPTY (holding nothing), feet near the bottom of the image
+pet     : tiny cute creature, full body, facing right
+monster : full body, facing the viewer (front view)
+icon    : simple game icon, one big clear symbol, front view, filling about 80% of the image
+attack  : 2-heads-tall chibi, full body, side view FACING RIGHT, dynamic attack lunge: front foot stepping forward, body leaning forward, the FRONT arm stretched straight forward at chest height ending in an EMPTY closed fist (as if gripping a handle) placed at about 72% from the left and 55% from the top of the image, the other arm pulled back, NO weapon, feet near the bottom of the image
+monster_attack: full body, facing the viewer (front view) like its idle picture, caught in the middle of an attack, same size and same feet height as the idle picture
+
+=== JOB LIST (35 images) ===
+[
+  {"file": "assets/props/tree.png", "size": "512x512", "bg": "magenta", "pose": "prop_tall", "style": "prop", "prompt": "round leafy oak tree with a short brown trunk and a fluffy rounded green canopy"},
+  {"file": "assets/props/rock.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "rounded grey boulder with a lighter top and a few small cracks"},
+  {"file": "assets/props/pond.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "small oval pond of clear blue water with a muddy brown bank rim and one lily pad, about twice as wide as tall"},
+  {"file": "assets/props/bush.png", "size": "512x512", "bg": "magenta", "pose": "prop_wide", "style": "prop", "prompt": "round leafy green bush"},
+  {"file": "assets/props/cactus.png", "size": "512x512", "bg": "magenta", "pose": "prop_tall", "style": "prop", "prompt": "green saguaro cactus with two arms, small spines and a tiny pink flower on top"},
+  {"file": "assets/props/sandrock.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "tan sandstone desert boulder with horizontal layers"},
+  {"file": "assets/props/drybush.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "dry yellow-brown desert shrub, round and scraggly like a tumbleweed"},
+  {"file": "assets/props/pillar.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "ancient weathered grey stone pillar, broken at the top, small moss patches"},
+  {"file": "assets/props/pine.png", "size": "512x512", "bg": "magenta", "pose": "prop_tall", "style": "prop", "prompt": "pine tree with dark green layered branches covered in white snow"},
+  {"file": "assets/props/icecrystal.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "cluster of three light blue ice crystals growing from the ground, the middle one the tallest"},
+  {"file": "assets/props/snowrock.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "blue-grey boulder with a thick cap of white snow on top"},
+  {"file": "assets/props/snowbush.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "round bush covered in white snow"},
+  {"file": "assets/props/lavarock.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "dark volcanic boulder with glowing orange lava cracks"},
+  {"file": "assets/props/lava.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "small oval pool of bright molten orange lava with a dark rock rim, about twice as wide as tall"},
+  {"file": "assets/props/deadtree.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "bare dead tree with a twisted dark brown trunk and a few crooked leafless branches"},
+  {"file": "assets/props/darkpillar.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "dark purple-grey dungeon stone pillar made of cracked bricks, broken at the top"},
+  {"file": "assets/props/barrel.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "wooden barrel with dark iron bands, standing upright"},
+  {"file": "assets/props/crate.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "wooden supply crate with cross planks"},
+  {"file": "assets/props/torch.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "standing iron torch on a thin wooden pole with a burning orange flame on top"},
+  {"file": "assets/props/swords.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "two old rusty swords stuck in the ground, leaning a little apart"},
+  {"file": "assets/props/swamp.png", "size": "512x512", "bg": "magenta", "pose": "decal", "style": "decal", "prompt": "small oval pool of murky dark green swamp water with a muddy rim and a few bubbles, about twice as wide as tall"},
+  {"file": "assets/props/reeds.png", "size": "512x512", "bg": "magenta", "pose": "prop_tall", "style": "prop", "prompt": "clump of tall green swamp reeds and brown cattails"},
+  {"file": "assets/props/mushroom.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "cluster of three cute spotted mushrooms with red and purple caps"},
+  {"file": "assets/props/blossom.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "cherry blossom tree with a short brown trunk and a fluffy round canopy of pink blossoms"},
+  {"file": "assets/props/marble.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "white marble column with a carved capital and thin gold trim, elegant"},
+  {"file": "assets/props/chaoscrystal.png", "size": "512x512", "bg": "green", "pose": "prop_tall", "style": "prop", "prompt": "cluster of three dark magenta crystals growing from the ground, the middle one the tallest"},
+  {"file": "assets/props/voidrock.png", "size": "512x512", "bg": "green", "pose": "prop_wide", "style": "prop", "prompt": "dark purple boulder with glowing pink cracks, otherworldly"},
+  {"file": "assets/props/flowers.png", "size": "512x512", "bg": "magenta", "pose": "decal", "style": "decal", "prompt": "small patch of tiny pink and yellow flowers with a few green leaves"},
+  {"file": "assets/props/tuft.png", "size": "512x512", "bg": "magenta", "pose": "decal", "style": "decal", "prompt": "small tuft of green grass blades"},
+  {"file": "assets/props/drytuft.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "small tuft of dry yellow-brown grass blades"},
+  {"file": "assets/props/bones.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "a small old skull and two scattered bones"},
+  {"file": "assets/props/pebbles.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "four small grey pebbles"},
+  {"file": "assets/props/cloud.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "small soft white cloud puff, low and flat"},
+  {"file": "assets/props/vent.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "long thin jagged crack with dark rock edges and bright glowing orange lava inside, about five times as wide as tall"},
+  {"file": "assets/props/rift.png", "size": "512x512", "bg": "green", "pose": "decal", "style": "decal", "prompt": "long thin jagged crack with dark edges and glowing magenta energy inside, about five times as wide as tall"}
+]

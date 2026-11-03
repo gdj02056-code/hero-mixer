@@ -213,7 +213,8 @@ function propCrack(c, col) { // glowing crack in the ground (lava vent, chaos ri
 }
 
 // kinds: r = blocking radius at the base (0 = walk through), sy = squash of that circle,
-// flat = lies on the ground under everything, w/h = drawn size (for the see-through check)
+// flat = lies on the ground under everything, w/h = drawn size (see-through check, picture fit),
+// glow = [rgb, height on the prop, radius / w]: the light added over a picture (the canvas art draws its own)
 const PROP_KINDS = {
   tree: { r: 12, w: 78, h: 96, draw: c => propTree(c, '#2e7d32', '#5cb860', '#6d4c2f') },
   blossom: { r: 12, w: 78, h: 96, draw: c => propTree(c, '#ec7aa8', '#f8bbd0', '#8d6e63') },
@@ -222,18 +223,18 @@ const PROP_KINDS = {
   rock: { r: 26, w: 64, h: 38, draw: c => propRock(c, '#8a8f98', '#b8bdc6') },
   sandrock: { r: 26, w: 64, h: 38, draw: c => propRock(c, '#b08a55', '#dcbf87') },
   snowrock: { r: 26, w: 64, h: 38, draw: c => propRock(c, '#7b93a6', '#f2f7fb') },
-  lavarock: { r: 26, w: 64, h: 38, draw: c => propRock(c, '#3b2f2f', '#5d4a44', '#ff7043') },
-  voidrock: { r: 26, w: 64, h: 38, draw: c => propRock(c, '#2d1b33', '#4a2f55', '#ec4899') },
+  lavarock: { r: 26, w: 64, h: 38, glow: ['255,112,67', 0.35, 0.75], draw: c => propRock(c, '#3b2f2f', '#5d4a44', '#ff7043') },
+  voidrock: { r: 26, w: 64, h: 38, glow: ['236,72,153', 0.35, 0.75], draw: c => propRock(c, '#2d1b33', '#4a2f55', '#ec4899') },
   cactus: { r: 11, w: 46, h: 66, draw: c => propCactus(c) },
   pillar: { r: 17, w: 42, h: 86, draw: (c, v) => propPillar(c, '#8e8e7e', '#c4c4ae', v) },
   marble: { r: 17, w: 42, h: 86, draw: (c, v) => propPillar(c, '#c9d3df', '#ffffff', v) },
   darkpillar: { r: 17, w: 42, h: 86, draw: (c, v) => propPillar(c, '#3d3a52', '#5e5a7a', v) },
-  icecrystal: { r: 18, w: 56, h: 62, draw: c => propCrystal(c, '#4fc3f7', '#e1f5fe') },
-  chaoscrystal: { r: 18, w: 56, h: 62, draw: c => propCrystal(c, '#d81b60', '#f8bbd0') },
+  icecrystal: { r: 18, w: 56, h: 62, glow: ['79,195,247', 0.45, 0.85], draw: c => propCrystal(c, '#4fc3f7', '#e1f5fe') },
+  chaoscrystal: { r: 18, w: 56, h: 62, glow: ['236,72,153', 0.45, 0.85], draw: c => propCrystal(c, '#d81b60', '#f8bbd0') },
   barrel: { r: 15, w: 30, h: 42, draw: c => propBarrel(c) },
   crate: { r: 17, w: 38, h: 36, draw: c => propCrate(c) },
   pond: { r: 66, sy: 0.55, w: 152, h: 0, flat: true, draw: c => propPool(c, '#3f9fd8', '#b3e5fc', '#5d4a35') },
-  lava: { r: 66, sy: 0.55, w: 152, h: 0, flat: true, draw: c => { c.shadowColor = '#ff6d00'; c.shadowBlur = 18; propPool(c, '#f4511e', '#ffd54f', '#2b1d1a'); c.shadowBlur = 0; } },
+  lava: { r: 66, sy: 0.55, w: 152, h: 0, flat: true, glow: ['255,109,0', 0, 0.6], draw: c => { c.shadowColor = '#ff6d00'; c.shadowBlur = 18; propPool(c, '#f4511e', '#ffd54f', '#2b1d1a'); c.shadowBlur = 0; } },
   swamp: { r: 66, sy: 0.55, w: 152, h: 0, flat: true, draw: c => propPool(c, '#35562c', '#7fae5c', '#22302a') },
   bush: { r: 0, w: 52, h: 32, draw: c => propBush(c, '#2f7d32', '#66bb6a') },
   snowbush: { r: 0, w: 52, h: 32, draw: c => propBush(c, '#dfeaf2', '#ffffff') },
@@ -246,10 +247,10 @@ const PROP_KINDS = {
   mushroom: { r: 0, w: 36, h: 24, draw: c => propMushroom(c) },
   reeds: { r: 0, w: 30, h: 44, draw: c => propReeds(c) },
   swords: { r: 0, w: 40, h: 44, draw: c => propSwords(c) },
-  torch: { r: 0, w: 20, h: 62, draw: c => propTorch(c) },
+  torch: { r: 0, w: 20, h: 62, glow: ['255,183,77', 0.8, 2.3], draw: c => propTorch(c) },
   pebbles: { r: 0, w: 30, h: 0, flat: true, draw: c => propPebbles(c) },
-  vent: { r: 0, w: 70, h: 0, flat: true, draw: c => propCrack(c, '#ff6d00') },
-  rift: { r: 0, w: 70, h: 0, flat: true, draw: c => propCrack(c, '#ec4899') },
+  vent: { r: 0, w: 70, h: 0, flat: true, glow: ['255,109,0', 0, 0.55], draw: c => propCrack(c, '#ff6d00') },
+  rift: { r: 0, w: 70, h: 0, flat: true, glow: ['236,72,153', 0, 0.55], draw: c => propCrack(c, '#ec4899') },
 };
 // what stands in each biome (same order as STAGES): [kind, weight]
 const PROP_SETS = [
@@ -339,7 +340,20 @@ function drawProp(q) {
   if (!q.flat && p.y < q.y && q.y - p.y < q.h + 10 && Math.abs(p.x - q.x) < q.w * 0.55) ctx.globalAlpha = 0.45;
   if (!q.flat) { ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(0, 1, q.w * 0.42, q.w * 0.13, 0, 0, TAU); ctx.fill(); }
   ctx.scale(q.flip, 1);
-  if (im) { const S = q.w * 1.3; ctx.drawImage(im, -S / 2, -S * imgBottom(key) + (q.flat ? S * 0.4 : 0), S, S); }
+  if (im) {
+    // fit what is drawn in the picture (its box, from process_assets) to the prop's size:
+    // standing props stand their base on the spot, flat ones are centered on it
+    const b = (typeof IMG_BOX === 'object' && IMG_BOX[key]) || [0.1, 0.1, 0.9, 0.9], bw = b[2] - b[0], bh = b[3] - b[1];
+    const S = q.flat ? q.w * 1.05 / bw : Math.min(q.w * 1.15 / bw, q.h * 1.1 / bh);
+    ctx.drawImage(im, -S * (b[0] + b[2]) / 2, q.flat ? -S * (b[1] + b[3]) / 2 : -S * b[3], S, S);
+    const g = PROP_KINDS[q.kind].glow;
+    if (g) { // the pictures have no glow of their own: a soft pulsing light, flickering for torches
+      const a = 0.3 + 0.12 * Math.sin(G.time * (q.kind === 'torch' ? 14 : 3) + q.v * 6), gy = -q.h * g[1], R = q.w * g[2];
+      const gr = ctx.createRadialGradient(0, gy, 0, 0, gy, R);
+      gr.addColorStop(0, `rgba(${g[0]},${a})`); gr.addColorStop(1, `rgba(${g[0]},0)`);
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; circ(ctx, 0, gy, R); ctx.fill();
+    }
+  }
   else if (!imgPending(key)) { ctx.scale(q.s, q.s); ctx.lineJoin = 'round'; PROP_KINDS[q.kind].draw(ctx, q.v); }
   ctx.restore();
   ctx.lineCap = 'butt';

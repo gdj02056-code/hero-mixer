@@ -504,6 +504,7 @@ function preloadBattleArt() {
   for (let i = 1; i <= BOSSES.length; i++) keys.push('bosses/boss' + i, 'bosses/boss' + i + '_charge', 'bosses/boss' + i + '_cast');
   for (let i = 1; i <= STAGES.length; i++) keys.push('stages/stage' + i);
   for (const k of ['gold', 'chest', 'meat', 'magnet_item', 'bomb']) keys.push('items/' + k);
+  for (const k in PROP_KINDS) keys.push('props/' + k);
   for (const id in WEAPONS) keys.push(skillImgKey(id, false), skillImgKey(id, true));
   for (const id in PASSIVES) keys.push(skillImgKey(id, false));
   keys.push('heroes/' + S.hero, 'heroes/' + S.hero + '_attack');
