@@ -164,7 +164,8 @@ function imgReady(k) {
 const imgURL = k => k && IMG_SET.has(k) ? `img/${k}.webp` : null;
 // a picture exists but is still downloading: draw nothing for a moment instead of the old canvas art
 function imgPending(k) { if (!k || !IMG_SET.has(k)) return false; imgReady(k); return !IMGS[k].complete; }
-function preloadImages(keys) { for (const k of keys) imgReady(k); }
+// decoded ahead too, so a picture's first appearance doesn't stall that frame
+function preloadImages(keys) { for (const k of keys) { imgReady(k); const im = IMGS[k]; if (im && im.decode) im.decode().catch(() => { }); } }
 
 // battle skill icons: the picture when it exists, the emoji otherwise
 const PASSIVE_IMG = { book: 'book', glove: 'glove', clock: 'clock', armor: 'armor_p', boots: 'boots_p', magnet: 'magnet' };

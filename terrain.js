@@ -10,23 +10,24 @@
 const GROUND_PATCH = 340;
 // One biome's ground over a rectangle: the ground picture calmed with the biome color, then big soft
 // light and dark patches so the repeating picture doesn't read as a grid.
-function paintGround(bi, x, y, w, h) {
+function paintGround(c, bi, x, y, w, h) {
   const b = STAGES[bi % STAGES.length], pat = groundPattern(bi);
-  ctx.fillStyle = b.g1; ctx.fillRect(x, y, w, h);
+  c.fillStyle = b.g1; c.fillRect(x, y, w, h);
   if (pat) {
-    ctx.fillStyle = pat; ctx.fillRect(x, y, w, h);
-    ctx.globalAlpha = 0.4; ctx.fillStyle = b.g1; ctx.fillRect(x, y, w, h);
+    c.fillStyle = pat; c.fillRect(x, y, w, h);
+    c.globalAlpha = 0.4; c.fillStyle = b.g1; c.fillRect(x, y, w, h);
   }
   const P = GROUND_PATCH, i0 = Math.floor(x / P) - 1, i1 = Math.floor((x + w) / P) + 1, j0 = Math.floor(y / P) - 1, j1 = Math.floor((y + h) / P) + 1;
   for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
     const k = hash2(i + 913, j + 271);
     if (k > 0.62) continue;
     const cx = (i + hash2(j, i + 17)) * P, cy = (j + hash2(i + 5, j + 3)) * P, r = P * (0.55 + hash2(i * 3 + 1, j * 7 + 2) * 0.75);
-    const dark = k < 0.36, col = dark ? '#000000' : b.deco, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    if (cx + r < x || cx - r > x + w || cy + r < y || cy - r > y + h) continue;
+    const dark = k < 0.36, col = dark ? '#000000' : b.deco, g = c.createRadialGradient(cx, cy, 0, cx, cy, r);
     g.addColorStop(0, col); g.addColorStop(1, col + '00');
-    ctx.globalAlpha = dark ? 0.2 : 0.13; ctx.fillStyle = g; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+    c.globalAlpha = dark ? 0.2 : 0.13; c.fillStyle = g; c.fillRect(cx - r, cy - r, r * 2, r * 2);
   }
-  ctx.globalAlpha = 1;
+  c.globalAlpha = 1;
 }
 
 // points along one side of section cell (col,row), clockwise: 0 top, 1 right, 2 bottom, 3 left
@@ -42,34 +43,78 @@ function secBorder(col, row, side) {
   }
   return pts;
 }
-function secPath(col, row) {
-  ctx.beginPath();
-  for (let side = 0; side < 4; side++) { const pts = secBorder(col, row, side); for (let i = 0; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]); }
-  ctx.closePath();
+function secPath(c, col, row) {
+  c.beginPath();
+  for (let side = 0; side < 4; side++) { const pts = secBorder(col, row, side); for (let i = 0; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]); }
+  c.closePath();
 }
-function drawGround(hw, hh) {
-  const p = G.p, x = p.x - hw - 4, y = p.y - hh - 4, w = hw * 2 + 8, h = hh * 2 + 8;
-  if (!G.world) { paintGround(G.stage - 1, x, y, w, h); return; }
+// The ground of one area: in the world each section is clipped to its wavy outline, locked ones are
+// darkened, and a soft seam runs where two open sections meet instead of a hard cut.
+function paintArea(c, x, y, w, h) {
+  if (!G.world) { paintGround(c, G.stage - 1, x, y, w, h); return; }
   const c0 = Math.floor((x - SEC_WAVE) / SEC), c1 = Math.floor((x + w + SEC_WAVE) / SEC);
   const r0 = Math.floor((y - SEC_WAVE) / SEC), r1 = Math.floor((y + h + SEC_WAVE) / SEC);
   for (let col = c0; col <= c1; col++) for (let row = r0; row <= r1; row++) {
     const s = secIdx(col, row);
     if (s < 0) continue;
-    ctx.save(); secPath(col, row); ctx.clip();
-    paintGround(s, x, y, w, h);
-    if (!accessible(s)) { ctx.fillStyle = 'rgba(5,6,13,.72)'; ctx.fillRect(x, y, w, h); }
-    ctx.restore();
+    c.save(); secPath(c, col, row); c.clip();
+    paintGround(c, s, x, y, w, h);
+    if (!accessible(s)) { c.fillStyle = 'rgba(5,6,13,.72)'; c.fillRect(x, y, w, h); }
+    c.restore();
   }
-  // a soft seam where two open sections meet, instead of a hard cut
   for (let col = c0; col <= c1; col++) for (let row = r0; row <= r1; row++) {
     if (!accessible(secIdx(col, row))) continue;
     for (const [side, n] of [[1, secIdx(col + 1, row)], [2, secIdx(col, row + 1)]]) {
       if (!accessible(n)) continue;
       const pts = secBorder(col, row, side);
-      line(ctx, pts, 'rgba(0,0,0,.14)', 30); line(ctx, pts, 'rgba(255,255,255,.07)', 8);
+      line(c, pts, 'rgba(0,0,0,.14)', 30); line(c, pts, 'rgba(255,255,255,.07)', 8);
     }
   }
-  ctx.lineCap = 'butt';
+  c.lineCap = 'butt';
+}
+// Painting the ground every frame costs a phone many full-screen fills (the scaled ground picture and the
+// soft patches above all), so it is painted once into chunks that are then only copied to the screen.
+const GROUND_CHUNK = 256, GCACHE = { key: '', res: 1, chunks: new Map(), spare: [] };
+const chunkId = (i, j) => (i + 32768) * 65536 + (j + 32768);
+// what the painted ground depends on: the mode, which sections are open, which ground pictures have loaded, the resolution
+function groundKey() {
+  let ready = '';
+  if (G.world) for (let i = 0; i < STAGES.length; i++) ready += groundPattern(i) ? 1 : 0;
+  else ready = groundPattern(G.stage - 1) ? 1 : 0;
+  return (G.world ? 'w' + S.world.cleared : 's' + G.stage) + ':' + ready + ':' + DPR * ZOOM;
+}
+function groundChunk(i, j) {
+  const C = GCACHE, pad = 2, x = i * GROUND_CHUNK - pad, y = j * GROUND_CHUNK - pad, w = GROUND_CHUNK + pad * 2, n = Math.ceil(w * C.res);
+  const ch = C.spare.pop() || document.createElement('canvas');
+  ch.width = ch.height = n; // also clears it
+  const c = ch.getContext('2d');
+  c.setTransform(n / w, 0, 0, n / w, -x * n / w, -y * n / w); c.lineJoin = 'round';
+  paintArea(c, x, y, w, w);
+  return ch;
+}
+function dropChunk(ch) { if (GCACHE.spare.length < 4) GCACHE.spare.push(ch); else ch.width = ch.height = 0; }
+function drawGround(hw, hh) {
+  const C = GCACHE, key = groundKey(), p = G.p, Z = GROUND_CHUNK, pad = 2;
+  if (C.key !== key) {
+    for (const ch of C.chunks.values()) dropChunk(ch);
+    C.chunks.clear(); C.key = key;
+    C.res = Math.min(1.6, DPR * ZOOM); // about the ground picture's own detail (512px per 320 units); more only costs memory
+  }
+  const i0 = Math.floor((p.x - hw) / Z), i1 = Math.floor((p.x + hw) / Z), j0 = Math.floor((p.y - hh) / Z), j1 = Math.floor((p.y + hh) / Z);
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    let ch = C.chunks.get(chunkId(i, j));
+    if (!ch) C.chunks.set(chunkId(i, j), ch = groundChunk(i, j));
+    ctx.drawImage(ch, i * Z - pad, j * Z - pad, Z + pad * 2, Z + pad * 2);
+  }
+  // paint one chunk just outside the view ahead of time, and let go of the ones left far behind
+  const m = 128, a0 = Math.floor((p.x - hw - m) / Z), a1 = Math.floor((p.x + hw + m) / Z), b0 = Math.floor((p.y - hh - m) / Z), b1 = Math.floor((p.y + hh + m) / Z);
+  ahead: for (let i = a0; i <= a1; i++) for (let j = b0; j <= b1; j++) {
+    if (!C.chunks.has(chunkId(i, j))) { C.chunks.set(chunkId(i, j), groundChunk(i, j)); break ahead; }
+  }
+  if (C.chunks.size > (a1 - a0 + 1) * (b1 - b0 + 1)) for (const [k, ch] of C.chunks) {
+    const i = Math.floor(k / 65536) - 32768, j = k % 65536 - 32768;
+    if (i < a0 - 1 || i > a1 + 1 || j < b0 - 1 || j > b1 + 1) { C.chunks.delete(k); dropChunk(ch); }
+  }
 }
 
 // ---------- props ----------
