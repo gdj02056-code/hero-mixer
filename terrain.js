@@ -246,8 +246,8 @@ const PROP_KINDS = {
   bones: { r: 0, w: 36, h: 20, flat: true, draw: c => propBones(c) },
   mushroom: { r: 0, w: 36, h: 24, draw: c => propMushroom(c) },
   reeds: { r: 0, w: 30, h: 44, draw: c => propReeds(c) },
-  swords: { r: 0, w: 40, h: 44, draw: c => propSwords(c) },
-  torch: { r: 0, w: 20, h: 62, glow: ['255,183,77', 0.8, 2.3], draw: c => propTorch(c) },
+  swords: { r: 0, w: 44, h: 62, draw: c => propSwords(c) },
+  torch: { r: 0, w: 20, h: 62, glow: ['255,183,77', 1, 2.3], draw: c => propTorch(c) },
   pebbles: { r: 0, w: 30, h: 0, flat: true, draw: c => propPebbles(c) },
   vent: { r: 0, w: 70, h: 0, flat: true, glow: ['255,109,0', 0, 0.55], draw: c => propCrack(c, '#ff6d00') },
   rift: { r: 0, w: 70, h: 0, flat: true, glow: ['236,72,153', 0, 0.55], draw: c => propCrack(c, '#ec4899') },
@@ -289,25 +289,31 @@ function propClear(x, y) {
   const c = secCenter(s), l = lairSpot(s);
   return !fbSpots(s).some(q => near(q, 180)) && !near(l, 240) && !near({ x: c.x - (l.x - c.x) * 0.8, y: c.y - (l.y - c.y) * 0.8 }, 220);
 }
-// the props of one grid cell (at most one standing and one small), made once per run
+// what one grid cell would hold (standing: salt 0, small: salt 500), before pools clear their banks
+function cellPick(i, j, sets, rate, salt) {
+  if (hash2(i * 7 + 3 + salt, j * 13 + 5) >= rate) return null;
+  const x = (i + 0.12 + 0.76 * hash2(j + 41 + salt, i)) * PROP_CELL, y = (j + 0.12 + 0.76 * hash2(i, j + 77 + salt)) * PROP_CELL;
+  const sec = G.world ? secAt(x, y) : G.stage - 1;
+  if (sec < 0 || !propClear(x, y)) return null;
+  const set = sets[sec % sets.length];
+  let pick = hash2(i + 19 + salt, j + 23) * set.reduce((n, k) => n + k[1], 0), kind = set[0][0];
+  for (const [k, wt] of set) { if ((pick -= wt) < 0) { kind = k; break; } }
+  const K = PROP_KINDS[kind], s = 0.85 + hash2(j * 3 + 1, i * 5 + 2 + salt) * 0.35;
+  return { x, y, kind, sec, s, flip: hash2(i + 61, j + 3 + salt) < 0.5 ? -1 : 1, v: hash2(i + 5 + salt, j + 9), r: K.r * s, sy: K.sy || 1, w: K.w * s, h: K.h * s, flat: !!K.flat };
+}
+// the props of one grid cell (at most one standing and one small), made once per run;
+// nothing stands in a pool (pond, lava, swamp) of this or a neighboring cell, or right at its bank
 function cellProps(i, j) {
   const M = G.props || (G.props = new Map()), key = (i + 32768) * 65536 + (j + 32768);
   let a = M.get(key);
   if (a) return a;
-  a = [];
-  const place = (sets, rate, salt) => {
-    if (hash2(i * 7 + 3 + salt, j * 13 + 5) >= rate) return;
-    const x = (i + 0.12 + 0.76 * hash2(j + 41 + salt, i)) * PROP_CELL, y = (j + 0.12 + 0.76 * hash2(i, j + 77 + salt)) * PROP_CELL;
-    const sec = G.world ? secAt(x, y) : G.stage - 1;
-    if (sec < 0 || !propClear(x, y)) return;
-    const set = sets[sec % sets.length];
-    let pick = hash2(i + 19 + salt, j + 23) * set.reduce((n, k) => n + k[1], 0), kind = set[0][0];
-    for (const [k, wt] of set) { if ((pick -= wt) < 0) { kind = k; break; } }
-    const K = PROP_KINDS[kind], s = 0.85 + hash2(j * 3 + 1, i * 5 + 2 + salt) * 0.35;
-    a.push({ x, y, kind, sec, s, flip: hash2(i + 61, j + 3 + salt) < 0.5 ? -1 : 1, v: hash2(i + 5 + salt, j + 9), r: K.r * s, sy: K.sy || 1, w: K.w * s, h: K.h * s, flat: !!K.flat });
-  };
-  place(PROP_SETS, PROP_RATE, 0);
-  place(PROP_SMALL, SMALL_RATE, 500);
+  const pools = [];
+  for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+    const o = cellPick(i + di, j + dj, PROP_SETS, PROP_RATE, 0);
+    if (o && o.sy < 1) pools.push(o);
+  }
+  const wet = q => q.sy === 1 && pools.some(o => Math.hypot(q.x - o.x, (q.y - o.y) / o.sy) < o.r + 34 + q.r);
+  a = [cellPick(i, j, PROP_SETS, PROP_RATE, 0), cellPick(i, j, PROP_SMALL, SMALL_RATE, 500)].filter(q => q && !wet(q));
   M.set(key, a);
   return a;
 }
@@ -345,14 +351,15 @@ function drawProp(q) {
     // standing props stand their base on the spot, flat ones are centered on it
     const b = (typeof IMG_BOX === 'object' && IMG_BOX[key]) || [0.1, 0.1, 0.9, 0.9], bw = b[2] - b[0], bh = b[3] - b[1];
     const S = q.flat ? q.w * 1.05 / bw : Math.min(q.w * 1.15 / bw, q.h * 1.1 / bh);
-    ctx.drawImage(im, -S * (b[0] + b[2]) / 2, q.flat ? -S * (b[1] + b[3]) / 2 : -S * b[3], S, S);
     const g = PROP_KINDS[q.kind].glow;
-    if (g) { // the pictures have no glow of their own: a soft pulsing light, flickering for torches
+    if (g) { // the pictures have no glow of their own: a soft pulsing light spilling on the ground behind, flickering for torches
       const a = 0.3 + 0.12 * Math.sin(G.time * (q.kind === 'torch' ? 14 : 3) + q.v * 6), gy = -q.h * g[1], R = q.w * g[2];
       const gr = ctx.createRadialGradient(0, gy, 0, 0, gy, R);
       gr.addColorStop(0, `rgba(${g[0]},${a})`); gr.addColorStop(1, `rgba(${g[0]},0)`);
       ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; circ(ctx, 0, gy, R); ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
     }
+    ctx.drawImage(im, -S * (b[0] + b[2]) / 2, q.flat ? -S * (b[1] + b[3]) / 2 : -S * b[3], S, S);
   }
   else if (!imgPending(key)) { ctx.scale(q.s, q.s); ctx.lineJoin = 'round'; PROP_KINDS[q.kind].draw(ctx, q.v); }
   ctx.restore();
