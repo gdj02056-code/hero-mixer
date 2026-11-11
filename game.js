@@ -209,10 +209,12 @@ function startRun(stage, world = false) {
     pet: S.pet && S.pets[S.pet] ? { id: S.pet, x: -30, y: -20, t: 0, cd: 1, healT: 5, mode: 'follow', face: 1, dmg: petDmg(m, S.pet) } : null,
   };
   pStat();
+  juiceStart(); // 연출 상태(G.juice: 콤보·번쩍임·떠다니는 입자)를 이번 판용으로 새로 만든다
   joy.active = false;
   $('#lobby').classList.add('hidden');
   $('#hudBtns').classList.remove('hidden');
-  if (!world) showBanner(`STAGE ${stage} · ${STAGES[(stage - 1) % STAGES.length].name}`);
+  // 스테이지 이름 아래에 목표를 한 줄로 알려 준다. STAGE_TIME(초) / 60 = 보스가 나오기까지의 분
+  if (!world) showBanner(`STAGE ${stage} · ${STAGES[(stage - 1) % STAGES.length].name}`, '#fff', `${STAGE_TIME / 60}분을 버티면 보스가 나타납니다`);
 }
 function backToLobby() { closeModal(); G = null; $('#hudBtns').classList.add('hidden'); $('#lobby').classList.remove('hidden'); renderLobby(); }
 
@@ -265,7 +267,7 @@ function spawnLeader(s, l) {
   e.leader = s; e.home = l;
   e.name = (s >= BOSSES.length ? '지옥의 ' : '') + BOSSES[s % BOSSES.length];
   G.boss = e;
-  showBanner('👑 대장 보스 등장: ' + e.name, '#fcd34d'); addShake(10);
+  bossIntro(e); // 경고 띠 → 보스 이름 연출 (화면 흔들림과 소리도 여기서 낸다)
   return e;
 }
 function updateWorld(dt) {
@@ -333,12 +335,14 @@ function endWorld() {
   if (G.state === 'over') return;
   G.state = 'over'; joy.active = false; save();
   const L = G.world.loot, sec = Math.max(0, secAt(G.p.x, G.p.y));
-  const box = showModal(`<div class="bigicon">🏕️</div><h2>마을로 귀환</h2>
-    <div class="center">💀 ${G.kills} 처치 · ⏱ ${fmtTime(G.time)} · 🗺️ 정복 ${S.world.cleared}지역</div>
-    <div class="reward"><span>🪙 ${fmt(L.gold)}</span><span>💎 ${fmt(L.gems)}</span><span>📘 ${fmt(L.cexp)}</span></div>
+  // data-to: countUp 이 0 에서 이 값까지 숫자를 올려 보여 준다. 🔥 = 이번 모험의 최고 연속 처치 수
+  const box = showModal(`<div class="bigicon">🏕️</div><h2 class="rtitle">마을로 귀환</h2>
+    <div class="center">⏱ ${fmtTime(G.time)} · 🗺️ 정복 ${S.world.cleared}지역<br>💀 ${G.kills} 처치 · 🔥 최고 콤보 ${G.juice.best}</div>
+    <div class="reward"><span>🪙 <b data-to="${Math.floor(L.gold)}">0</b></span><span>💎 <b data-to="${Math.floor(L.gems)}">0</b></span><span>📘 <b data-to="${Math.floor(L.cexp)}">0</b></span></div>
     ${L.ups ? `<div class="center lvup">🎉 캐릭터 레벨 +${L.ups} → Lv.${S.clv}</div>` : ''}
     ${L.items.length ? `<div class="ggrid">${L.items.slice(0, 20).map(it => itemTile(it)).join('')}</div>` : '<div class="center sub">장비는 필드 보스와 대장 보스가 떨어뜨려요</div>'}
     <div class="row"><button class="btn green" id="home">로비로</button><button class="btn gold" id="again">다시 출발 ▶</button></div>`);
+  countUp(box);
   box.querySelector('#home').onclick = backToLobby;
   box.querySelector('#again').onclick = () => { backToLobby(); startWorld(Math.min(sec, S.world.cleared)); };
 }
@@ -357,7 +361,9 @@ function pStat() {
   const nm = p.maxBase * (1 + pLv('armor') * 0.1);
   p.hp += nm - p.maxHp; p.maxHp = nm;
 }
-function showBanner(text, color = '#fff') { G.banner = { text, color, t: 2.4 }; }
+// 화면 위쪽 알림 띠. text: 큰 글자, color: 글자색, sub: (선택) 아래 작은 설명 줄.
+// t = 2.4 는 떠 있는 시간(초)이고, juice.js 의 drawBanner 가 같은 2.4 로 등장·퇴장 시점을 계산한다.
+function showBanner(text, color = '#fff', sub = '') { G.banner = { text, color, sub, t: 2.4 }; }
 function addShake(v) { G.shake = Math.max(G.shake, v); }
 const curWT = () => G.p.wt ? WT[G.p.wt] : FIST;
 
@@ -469,8 +475,7 @@ function updateSpawner(dt) {
     G.bossSpawned = true;
     const [x, y] = spawnRingPos();
     G.boss = spawnEnemy('boss', x, y);
-    showBanner('👑 보스 등장: ' + G.boss.name, '#fcd34d');
-    addShake(10);
+    bossIntro(G.boss); // 경고 띠 → 보스 이름 연출 (화면 흔들림과 소리도 여기서 낸다)
   }
 }
 function shootAt(e, a, spd, dmg, extra) { G.ebul.push(Object.assign({ x: e.x, y: e.y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, r: 7, dmg, life: 5 }, extra)); }
@@ -549,11 +554,14 @@ function hitEnemy(e, dmg, kx = 0, ky = 0) {
   e.hp -= dmg; e.flash = 0.08; e.hitT = 0.12;
   const kb = e.boss ? 0.03 : e.elite ? 0.3 : 1;
   e.kx += kx * kb; e.ky += ky * kb;
-  if (crit || G.texts.length < 70) G.texts.push({ x: e.x + rand(-8, 8), y: e.y - e.r, txt: fmt(dmg), color: crit ? '#fde047' : '#fff', big: crit, t: 0 });
+  // 피해 숫자. 치명타는 크고 노랗게 '!' 를 붙인다. vx: 숫자끼리 겹치지 않게 옆으로 흩어지는 양(월드 단위)
+  if (crit || G.texts.length < 70) G.texts.push({ x: e.x + rand(-8, 8), y: e.y - e.r, txt: fmt(dmg) + (crit ? '!' : ''), color: crit ? '#fde047' : '#fff', big: crit, crit, vx: rand(-14, 14), t: 0 });
+  juiceHit(e, crit); // 타격 불꽃과 소리 (화면 밖이면 아무것도 하지 않는다)
   if (e.hp <= 0) killEnemy(e);
 }
 function killEnemy(e) {
   e.dead = true; G.kills++;
+  juiceKill(e); // 콤보 +1, 터지는 조각, 강한 적이면 멈칫 · 보스면 슬로모션
   dropGem(e.x, e.y, e.xp);
   G.fx.push({ type: 'pop', x: e.x, y: e.y, r: e.r, t: 0, life: 0.3, color: e.color });
   if (e.leader !== undefined) { leaderDown(e); return; }
@@ -583,6 +591,7 @@ function hurtPlayer(dmg) {
   if (p.inv > 0 || G.state !== 'play') return;
   dmg *= (1 - p.dr);
   p.hp -= dmg; p.inv = 0.5; addShake(5);
+  juiceHurt(); // 화면 가장자리가 붉게 번쩍이고 피격음이 난다
   if (navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive) navigator.vibrate(25);
   G.texts.push({ x: p.x, y: p.y - 24, txt: '-' + Math.round(dmg), color: '#f87171', big: true, t: 0 });
   if (p.hp <= 0) { p.hp = 0; playerDown(); }
@@ -1007,7 +1016,10 @@ function updatePickups(dt) {
       const d = Math.sqrt(d2) || 1;
       g.sp = Math.max(g.sp, 120) + dt * 1100;
       g.x += dx / d * g.sp * dt; g.y += dy / d * g.sp * dt;
-      if (d < p.r + 8) { g.dead = true; gainXp(g.v); }
+      if (d < p.r + 8) {
+        g.dead = true; gainXp(g.v);
+        juiceGem(); // 경험치 막대가 번쩍이고, 연달아 주울수록 소리가 한 음씩 올라간다
+      }
     }
   }
   G.gems = G.gems.filter(g => !g.dead);
@@ -1021,10 +1033,16 @@ function updatePickups(dt) {
         case 'gold': {
           const v = it.v * p.goldMul;
           G.gold += v;
+          juiceGold(v); // 영웅 머리 위에 "+얻은 양" 과 동전 소리
           if (G.world) { S.gold += Math.floor(v); G.world.loot.gold += Math.floor(v); }
           break;
         }
-        case 'meat': p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.3); G.texts.push({ x: p.x, y: p.y - 30, txt: '+HP', color: '#4ade80', big: true, t: 0 }); break;
+        case 'meat':
+          p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.3); // 최대 체력의 30% 회복
+          G.texts.push({ x: p.x, y: p.y - 30, txt: '+HP', color: '#4ade80', big: true, t: 0 });
+          G.fx.push({ type: 'heal', x: p.x, y: p.y, t: 0, life: 0.6 }); // 초록 고리가 퍼지는 회복 표시
+          sfx('pick');
+          break;
         case 'magnet': for (const g of G.gems) g.m = true; showBanner('🧲 경험치 전부 흡수!', '#93c5fd'); break;
         case 'bomb': for (const e of G.enemies) if (!e.dead && onScreen(e)) hitEnemy(e, e.boss || e.home ? 300 * p.dmgMul : 99999); G.fx.push({ type: 'flash', t: 0, life: 0.4 }); addShake(12); break;
         case 'chest': openChest(); break;
@@ -1046,6 +1064,9 @@ function updateFx(dt) {
 }
 
 function update(dt) {
+  // 멈칫(강한 적 처치)과 슬로모션(보스 처치)을 반영한 게임 시간으로 바꾼다. 0 이면 이번 프레임은 정지.
+  dt = juiceTime(dt);
+  if (!dt) return;
   G.time += dt;
   updatePlayer(dt);
   if (G.world) updateWorld(dt); else updateSpawner(dt);
@@ -1059,6 +1080,7 @@ function update(dt) {
   updateHazards(dt);
   updatePickups(dt);
   updateFx(dt);
+  juiceUpdate(dt); // 콤보·번쩍임 타이머를 줄이고 떠다니는 입자를 움직인다
   G.enemies = G.enemies.filter(e => !e.dead);
   if (G.winT > 0) { G.winT -= dt; for (const g of G.gems) g.m = true; if (G.winT <= 0) { endRun(true); return; } }
   if (G.state === 'play' && G.pendingLv > 0) openLevelUp();
@@ -1106,12 +1128,8 @@ function render() {
     ctx.globalAlpha = 1;
   }
 
-  // gems
-  for (const g of G.gems) {
-    const c = g.v < 5 ? '#38bdf8' : g.v < 20 ? '#4ade80' : '#f43f5e', s = g.v < 5 ? 5 : g.v < 20 ? 7 : 9;
-    ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(g.x, g.y - s); ctx.lineTo(g.x + s * 0.7, g.y); ctx.lineTo(g.x, g.y + s); ctx.lineTo(g.x - s * 0.7, g.y); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.fillRect(g.x - 1, g.y - s * 0.6, 2, s * 0.6);
-  }
+  // 경험치 보석: 빛 + 입체 보석 + 끌려올 때의 꼬리 (juice.js). 화면 밖 보석은 그리지 않는다
+  drawGems(hw, hh);
   // items
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (const it of G.items) {
@@ -1124,6 +1142,8 @@ function render() {
     ctx.fillText({ meat: '🍖', magnet: '🧲', bomb: '💣', chest: '🎁' }[it.type], it.x, it.y + bob);
   }
 
+  // 영웅 발밑의 은은한 빛: 몬스터 떼 속에서도 영웅 위치가 바로 보이게 (모든 캐릭터보다 먼저, 땅 위에)
+  drawHeroLight();
   // standing props, monsters, the pet and the hero, back to front by where their feet are
   const layer = visibleProps(hw, hh, false).map(q => ({ y: q.y, q }));
   for (const e of G.enemies) layer.push({ y: e.y + e.r * 0.85, e });
@@ -1166,16 +1186,8 @@ function render() {
     ctx.globalAlpha = 1; ctx.fillStyle = b.color ? '#fff' : '#fca5a5'; circle(b.x, b.y, b.r * (b.color ? 0.55 : 1)); ctx.fill();
   }
   drawFx();
-  // damage numbers
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  for (const t of G.texts) {
-    const k = t.t / 0.7;
-    ctx.globalAlpha = 1 - k * k;
-    ctx.font = `900 ${t.big ? 18 : 13}px sans-serif`;
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 3;
-    ctx.strokeText(t.txt, t.x, t.y - k * 30); ctx.fillStyle = t.color; ctx.fillText(t.txt, t.x, t.y - k * 30);
-  }
-  ctx.globalAlpha = 1;
+  drawTexts();      // 피해 숫자: 튀어나왔다 떠오르며 사라진다 (juice.js)
+  drawAtmosphere(); // 떠다니는 입자 · 가장자리 어둠 · 위험할 때 붉은 가장자리 (화면 좌표, HUD 보다 아래)
   drawHUD();
 }
 
@@ -1423,6 +1435,8 @@ function drawFx() {
         ctx.lineTo(f.x2, f.y2); ctx.stroke();
         break;
       }
+      // 여기에 없는 종류(spark 타격 불꽃 · burst 처치 조각 · lvring 레벨업 고리)는 juice.js 가 그린다
+      default: drawJuiceFx(f, k); break;
     }
     ctx.globalAlpha = 1;
   }
@@ -1569,11 +1583,10 @@ function drawHUD() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, DPR * SAFE_TOP);
   ctx.textBaseline = 'middle';
   const bx = 12, by = 10, bw = VW - 24;
-  ctx.fillStyle = 'rgba(0,0,0,.6)'; rr(bx, by, bw, 16, 8); ctx.fill();
-  const gr = ctx.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#22d3ee'); gr.addColorStop(1, '#3b82f6');
+  // 경험치 막대 (광택 · 앞머리 빛 · 획득 시 번쩍임은 juice.js).
+  // 월드에서는 캐릭터 경험치(S.cexp / 필요량), 스테이지에서는 이번 판 경험치(p.xp / p.xpNext)를 보여 준다
   const xpk = G.world ? S.cexp / cexpNeed(S.clv) : p.xp / p.xpNext;
-  ctx.fillStyle = gr; rr(bx + 2, by + 2, Math.max(0, (bw - 4) * clamp(xpk, 0, 1)), 12, 6); ctx.fill();
-  ctx.font = '900 11px sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.fillText('Lv.' + (G.world ? S.clv : p.lv), VW / 2, by + 8.5);
+  drawXpBar(bx, by, bw, xpk, 'Lv.' + (G.world ? S.clv : p.lv));
   ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.6)';
   if (G.world) {
     const s = Math.max(0, secAt(p.x, p.y)), t = `${s + 1}. ${secName(s)}`;
@@ -1619,23 +1632,19 @@ function drawHUD() {
     }
   }
   if (G.boss && !G.boss.dead) {
-    const b = G.boss, w = Math.min(420, VW - 40), x = (VW - w) / 2, y = VH - 60 - SAFE_BOTTOM;
-    ctx.fillStyle = 'rgba(0,0,0,.7)'; rr(x, y, w, 18, 9); ctx.fill();
-    ctx.fillStyle = '#dc2626'; rr(x + 2, y + 2, (w - 4) * clamp(b.hp / b.maxHp, 0, 1), 14, 7); ctx.fill();
-    ctx.textAlign = 'center'; ctx.font = '900 13px sans-serif'; ctx.fillStyle = '#fff'; ctx.fillText('👑 ' + b.name, VW / 2, y - 10);
+    const b = G.boss;
+    drawBossBar(b); // 화면 아래 체력 막대: 이름 · 남은 % · 방금 깎은 만큼의 노란 잔상 (juice.js)
     if (!onScreen(b)) {
       const a = Math.atan2(b.y - p.y, b.x - p.x), ax = VW / 2 + Math.cos(a) * Math.min(VW, VH) * 0.4, ay = VH / 2 + Math.sin(a) * Math.min(VW, VH) * 0.4;
       ctx.save(); ctx.translate(ax, ay); ctx.rotate(a); ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(-8, -10); ctx.lineTo(-8, 10); ctx.fill(); ctx.restore();
     }
   }
   for (const f of G.fx) if (f.type === 'flash') { ctx.fillStyle = `rgba(255,255,255,${0.7 * (1 - f.t / f.life)})`; ctx.fillRect(0, 0, VW, VH); }
-  if (G.banner) {
-    const a = Math.min(1, G.banner.t * 2), y = VH * 0.28;
-    ctx.globalAlpha = a;
-    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, y - 24, VW, 48);
-    ctx.textAlign = 'center'; ctx.font = '900 22px sans-serif'; ctx.fillStyle = G.banner.color; ctx.fillText(G.banner.text, VW / 2, y + 1);
-    ctx.globalAlpha = 1;
-  }
+  // 콤보는 화면 오른쪽, 일시정지 버튼(스테이지) 또는 미니맵(월드) 바로 아래에 둔다.
+  // 미니맵 높이 = 22px × 줄 수 + 여백 8px, 시작 y = 84 (drawMinimap 과 같은 값)
+  drawCombo(SAFE_TOP + (G.world ? 84 + 22 * (secCell(S.world.cleared + 1).row + 1) + 18 : 98));
+  drawBanner();    // 알림 띠 (스테이지 이름 · 엘리트 등장 · 보스 처치 …)
+  drawBossIntro(); // 보스 등장: 경고 줄무늬 띠 → 보스 이름
   if (joy.active) {
     ctx.fillStyle = 'rgba(255,255,255,.12)'; circle(joy.bx, joy.by, 50); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();
@@ -1724,18 +1733,25 @@ function cardHTML(o, i) {
 }
 function openLevelUp() {
   G.state = 'modal'; G.pendingLv--; joy.active = false;
+  sfx('levelup'); // 레벨업 팡파르 (도-미-솔-도)
   const n = S.pass ? 4 : 3;
   let opts = buildOptions(n);
   const draw = () => {
-    const box = showModal(`<h2>⬆️ 레벨 업! <small>Lv.${G.p.lv - G.pendingLv}</small></h2><div class="cards">${opts.map(cardHTML).join('')}</div>
+    // lvtitle: 금빛으로 빛나는 제목 (style.css). 카드는 위에서부터 차례로 나타난다.
+    // 그림 글자(⬆️)는 금빛 칠 바깥에 둔다 — 안에 넣으면 글자 모양대로 색이 칠해져 노란 네모로 보인다
+    const box = showModal(`<h2>⬆️ <span class="lvtitle">레벨 업!</span> <small>Lv.${G.p.lv - G.pendingLv}</small></h2><div class="cards">${opts.map(cardHTML).join('')}</div>
       <div class="row"><button class="btn gray" id="reroll">🔄 새로고침 <small>(광고 X · 무료)</small></button></div>`);
-    box.querySelectorAll('.card').forEach(c => c.onclick = () => { applyOption(opts[+c.dataset.i]); closeModal(); G.state = 'play'; });
+    box.querySelectorAll('.card').forEach(c => c.onclick = () => {
+      applyOption(opts[+c.dataset.i]); closeModal(); G.state = 'play';
+      juiceLevelUp(); // 게임으로 돌아오는 순간 영웅 주위로 금빛 고리가 퍼진다 (강해졌다는 느낌)
+    });
     box.querySelector('#reroll').onclick = () => { opts = buildOptions(n); draw(); };
   };
   draw();
 }
 function openChest() {
   G.state = 'modal'; joy.active = false;
+  sfx('chest'); // 빠르게 올라가는 반짝임 소리
   const r = Math.random(), n = r < 0.1 ? 5 : r < 0.4 ? 3 : 1, got = [];
   for (let i = 0; i < n; i++) { const o = buildOptions(1)[0]; got.push(optInfo(o)); applyOption(o); }
   const box = showModal(`<div class="bigicon">🎁</div><h2>보물상자! <small>x${n}</small></h2>
@@ -1768,6 +1784,7 @@ $('#btnPause').onclick = pauseGame;
 
 function playerDown() {
   G.state = 'modal'; joy.active = false;
+  sfx('lose'); // 아래로 내려가는 세 음
   const box = showModal(`<div class="bigicon">💀</div><h2>쓰러졌습니다!</h2>
     <div class="center">원래라면 💎보석이나 광고가 필요하지만…<br><b>여기선 공짜!</b> (부활 ${G.revives}회)</div>
     <div class="row"><button class="btn gray" id="giveup">포기</button><button class="btn gold" id="rev">💖 무료 부활</button></div>`);
@@ -1783,6 +1800,29 @@ function playerDown() {
     G.state = 'play';
   };
   box.querySelector('#giveup').onclick = () => { closeModal(); G.world ? endWorld() : endRun(false); };
+}
+
+// 결과 창의 보상 숫자(data-to 가 붙은 요소)를 0 에서 실제 값까지 0.9초 동안 올려 보여 준다.
+// box: 결과 창. 창이 닫혀 요소가 사라지면 스스로 멈춘다.
+function countUp(box) {
+  const els = [...box.querySelectorAll('[data-to]')], t0 = performance.now(), D = 900; // D: 걸리는 시간 (ms)
+  if (!els.length) return;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3); // e: 처음엔 빠르게 오르고 끝에서 천천히 멈춘다
+    for (const el of els) el.textContent = fmt(Math.floor(+el.dataset.to * e));
+    if (k < 1 && document.body.contains(els[0])) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+// 승리 화면에 떨어지는 색종이 26장. 위치 · 색 · 시작 시각 · 속도를 장마다 다르게 준다 (모양과 움직임은 style.css)
+function confettiHTML() {
+  const cols = ['#fde047', '#f472b6', '#60a5fa', '#4ade80', '#fb923c', '#c084fc'];
+  let h = '<div class="confetti">';
+  for (let i = 0; i < 26; i++) {
+    // left: 가로 위치(%), delay: 0~1.2초 사이에 흩어져 시작, duration: 1.6~2.8초에 걸쳐 떨어짐
+    h += `<i style="left:${(Math.random() * 100).toFixed(1)}%;background:${cols[i % cols.length]};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;animation-duration:${(1.6 + Math.random() * 1.2).toFixed(2)}s"></i>`;
+  }
+  return h + '</div>';
 }
 
 function endRun(win) {
@@ -1804,15 +1844,20 @@ function endRun(win) {
   const ups = addCexp(cexp);
   S.best[s] = Math.max(S.best[s] || 0, Math.floor(G.time));
   save();
-  const box = showModal(`<div class="bigicon">${win ? '🏆' : '☠️'}</div><h2>${win ? '스테이지 클리어!' : '패배…'}</h2>
-    <div class="center">STAGE ${s} · ${fmtTime(G.time)} · 💀 ${G.kills} 처치${S.pass ? ' · 👑패스 2배' : ''}</div>
+  if (win) sfx('win'); // 승리 팡파르 (패배음은 쓰러진 순간 playerDown 에서 이미 났다)
+  // 승리하면 트로피 뒤로 빛살이 돌고(.rays) 색종이가 떨어진다(.confetti). 패배는 차분하게 둔다.
+  // data-to: countUp 이 0 에서 이 값까지 숫자를 올려 보여 준다. 🔥 = 이번 판의 최고 연속 처치 수
+  const box = showModal(`<div class="result ${win ? 'win' : 'lose'}">${win ? '<div class="rays"></div>' + confettiHTML() : ''}
+      <div class="bigicon">${win ? '🏆' : '☠️'}</div><h2 class="rtitle">${win ? '스테이지 클리어!' : '패배…'}</h2></div>
+    <div class="center">STAGE ${s} · ${fmtTime(G.time)}${S.pass ? ' · 👑패스 2배' : ''}<br>💀 ${G.kills} 처치 · 🔥 최고 콤보 ${G.juice.best}</div>
     ${buildSummary()}
-    <div class="reward"><span>🪙 ${fmt(gold)}</span><span>💎 ${fmt(gems)}</span><span>📘 ${fmt(cexp)}</span></div>
+    <div class="reward"><span>🪙 <b data-to="${gold}">0</b></span><span>💎 <b data-to="${gems}">0</b></span><span>📘 <b data-to="${cexp}">0</b></span></div>
     ${ups ? `<div class="center lvup">🎉 캐릭터 레벨 업! Lv.${S.clv}</div>` : ''}
     ${first ? '<div class="center">🎉 첫 클리어 보너스 💎100 포함</div>' : ''}
     ${drops.length ? `<div class="ggrid" style="justify-content:center;grid-template-columns:repeat(2,64px)">${drops.map(it => itemTile(it)).join('')}</div>` : ''}
     <div class="row"><button class="btn purple" id="dbl">📺 2배 받기 <small>(광고 없이 무료)</small></button></div>
     <div class="row"><button class="btn green" id="home">로비로</button>${win ? '<button class="btn gold" id="next">다음 스테이지 ▶</button>' : '<button class="btn gold" id="retry">다시 도전</button>'}</div>`);
+  countUp(box);
   box.querySelector('#dbl').onclick = e => {
     S.gold += gold; S.gems += gems; addCexp(cexp); save();
     const b = e.target.closest('button'); b.disabled = true; b.textContent = '✅ 2배 지급 완료';

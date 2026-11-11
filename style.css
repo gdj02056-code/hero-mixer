@@ -263,3 +263,108 @@ h3 .btn.mini{vertical-align:middle}
 /* hud */
 #hudBtns{position:fixed;top:calc(34px + env(safe-area-inset-top));right:12px;z-index:5}
 #btnPause{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(0,0,0,.45);color:#fff;font-size:14px;font-weight:900}
+
+/* ============================================================
+   꾸미기 — 로비 · 창 · 결과 화면의 연출
+   규칙: 움직임은 transform / opacity 만 쓴다 (폰에서 가장 가볍게 움직이는 두 속성).
+         색 계열은 금색(#fde047 ~ #f59e0b)을 "중요한 것"에만 쓴다.
+   ============================================================ */
+
+/* ---------- 로비 배경에 떠오르는 불빛 ---------- */
+/* #motes 는 로비 맨 뒤에 깔리고, 나머지 내용은 그 위(z-index 1)에 올라온다 */
+#lobby>*{position:relative;z-index:1}
+#motes{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+/* 불빛 하나: 아래에서 생겨 위로 떠오르며 사라진다. 위치 · 크기 · 속도는 ui.js 가 저마다 다르게 준다 */
+#motes i{position:absolute;bottom:-12px;border-radius:50%;opacity:0;animation:mote linear infinite}
+/* --dx: 떠오르는 동안 옆으로 흘러가는 거리 (ui.js 가 -30px ~ 30px 사이로 정함) */
+@keyframes mote{0%{transform:translate(0,0);opacity:0}12%{opacity:.85}80%{opacity:.5}100%{transform:translate(var(--dx),-92vh);opacity:0}}
+
+/* ---------- 게임 이름 ---------- */
+/* 금빛 글자 + 어두운 그림자. 빛줄기가 3.2초마다 글자 위를 지나간다 */
+.logo{text-align:center;font-size:30px;font-weight:900;letter-spacing:3px;line-height:1;margin:2px 0 10px;font-style:italic;
+  background:linear-gradient(180deg,#fff7c2 0%,#fde047 38%,#f59e0b 62%,#b45309 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 0 #3b1d00) drop-shadow(0 0 12px rgba(251,191,36,.55))}
+/* 뒤 단어는 하늘색으로 — 두 단어가 한눈에 구분되게 */
+.logo span{margin-left:8px;background:linear-gradient(180deg,#e0f2fe 0%,#7dd3fc 40%,#3b82f6 70%,#1e3a8a 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- 영웅 진열대 ---------- */
+/* --c: 영웅 희귀도 색 (ui.js 가 넣어 줌). 왼쪽에서 그 색이 은은하게 번진다 */
+.herobox.show{position:relative;overflow:hidden;padding:4px 8px 4px 2px;border:1px solid rgba(255,255,255,.1);
+  background:linear-gradient(110deg,color-mix(in srgb,var(--c) 26%,transparent),rgba(0,0,0,.32) 62%)}
+.pedestal{position:relative;flex:none;width:140px;height:126px}
+.pedestal .preview{position:relative;z-index:1;width:100%;height:100%}
+/* 위에서 내려오는 조명: 위가 좁고 아래가 넓은 사다리꼴 */
+.pedestal::before{content:'';position:absolute;left:50%;top:-8px;width:124px;height:128px;margin-left:-62px;
+  background:linear-gradient(rgba(255,255,255,.26),transparent 88%);clip-path:polygon(36% 0,64% 0,100% 100%,0 100%);animation:beam 3s ease-in-out infinite}
+/* 발밑의 빛 고리: 희귀도 색으로 숨쉬듯 커졌다 작아진다 */
+.pedestal::after{content:'';position:absolute;left:50%;bottom:9px;width:108px;height:26px;margin-left:-54px;border-radius:50%;
+  background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 65%,#fff) 0,color-mix(in srgb,var(--c) 55%,transparent) 42%,transparent 70%);animation:ring 2.4s ease-in-out infinite}
+@keyframes beam{50%{opacity:.5}}
+@keyframes ring{50%{transform:scale(1.14);opacity:.7}}
+
+/* ---------- 출발 버튼 ---------- */
+/* 숨쉬듯 빛나고(cta), 흰 빛줄기가 주기적으로 지나간다(shine) — 화면에서 가장 먼저 눈이 가야 하는 버튼 */
+.btn.big{position:relative;overflow:hidden;animation:cta 1.8s ease-in-out infinite;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+.btn.big::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:42%;transform:skewX(-20deg);
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);animation:shine 2.8s ease-in-out infinite}
+/* 버튼의 기본 그림자(0 4px 0 #b45309)는 유지한 채 바깥 빛만 더한다 */
+@keyframes cta{50%{box-shadow:0 4px 0 #b45309,0 0 26px rgba(251,191,36,.8);transform:scale(1.015)}}
+/* 앞의 55%는 쉬고, 뒤의 45% 동안 왼쪽 밖에서 오른쪽 밖으로 지나간다 */
+@keyframes shine{0%,55%{left:-60%}100%{left:130%}}
+.btn.big:active{animation:none;transform:translateY(2px)}
+
+/* ---------- 화면 전환 · 아래 메뉴 ---------- */
+/* 탭을 바꿀 때만 ui.js 가 enter 를 붙인다 (버튼을 누를 때마다 깜빡이면 안 되므로) */
+#page.enter{animation:pageIn .22s ease-out}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px)}}
+/* 고른 탭의 아이콘이 살짝 커지며 올라온다 */
+nav.bottom button{transition:transform .15s,color .15s}
+nav.bottom button.on{transform:translateY(-3px) scale(1.08)}
+/* 자원 칸: 위가 밝은 유리 느낌 */
+.res{background:linear-gradient(rgba(255,255,255,.1),rgba(0,0,0,.5));box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+
+/* ---------- 창 ---------- */
+/* 깊은 그림자 + 위쪽 테두리 빛으로 화면에서 떠 보이게 */
+#modal .box{position:relative;box-shadow:0 14px 44px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.14)}
+/* 0.85배에서 1.03배까지 커졌다가 제 크기로 — 살짝 튀는 등장 */
+@keyframes pop{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.03);opacity:1}}
+
+/* ---------- 레벨업 ---------- */
+/* 제목: 금빛 글자가 숨쉬듯 빛난다 */
+.lvtitle{display:inline-block;font-size:26px;font-weight:900;background:linear-gradient(180deg,#fff7c2,#fde047 45%,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 0 #3b1d00);animation:lvglow 1.2s ease-in-out infinite alternate}
+@keyframes lvglow{to{filter:drop-shadow(0 2px 0 #3b1d00) drop-shadow(0 0 14px rgba(253,224,71,.9))}}
+/* 카드: 왼쪽에서 미끄러져 들어온다. 위에서부터 0.07초씩 늦게 */
+.cards .card{animation:cardIn .3s cubic-bezier(.2,.9,.3,1.2) backwards;background:linear-gradient(120deg,#343a78,#262b5c);box-shadow:0 3px 0 #1a1d3d}
+.cards .card:nth-child(2){animation-delay:.07s}
+.cards .card:nth-child(3){animation-delay:.14s}
+.cards .card:nth-child(4){animation-delay:.21s}
+@keyframes cardIn{from{opacity:0;transform:translateX(-26px) scale(.96)}}
+/* 주무기 강화 카드는 파랑, 스킬 믹스 카드는 금색 테두리로 구분 */
+.cards .card.mainup{border-color:#60a5fa;background:linear-gradient(120deg,#1e40af,#262b5c)}
+.cards .card.evo{animation:cardIn .3s cubic-bezier(.2,.9,.3,1.2) backwards,glow .8s .3s infinite alternate}
+/* 아이콘 칸: 위에서 빛을 받는 느낌 */
+.card .ic{background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.2),rgba(0,0,0,.35) 70%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+
+/* ---------- 결과 화면 ---------- */
+.result{position:relative}
+.rtitle{font-size:26px;font-weight:900}
+/* 승리: 금빛 제목, 패배: 가라앉은 회색 제목 */
+.result.win .rtitle{background:linear-gradient(180deg,#fff7c2,#fde047 45%,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #3b1d00) drop-shadow(0 0 12px rgba(253,224,71,.6))}
+.result.lose .rtitle{color:#9ca3af}
+.result.lose .bigicon{filter:grayscale(.4);opacity:.9}
+/* 트로피: 위에서 떨어져 튕기며 자리 잡는다 */
+.result.win .bigicon{position:relative;z-index:1;animation:trophy .7s cubic-bezier(.3,1.6,.5,1) backwards}
+@keyframes trophy{from{transform:translateY(-40px) scale(.3) rotate(-25deg);opacity:0}}
+/* 트로피 뒤에서 도는 빛살: 부채꼴 무늬를 원형으로 잘라 가운데만 보이게 하고 천천히 돌린다 */
+.result .rays{position:absolute;left:50%;top:-52px;width:240px;height:240px;margin-left:-120px;border-radius:50%;
+  background:repeating-conic-gradient(rgba(253,224,71,.3) 0 12deg,transparent 12deg 30deg);
+  -webkit-mask:radial-gradient(circle,#000 18%,transparent 68%);mask:radial-gradient(circle,#000 18%,transparent 68%);animation:spin 10s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 색종이: 창 위쪽에서 돌면서 떨어진다. 색 · 위치 · 속도는 game.js confettiHTML 이 장마다 다르게 준다 */
+.confetti{position:absolute;left:-16px;right:-16px;top:-18px;height:320px;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-12px;width:7px;height:11px;border-radius:2px;opacity:0;animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(330px) rotate(540deg);opacity:.2}}
+/* 보상 숫자: 큼직하게, 0 에서 올라오는 동안 흔들리지 않게 고정폭 숫자를 쓴다 */
+.reward b{font-variant-numeric:tabular-nums;color:#fde68a}
+.reward span{background:rgba(0,0,0,.3);border-radius:10px;padding:4px 10px}

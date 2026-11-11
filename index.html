@@ -41,6 +41,8 @@ window.addEventListener('error', function () {
 <div id="hudBtns" class="hidden"><button id="btnPause" aria-label="일시정지">❚❚</button></div>
 
 <div id="lobby">
+  <!-- 로비 배경에 떠오르는 불빛 (ui.js 가 채운다) -->
+  <div id="motes"></div>
   <header class="topbar">
     <div class="res"><span>🪙</span><b id="rGold">0</b><button data-go="shop">+</button></div>
     <div class="res"><span>💎</span><b id="rGems">0</b><button data-go="shop">+</button></div>
@@ -67,6 +69,8 @@ window.addEventListener('error', function () {
 <script src="art.js"></script>
 <script src="game.js"></script>
 <script src="terrain.js"></script>
+<script src="juice.js"></script>
+<script src="sfx.js"></script>
 <script src="boss.js"></script>
 <script src="shop.js"></script>
 <script src="ui.js"></script>

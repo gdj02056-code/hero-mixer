@@ -2,8 +2,8 @@
 // Code and pages are network-first: when online the game always loads the newest files as one
 // matching set (mixing an old page with new scripts breaks the game). The cache is only the
 // offline fallback. Pictures can come from the cache first, since an older picture is harmless.
-const CACHE = 'heromixer-v8';
-const FILES = ['./', 'index.html', 'style.css', 'imglist.js', 'data.js', 'art.js', 'game.js', 'terrain.js', 'boss.js', 'shop.js', 'ui.js', 'manifest.webmanifest',
+const CACHE = 'heromixer-v9';
+const FILES = ['./', 'index.html', 'style.css', 'imglist.js', 'data.js', 'art.js', 'game.js', 'terrain.js', 'juice.js', 'sfx.js', 'boss.js', 'shop.js', 'ui.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-192.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

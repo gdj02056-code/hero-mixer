@@ -64,7 +64,11 @@ function renderLobby() {
   PAGES[tab](pg);
   pg.scrollTop = y;
 }
-document.querySelectorAll('nav.bottom button').forEach(b => b.onclick = () => { tab = b.dataset.tab; renderLobby(); $('#page').scrollTop = 0; });
+// 탭을 바꿨을 때만 내용이 아래에서 떠오르며 나타나게 한다 (#page.enter, style.css).
+// 클래스를 뗐다가 다시 붙여도 브라우저는 움직임을 다시 시작하지 않으므로,
+// 그 사이에 offsetWidth 를 읽어 배치를 한 번 강제로 계산하게 한다 (움직임을 되감는 표준 방법).
+function pageEnter() { const pg = $('#page'); pg.classList.remove('enter'); void pg.offsetWidth; pg.classList.add('enter'); }
+document.querySelectorAll('nav.bottom button').forEach(b => b.onclick = () => { tab = b.dataset.tab; renderLobby(); $('#page').scrollTop = 0; pageEnter(); });
 document.querySelectorAll('.res button').forEach(b => b.onclick = () => { tab = 'shop'; renderLobby(); $('#page').scrollTop = 0; });
 $('#btnSettings').onclick = openSettings;
 setInterval(() => { if (!G) refreshTop(); }, 5000);
@@ -95,6 +99,8 @@ function tryStart(stage) {
 //  BATTLE
 // ============================================================
 let battleMode = 'world', selSec = null;
+// 전투 탭 맨 위의 게임 이름. 글자 모양(금빛 · 하늘빛)은 style.css 의 .logo
+const LOGO = '<div class="logo">HERO<span>MIXER</span></div>';
 const modesHTML = () => `<div class="subtabs"><button data-m="world" class="${battleMode === 'world' ? 'on' : ''}">🗺️ 모험 (오픈월드)</button><button data-m="stage" class="${battleMode === 'stage' ? 'on' : ''}">⚔️ 스테이지</button></div>`;
 const wireModes = pg => pg.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { battleMode = b.dataset.m; renderLobby(); });
 const skillIcon = id => skillIconHTML(id, !!(S.skills[id] && S.skills[id].evo));
@@ -110,9 +116,9 @@ function pageWorld(pg) {
   }
   const s = selSec, cnt = bits3(S.world.fb[s] || 0);
   const w = getItem(S.equip.weapon);
-  pg.innerHTML = `${modesHTML()}
+  pg.innerHTML = `${LOGO}${modesHTML()}
     <div class="power">⚔️ 전투력 <b>${fmt(m.power)}</b> <span class="clv">Lv.${S.clv}</span></div>
-    <div class="herobox"><canvas class="preview"></canvas>
+    <div class="herobox show" style="--c:${HRAR[HERO[S.hero].r].c}"><div class="pedestal"><canvas class="preview"></canvas></div>
       <div class="heroline"><b style="color:${HRAR[HERO[S.hero].r].c}">${HERO[S.hero].name}</b> · ${w ? `<b style="color:${GRADES[w.g].c}">${itemName(w)}</b>` : '👊 맨주먹'}
         <div class="skillrow">${S.skillSlots.map(id => `<span>${skillIcon(id)}</span>`).join('') || '<small>장착 스킬 없음</small>'}<button class="btn gray mini" id="toSkills">스킬 관리</button></div></div></div>
     <h3>🗺️ 월드 맵 <small>정복 ${cl}지역 · 지역을 골라 출발</small></h3>
@@ -132,9 +138,9 @@ function pageBattle(pg) {
   selStage = clamp(selStage, 1, maxSel);
   const st = STAGES[(selStage - 1) % STAGES.length], m = metaStats(), lap = Math.floor((selStage - 1) / STAGES.length);
   const w = getItem(S.equip.weapon), W = w ? WT[w.wt] : FIST;
-  pg.innerHTML = `${modesHTML()}
+  pg.innerHTML = `${LOGO}${modesHTML()}
     <div class="power">⚔️ 전투력 <b>${fmt(m.power)}</b> <span class="clv">Lv.${S.clv}</span></div>
-    <div class="herobox"><canvas class="preview"></canvas>
+    <div class="herobox show" style="--c:${HRAR[HERO[S.hero].r].c}"><div class="pedestal"><canvas class="preview"></canvas></div>
       <div class="heroline"><b style="color:${HRAR[HERO[S.hero].r].c}">${HERO[S.hero].name}</b> · ${w ? `<b style="color:${GRADES[w.g].c}">${itemName(w)}</b>` : '👊 맨주먹'}${S.pet ? ` · ${PET[S.pet].name}` : ''}<br><small>${W.desc}</small></div></div>
     <div class="stage" style="background:linear-gradient(160deg,${st.g1},${st.g2} 60%,${st.deco})">
       <button class="arrow" id="sPrev" ${selStage <= 1 ? 'disabled' : ''}>◀</button>
@@ -462,6 +468,8 @@ addEventListener('appinstalled', () => { installEvt = null; toast('📲 설치 �
 function openSettings() {
   const box = showModal(`<h2>⚙️ 설정</h2>
     <div class="tips">🎮 <b>Hero Mixer</b><br>• 이동: 화면 드래그(조이스틱) 또는 WASD / 방향키<br>• 공격: 장착한 무기로 자동 공격 (무기마다 공격 방식이 달라요)<br>• 3분 생존 → 보스 처치 → 클리어<br>• 모든 결제 상품은 <b>₩0</b> 💸</div>
+    <h3>🔊 소리</h3>
+    <div class="row"><button class="btn ${S.sfx === false ? 'gray' : 'green'}" id="sfxT">${S.sfx === false ? '🔇 효과음 꺼짐' : '🔊 효과음 켜짐'}</button></div>
     <h3>📱 휴대폰에 설치</h3>
     ${isStandalone() ? '<div class="tips">✅ 앱으로 실행 중이에요. 인터넷 없이도 플레이할 수 있어요.</div>'
       : installEvt ? '<div class="row"><button class="btn green" id="install">📲 홈 화면에 설치</button></div>'
@@ -470,6 +478,9 @@ function openSettings() {
   const ib = box.querySelector('#install');
   if (ib) ib.onclick = async () => { installEvt.prompt(); await installEvt.userChoice; installEvt = null; closeModal(); };
   box.querySelector('#close').onclick = closeModal;
+  // 효과음 스위치. S.sfx 가 없거나 true 면 켜짐, false 면 꺼짐 (옛 저장 데이터에는 이 값이 없으므로 기본은 켜짐).
+  // 바꾼 뒤 설정 창을 다시 그려 버튼 글자와 색을 맞춘다. 켤 때는 확인용으로 한 번 소리를 낸다.
+  box.querySelector('#sfxT').onclick = () => { S.sfx = S.sfx === false; save(); openSettings(); sfx('pick'); };
   box.querySelector('#reset').onclick = () => {
     const b2 = showModal(`<h2>정말 초기화할까요?</h2><div class="center">모든 진행 상황이 삭제됩니다.</div>
       <div class="row"><button class="btn gray" id="no">취소</button><button class="btn red" id="yes">초기화</button></div>`);
@@ -513,8 +524,23 @@ function preloadBattleArt() {
   if (w) keys.push(weaponKey(w.wt, w.g));
   preloadImages(keys.filter(k => k && IMG_SET.has(k)));
 }
+// 로비 배경에 떠오르는 불빛 18개를 만든다 (모양과 움직임은 style.css 의 #motes).
+// 저마다 위치 · 크기 · 색 · 속도가 달라야 규칙적인 무늬로 보이지 않는다.
+function makeMotes() {
+  const cols = ['#fde68a', '#fdba74', '#f9a8d4', '#c4b5fd']; // 노을빛 배경에 어울리는 따뜻한 색들
+  let h = '';
+  for (let i = 0; i < 18; i++) {
+    const size = 2 + Math.random() * 4;        // 지름 2~6px
+    const dur = 7 + Math.random() * 8;         // 화면을 다 오르는 데 7~15초
+    const c = cols[i % cols.length];
+    // 지연을 음수로 주면 처음부터 화면 곳곳에 이미 떠 있는 상태로 시작한다
+    h += `<i style="left:${(Math.random() * 100).toFixed(1)}%;width:${size.toFixed(1)}px;height:${size.toFixed(1)}px;background:${c};box-shadow:0 0 ${(size * 2).toFixed(0)}px ${c};--dx:${(Math.random() * 60 - 30).toFixed(0)}px;animation-duration:${dur.toFixed(1)}s;animation-delay:-${(Math.random() * dur).toFixed(1)}s"></i>`;
+  }
+  $('#motes').innerHTML = h;
+}
 loadSave();
 resize();
+makeMotes();
 applyLobbyArt();
 preloadBattleArt();
 selStage = Math.min(S.cleared + 1, 999);
