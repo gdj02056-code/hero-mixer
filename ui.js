@@ -474,7 +474,9 @@ function openSettings() {
     ${isStandalone() ? '<div class="tips">✅ 앱으로 실행 중이에요. 인터넷 없이도 플레이할 수 있어요.</div>'
       : installEvt ? '<div class="row"><button class="btn green" id="install">📲 홈 화면에 설치</button></div>'
       : '<div class="tips">• <b>안드로이드 (크롬)</b>: ⋮ 메뉴 → <b>앱 설치</b> / <b>홈 화면에 추가</b><br>• <b>아이폰 (사파리)</b>: 공유 ⬆️ → <b>홈 화면에 추가</b></div>'}
-    <div class="row"><button class="btn red" id="reset">데이터 초기화</button><button class="btn gray" id="close">닫기</button></div>`);
+    <div class="row"><button class="btn red" id="reset">데이터 초기화</button><button class="btn gray" id="close">닫기</button></div>
+    <div class="center sub" style="margin:10px 0 0">버전 v${VERSION}</div>`);
+  // 맨 아래의 버전: data.js 의 VERSION (주.부.수). 무엇이 바뀌었는지는 CHANGELOG.md 에 적는다
   const ib = box.querySelector('#install');
   if (ib) ib.onclick = async () => { installEvt.prompt(); await installEvt.userChoice; installEvt = null; closeModal(); };
   box.querySelector('#close').onclick = closeModal;
